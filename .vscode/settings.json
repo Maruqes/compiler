@@ -1,3 +1,15 @@
 {
-    "arrayIndexInlay.enabled": false
+    "arrayIndexInlay.enabled": false,
+    "files.associations": {
+        "unistd.h": "c",
+        "stdlib.h": "c",
+        "string.h": "c",
+        "functions.h": "c",
+        "strings.h": "c",
+        "fcntl.h": "c",
+        "cstdint": "c",
+        "uint32.h": "c",
+        "stdint.h": "c",
+        "system_error": "c"
+    }
 }

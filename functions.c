@@ -1,8 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdint.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include "functions.h"
 
 size_t custom_code_size = 0;
 
