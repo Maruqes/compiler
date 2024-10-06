@@ -43,15 +43,30 @@ struct Elf32_Phdr
 
 int main()
 {
-    pre_mov_eax();
-    pre_mov_ebx();
-    pre_syscall();
+    mov_eax(0x04);         // sys_write
+    mov_ebx(0x01);         // stdout
+    mov_ecx_symbol("msg"); // Use placeholder for 'msg' address
+    mov_edx(15);           // Length of "Hello, World!\n"
+    our_syscall();
 
-    pre_mov_eax();
-    pre_mov_ebx();
-    pre_mov_ecx();
-    pre_mov_edx();
-    pre_syscall();
+    mov_eax(0x04);
+    mov_ebx(0x01);
+    mov_ecx_symbol("msg2");
+    mov_edx(23);
+    our_syscall();
+
+    mov_eax(0x04);
+    mov_ebx(0x01);
+    mov_ecx_symbol("msg3");
+    mov_edx(23);
+    our_syscall();
+
+    mov_eax(0x01); // sys_exit
+    mov_ebx(0x00); // Exit code 0
+    our_syscall();
+
+    // Calculate code size
+    add_custom_code_size();
 
     // ELF header
     struct Elf32_Ehdr ehdr = {0};
@@ -85,7 +100,20 @@ int main()
     phdr.p_flags = 7;                          // Read + Write + Execute permissions
     phdr.p_align = 0x1000;                     // Alignment (page size)
 
-    create_constant_string("msg", "Hello, World!\n", phdr.p_vaddr + custom_code_size);
+    create_constant_string("msg", "Hello, World!\n", phdr.p_vaddr + custom_code_size + data_size);
+    create_constant_string("msg2", "boas mano bue malouco\n", phdr.p_vaddr + custom_code_size + data_size);
+    create_constant_string("msg3", "asas mano bue malouco\n", phdr.p_vaddr + custom_code_size + data_size);
+
+    fixup_addresses();
+
+    size_t total_data_size = 0;
+    for (uint32_t i = 0; i < constant_string_count; i++)
+    {
+        total_data_size += strlen(constant_strings[i].var_value);
+    }
+
+    phdr.p_filesz = custom_code_size + data_size;
+    phdr.p_memsz = custom_code_size + data_size;
 
     // Write the ELF file
     int fd = open("hello_elf_32", O_CREAT | O_WRONLY | O_TRUNC, 0755);
@@ -98,19 +126,13 @@ int main()
     write(fd, &ehdr, sizeof(ehdr)); // Write ELF header
     write(fd, &phdr, sizeof(phdr)); // Write program header
 
-    mov_eax(fd, 0x04);
-    mov_ebx(fd, 0x01);
-    mov_ecx(fd, constant_strings[0].var_address);
-    mov_edx(fd, strlen(constant_strings[0].var_value));
-    our_syscall(fd);
-
-    mov_eax(fd, 0x01);
-    mov_ebx(fd, 0x00);
-    our_syscall(fd);
+    write_all_custom_code(fd);
 
     write_all_string_constants(fd);
 
     close(fd);
+
+    cleanup();
 
     return 0;
 }

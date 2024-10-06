@@ -10,6 +10,8 @@
         "cstdint": "c",
         "uint32.h": "c",
         "stdint.h": "c",
-        "system_error": "c"
+        "system_error": "c",
+        "*.tcc": "c",
+        "stdio.h": "c"
     }
 }

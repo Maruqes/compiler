@@ -4,6 +4,7 @@
 Constant_string *constant_strings = 0;
 uint32_t constant_string_count = 0;
 
+size_t data_size = 0;
 void create_constant_string(char *var_name, char *var_value, uint32_t var_address)
 {
     constant_strings = realloc(constant_strings, sizeof(Constant_string) * (constant_string_count + 1));
@@ -11,7 +12,8 @@ void create_constant_string(char *var_name, char *var_value, uint32_t var_addres
     constant_strings[constant_string_count].var_value = var_value;
     constant_strings[constant_string_count].var_address = var_address;
     constant_string_count++;
-    custom_code_size += strlen(var_value);
+    data_size += strlen(var_value) + 1;
+    printf("Data size: %zu\n", data_size);
 }
 
 void write_all_string_constants(int __fd)

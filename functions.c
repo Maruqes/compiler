@@ -1,68 +1,288 @@
 #include "functions.h"
+#include "strings.h"
 
 size_t custom_code_size = 0;
 
-void mov_eax(int __fd, uint32_t code)
+OpCode *op_codes_array = NULL;    // Dynamic array of opcodes
+uint32_t op_codes_array_size = 0; // Number of opcodes stored
+
+Fixup *fixups_array = NULL;
+uint32_t fixups_array_size = 0;
+
+void add_fixup(int index, char *symbol_name)
 {
-    char mov_eax_template[5];
-    mov_eax_template[0] = 0xB8; // Opcode for 'mov eax, imm32'
+    // Record the fixup
+    fixups_array = realloc(fixups_array, (fixups_array_size + 1) * sizeof(Fixup));
+    if (fixups_array == NULL)
+    {
+        perror("Failed to reallocate memory for fixups_array");
+        exit(EXIT_FAILURE);
+    }
 
-    memcpy(&mov_eax_template[1], &code, sizeof(code));
-
-    write(__fd, mov_eax_template, 5);
+    Fixup new_fixup;
+    new_fixup.opcode_index = op_codes_array_size;
+    new_fixup.offset_in_opcode = 1;              // Offset where the address should be inserted
+    new_fixup.symbol_name = strdup(symbol_name); // Remember to free this later
+    fixups_array[fixups_array_size] = new_fixup;
+    fixups_array_size++;
 }
 
-void mov_ebx(int __fd, uint32_t code)
-{
-    char mov_ebx_template[5];
-    mov_ebx_template[0] = 0xBB; // Opcode for 'mov ebx, imm32'
-    memcpy(&mov_ebx_template[1], &code, sizeof(code));
-    write(__fd, mov_ebx_template, 5);
+void cleanup() {
+    for (uint32_t i = 0; i < op_codes_array_size; i++) {
+        free(op_codes_array[i].code);
+    }
+    free(op_codes_array);
+
+    // Free fixups
+    for (uint32_t i = 0; i < fixups_array_size; i++) {
+        free(fixups_array[i].symbol_name);
+    }
+    free(fixups_array);
 }
 
-void mov_ecx(int __fd, uint32_t code)
+void mov_ecx_symbol(char *symbol_name)
 {
-    char mov_ecx_template[5];
-    mov_ecx_template[0] = 0xB9; // Opcode for 'mov ecx, imm32'
-    memcpy(&mov_ecx_template[1], &code, sizeof(code));
-    write(__fd, mov_ecx_template, 5);
+    add_fixup(op_codes_array_size, symbol_name);
+    mov_ecx(0); // Placeholder for the address
 }
 
-void mov_edx(int __fd, uint32_t code)
+void fixup_addresses()
 {
-    char mov_edx_template[5];
-    mov_edx_template[0] = 0xBA; // Opcode for 'mov edx, imm32'
-    memcpy(&mov_edx_template[1], &code, sizeof(code));
-    write(__fd, mov_edx_template, 5);
+    for (uint32_t i = 0; i < fixups_array_size; i++)
+    {
+        Fixup fixup = fixups_array[i];
+        // Find the symbol's address
+        uint32_t symbol_address = 0;
+        for (uint32_t j = 0; j < constant_string_count; j++)
+        {
+            if (strcmp(fixup.symbol_name, constant_strings[j].var_name) == 0)
+            {
+                symbol_address = constant_strings[j].var_address;
+                break;
+            }
+        }
+        if (symbol_address == 0)
+        {
+            fprintf(stderr, "Undefined symbol: %s\n", fixup.symbol_name);
+            exit(EXIT_FAILURE);
+        }
+        // Insert the address into the opcode
+        memcpy(&op_codes_array[fixup.opcode_index].code[fixup.offset_in_opcode], &symbol_address, sizeof(symbol_address));
+    }
 }
 
-void our_syscall(int __fd)
+void mov_eax(uint32_t code)
 {
-    unsigned char syscall_code[] = {0xCD, 0x80};
-    write(__fd, syscall_code, 2);
+    char *opcode_bytes = malloc(5);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[0] = 0xB8;
+    memcpy(&opcode_bytes[1], &code, sizeof(code));
+
+    // Create an OpCode structure
+    OpCode new_opcode;
+    new_opcode.size = 5;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
 }
 
-void pre_mov_eax()
+void mov_ebx(uint32_t code)
 {
-    custom_code_size += 5;
+    char *opcode_bytes = malloc(5);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[0] = 0xBB;
+    memcpy(&opcode_bytes[1], &code, sizeof(code)); // Copy the immediate value
+
+    // Create an OpCode structure
+    OpCode new_opcode;
+    new_opcode.size = 5;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
 }
 
-void pre_mov_ebx()
+void mov_ecx(uint32_t code)
 {
-    custom_code_size += 5;
+    char *opcode_bytes = malloc(5);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[0] = 0xB9;
+
+    memcpy(&opcode_bytes[1], &code, sizeof(code)); // Copy the immediate value
+
+    // Create an OpCode structure
+    OpCode new_opcode;
+    new_opcode.size = 5;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
 }
 
-void pre_mov_ecx()
+void mov_edx(uint32_t code)
 {
-    custom_code_size += 5;
+    char *opcode_bytes = malloc(5);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[0] = 0xBA;
+
+    memcpy(&opcode_bytes[1], &code, sizeof(code)); // Copy the immediate value
+
+    // Create an OpCode structure
+    OpCode new_opcode;
+    new_opcode.size = 5;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
 }
 
-void pre_mov_edx()
+void mov_edi(uint32_t code)
 {
-    custom_code_size += 5;
+    char *opcode_bytes = malloc(5);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[0] = 0xBF;
+
+    memcpy(&opcode_bytes[1], &code, sizeof(code)); // Copy the immediate value
+
+    // Create an OpCode structure
+    OpCode new_opcode;
+    new_opcode.size = 5;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
 }
 
-void pre_syscall()
+void our_syscall()
 {
-    custom_code_size += 2;
+    unsigned char *syscall_code = malloc(2);
+    if (syscall_code == NULL)
+    {
+        perror("Failed to allocate memory for syscall_code");
+        exit(EXIT_FAILURE);
+    }
+    syscall_code[0] = 0xCD;
+    syscall_code[1] = 0x80;
+
+    // Create an OpCode structure
+    OpCode new_opcode;
+    new_opcode.size = 2; // Correct size
+    new_opcode.code = syscall_code;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
 }
+
+void mov_ecx_edi()
+{
+    char *opcode_bytes = malloc(2);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[0] = 0x89;
+    opcode_bytes[1] = 0xf9;
+
+    // Create an OpCode structure
+    OpCode new_opcode;
+    new_opcode.size = 2;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}
+
+void add_custom_code_size()
+{
+    for (uint32_t i = 0; i < op_codes_array_size; i++)
+    {
+        custom_code_size += op_codes_array[i].size;
+    }
+}
+
+void write_all_custom_code(int __fd)
+{
+    for (int i = 0; i < op_codes_array_size; i++)
+    {
+        write(__fd, op_codes_array[i].code, op_codes_array[i].size);
+    }
+}
+
+// void mov_var_from_eax(uint32_t code)
+// {
+//     char mov_var_from_eax_template[5];
+//     mov_var_from_eax_template[0] = 0xA3; // Opcode for 'mov [var], eax'
+//     memcpy(&mov_var_from_eax_template[1], &code, sizeof(code));
+//     write(__fd, mov_var_from_eax_template, 5);
+// }
