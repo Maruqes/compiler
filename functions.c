@@ -27,14 +27,17 @@ void add_fixup(int index, char *symbol_name)
     fixups_array_size++;
 }
 
-void cleanup() {
-    for (uint32_t i = 0; i < op_codes_array_size; i++) {
+void cleanup()
+{
+    for (uint32_t i = 0; i < op_codes_array_size; i++)
+    {
         free(op_codes_array[i].code);
     }
     free(op_codes_array);
 
     // Free fixups
-    for (uint32_t i = 0; i < fixups_array_size; i++) {
+    for (uint32_t i = 0; i < fixups_array_size; i++)
+    {
         free(fixups_array[i].symbol_name);
     }
     free(fixups_array);
@@ -279,10 +282,30 @@ void write_all_custom_code(int __fd)
     }
 }
 
-// void mov_var_from_eax(uint32_t code)
-// {
-//     char mov_var_from_eax_template[5];
-//     mov_var_from_eax_template[0] = 0xA3; // Opcode for 'mov [var], eax'
-//     memcpy(&mov_var_from_eax_template[1], &code, sizeof(code));
-//     write(__fd, mov_var_from_eax_template, 5);
-// }
+void mov_var_from_eax(uint32_t code)
+{
+    char *opcode_bytes = malloc(5);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[0] = 0xA3; // Opcode for 'mov [var], eax'
+
+    memcpy(&opcode_bytes[1], &code, sizeof(code)); // Copy the immediate value
+
+    // Create an OpCode structure
+    OpCode new_opcode;
+    new_opcode.size = 5;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}

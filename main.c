@@ -43,22 +43,22 @@ struct Elf32_Phdr
 
 int main()
 {
-    mov_eax(0x04);         // sys_write
-    mov_ebx(0x01);         // stdout
-    mov_ecx_symbol("msg"); // Use placeholder for 'msg' address
-    mov_edx(15);           // Length of "Hello, World!\n"
+    mov_eax(0x04);
+    mov_ebx(0x01);
+    mov_ecx_symbol("msg");
+    mov_edx(14);
+    our_syscall();
+
+    mov_eax(0x03);
+    mov_ebx(0x00);
+    mov_ecx_symbol("msg2");
+    mov_edx(10);
     our_syscall();
 
     mov_eax(0x04);
     mov_ebx(0x01);
     mov_ecx_symbol("msg2");
-    mov_edx(23);
-    our_syscall();
-
-    mov_eax(0x04);
-    mov_ebx(0x01);
-    mov_ecx_symbol("msg3");
-    mov_edx(23);
+    mov_edx(10);
     our_syscall();
 
     mov_eax(0x01); // sys_exit
@@ -101,7 +101,7 @@ int main()
     phdr.p_align = 0x1000;                     // Alignment (page size)
 
     create_constant_string("msg", "Hello, World!\n", phdr.p_vaddr + custom_code_size + data_size);
-    create_constant_string("msg2", "boas mano bue malouco\n", phdr.p_vaddr + custom_code_size + data_size);
+    create_constant_string("msg2", "1234567890", phdr.p_vaddr + custom_code_size + data_size);
     create_constant_string("msg3", "asas mano bue malouco\n", phdr.p_vaddr + custom_code_size + data_size);
 
     fixup_addresses();
