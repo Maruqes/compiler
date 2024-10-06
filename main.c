@@ -6,6 +6,7 @@
 #include "uint32.h"
 #include "functions.h"
 #include "strings.h"
+#include "mov_reg_reg.h"
 
 // ELF header structure for 32-bit executable
 struct Elf32_Ehdr
@@ -43,7 +44,9 @@ struct Elf32_Phdr
 
 int main()
 {
-    mov_eax(0x04);
+    mov_ebx(0x04);
+    mov_eax_ebx();
+
     mov_ebx(0x01);
     mov_ecx_symbol("msg");
     mov_edx(14);
