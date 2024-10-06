@@ -7,6 +7,8 @@
 #include "functions.h"
 #include "strings.h"
 #include "mov_reg_reg.h"
+#include "push_pop.h"
+#include "16_code/functions_16.h"
 
 // ELF header structure for 32-bit executable
 struct Elf32_Ehdr
@@ -42,27 +44,41 @@ struct Elf32_Phdr
 
 #define BASE_ADDRESS 0x08048000 // Common base address for 32-bit executables
 
+void print(char *symbol_name)
+{
+
+    mov_eax(4);
+    mov_ebx(0x01);
+    mov_ecx_symbol_address(symbol_name);
+    mov_edx(22);
+    our_syscall();
+}
+
 int main()
 {
-    mov_ebx(0x04);
-    mov_eax_ebx();
+    mov_eax(66);
+    mov_var_from_ax("msg3", 4);
+    print("msg3");
 
-    mov_ebx(0x01);
-    mov_ecx_symbol("msg");
-    mov_edx(14);
-    our_syscall();
+    // mov_ebx(67);
+    // mov_var_from_ebx("msg3");
+    // print("msg3");
 
-    mov_eax(0x03);
-    mov_ebx(0x00);
-    mov_ecx_symbol("msg2");
-    mov_edx(10);
-    our_syscall();
+    // mov_ecx(68);
+    // mov_var_from_ecx("msg3");
+    // print("msg3");
 
-    mov_eax(0x04);
-    mov_ebx(0x01);
-    mov_ecx_symbol("msg2");
-    mov_edx(10);
-    our_syscall();
+    // mov_edx(69);
+    // mov_var_from_edx("msg3");
+    // print("msg3");
+
+    // mov_esi(70);
+    // mov_var_from_esi("msg3");
+    // print("msg3");
+
+    // mov_edi(71);
+    // mov_var_from_edi("msg3");
+    // print("msg3");
 
     mov_eax(0x01); // sys_exit
     mov_ebx(0x00); // Exit code 0
@@ -103,9 +119,13 @@ int main()
     phdr.p_flags = 7;                          // Read + Write + Execute permissions
     phdr.p_align = 0x1000;                     // Alignment (page size)
 
+    // All strings
     create_constant_string("msg", "Hello, World!\n", phdr.p_vaddr + custom_code_size + data_size);
-    create_constant_string("msg2", "1234567890", phdr.p_vaddr + custom_code_size + data_size);
+    create_constant_string("msg2", "1234567890\n", phdr.p_vaddr + custom_code_size + data_size);
     create_constant_string("msg3", "asas mano bue malouco\n", phdr.p_vaddr + custom_code_size + data_size);
+
+    // All uint32
+    create_constant_uint32("uint0", 4, phdr.p_vaddr + custom_code_size + data_size);
 
     fixup_addresses();
 
@@ -130,8 +150,8 @@ int main()
     write(fd, &phdr, sizeof(phdr)); // Write program header
 
     write_all_custom_code(fd);
-
     write_all_string_constants(fd);
+    write_all_uint32_constants(fd);
 
     close(fd);
 

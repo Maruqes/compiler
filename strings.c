@@ -12,7 +12,7 @@ void create_constant_string(char *var_name, char *var_value, uint32_t var_addres
     constant_strings[constant_string_count].var_value = var_value;
     constant_strings[constant_string_count].var_address = var_address;
     constant_string_count++;
-    data_size += strlen(var_value) + 1;
+    data_size += strlen(var_value); // ver o caralho do +1
     printf("Data size: %zu\n", data_size);
 }
 

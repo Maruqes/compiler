@@ -1,5 +1,6 @@
 #include "uint32.h"
 #include "functions.h"
+#include "strings.h"
 
 Constant_uint32 *constant_uint32s = 0;
 uint32_t constant_uint32_count = 0;
@@ -11,7 +12,7 @@ void create_constant_uint32(char *var_name, uint32_t var_value, uint32_t var_add
     constant_uint32s[constant_uint32_count].var_value = var_value;
     constant_uint32s[constant_uint32_count].var_address = var_address;
     constant_uint32_count++;
-    custom_code_size += 4;
+    data_size += 4;
 }
 
 void write_all_uint32_constants(int __fd)

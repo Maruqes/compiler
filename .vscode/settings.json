@@ -12,6 +12,7 @@
         "stdint.h": "c",
         "system_error": "c",
         "*.tcc": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "mov_reg_reg.h": "c"
     }
 }
