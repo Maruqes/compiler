@@ -10,6 +10,9 @@ uint32_t op_codes_array_size = 0; // Number of opcodes stored
 Fixup *fixups_array = NULL;
 uint32_t fixups_array_size = 0;
 
+Jump_struct *jump_array = NULL;
+uint32_t jump_array_size = 0;
+
 void add_fixup(int index, char *symbol_name, int offset, uint32_t var_offset)
 {
     // Record the fixup
@@ -29,22 +32,6 @@ void add_fixup(int index, char *symbol_name, int offset, uint32_t var_offset)
     fixups_array_size++;
 }
 
-void cleanup()
-{
-    for (uint32_t i = 0; i < op_codes_array_size; i++)
-    {
-        free(op_codes_array[i].code);
-    }
-    free(op_codes_array);
-
-    // Free fixups
-    for (uint32_t i = 0; i < fixups_array_size; i++)
-    {
-        free(fixups_array[i].symbol_name);
-    }
-    free(fixups_array);
-}
-
 void fixup_addresses()
 {
     for (uint32_t i = 0; i < fixups_array_size; i++)
@@ -59,16 +46,26 @@ void fixup_addresses()
                 symbol_address = constant_strings[j].var_address;
                 break;
             }
+        }
 
-            for (uint32_t j = 0; j < constant_uint32_count; j++)
+        for (uint32_t j = 0; j < constant_uint32_count; j++)
+        {
+            if (strcmp(fixup.symbol_name, constant_uint32s[j].var_name) == 0)
             {
-                if (strcmp(fixup.symbol_name, constant_uint32s[j].var_name) == 0)
-                {
-                    symbol_address = constant_uint32s[j].var_address;
-                    break;
-                }
+                symbol_address = constant_uint32s[j].var_address;
+                break;
             }
         }
+
+        for (uint32_t j = 0; j < jump_array_size; j++)
+        {
+            if (strcmp(fixup.symbol_name, jump_array[j].var_name) == 0)
+            {
+                symbol_address = jump_array[j].var_address;
+                break;
+            }
+        }
+
         if (symbol_address == 0)
         {
             fprintf(stderr, "Undefined symbol: %s\n", fixup.symbol_name);
@@ -78,6 +75,22 @@ void fixup_addresses()
         symbol_address += fixup.var_offset;
         memcpy(&op_codes_array[fixup.opcode_index].code[fixup.offset_in_opcode], &symbol_address, sizeof(symbol_address));
     }
+}
+
+void cleanup()
+{
+    for (uint32_t i = 0; i < op_codes_array_size; i++)
+    {
+        free(op_codes_array[i].code);
+    }
+    free(op_codes_array);
+
+    // Free fixups
+    for (uint32_t i = 0; i < fixups_array_size; i++)
+    {
+        free(fixups_array[i].symbol_name);
+    }
+    free(fixups_array);
 }
 
 // MOV code FUNCTIONS
@@ -432,4 +445,62 @@ void inc_esi()
 void inc_edi()
 {
     inc_reg32(REG_EDI);
+}
+
+void jmp_reg32(uint8_t reg_code)
+{
+    char *opcode_bytes = malloc(2); // 1-byte opcode + 1-byte ModR/M
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xFF;            // Opcode for group 5 instructions
+    opcode_bytes[1] = 0xE0 | reg_code; // ModR/M byte: Mod=11, Reg=100 (jump), R/M=reg_code
+
+    OpCode new_opcode;
+    new_opcode.size = 2; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void create_label(char *name)
+{
+    uint32_t addr = 0;
+    for (uint32_t i = 0; i < op_codes_array_size; i++)
+    {
+        addr += op_codes_array[i].size;
+    }
+
+    jump_array = realloc(jump_array, sizeof(Jump_struct) * (jump_array_size + 1));
+    jump_array[jump_array_size].var_name = name;
+    jump_array[jump_array_size].var_address = addr;
+    jump_array_size++;
+    printf("Label %s at %d\n", name, jump_array[jump_array_size - 1].var_address);
+}
+
+void fix_label_addresses(uint32_t fix_size)
+{
+    for (uint32_t i = 0; i < jump_array_size; i++)
+    {
+        jump_array[i].var_address += fix_size;
+        printf("Label %s at %d\n", jump_array[i].var_name, jump_array[i].var_address);
+        printf("Label %s at %d\n", jump_array[i].var_name, jump_array[i].var_address);
+    }
+}
+
+void jmp(char *name)
+{
+    mov_eax_symbol_address(name, 0);
+    jmp_reg32(REG_EAX);
 }

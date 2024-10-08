@@ -24,6 +24,12 @@ typedef struct
     char *code;  // Pointer to the opcode bytes
 } OpCode;
 
+typedef struct Jump_struct
+{
+    char *var_name;
+    uint32_t var_address;
+} Jump_struct;
+
 extern Fixup *fixups_array;
 extern uint32_t fixups_array_size;
 
@@ -76,5 +82,11 @@ void inc_edi();
 void cleanup();
 
 void add_fixup(int index, char *symbol_name, int offset, uint32_t var_offset);
+
+void jmp_reg32(uint8_t reg_code);
+
+void create_label(char *name);
+void fix_label_addresses(uint32_t fix_size);
+void jmp(char *name);
 
 #endif // FUNCTIONS_H

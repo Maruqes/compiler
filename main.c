@@ -60,27 +60,14 @@ int main()
     mov_al(48);
     mov_var_from_al("msg3", 0);
 
+    print("msg");
+
+    create_label("label1");
+
+    print("msg2");
     print("msg3");
 
-    // mov_ebx(67);
-    // mov_var_from_ebx("msg3");
-    // print("msg3");
-
-    // mov_ecx(68);
-    // mov_var_from_ecx("msg3");
-    // print("msg3");
-
-    // mov_edx(69);
-    // mov_var_from_edx("msg3");
-    // print("msg3");
-
-    // mov_esi(70);
-    // mov_var_from_esi("msg3");
-    // print("msg3");
-
-    // mov_edi(71);
-    // mov_var_from_edi("msg3");
-    // print("msg3");
+    jmp("label1");
 
     mov_eax(0x01); // sys_exit
     mov_ebx(0x00); // Exit code 0
@@ -128,6 +115,8 @@ int main()
 
     // All uint32
     create_constant_uint32("uint0", 4, phdr.p_vaddr + custom_code_size + data_size);
+
+    fix_label_addresses(phdr.p_vaddr);
 
     fixup_addresses();
 
