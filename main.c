@@ -46,10 +46,11 @@ struct Elf32_Phdr
 
 void print(char *symbol_name)
 {
+    mov_eax(0);
+    pop_ax();
 
-    mov_eax(4);
     mov_ebx(0x01);
-    mov_ecx_symbol_address(symbol_name);
+    mov_ecx_symbol_address(symbol_name, 0);
     mov_edx(22);
     our_syscall();
 }
@@ -57,7 +58,12 @@ void print(char *symbol_name)
 int main()
 {
     mov_eax(66);
-    mov_var_from_ax("msg3", 4);
+    mov_eax_from_var("msg2", 0);
+    mov_var_from_eax("msg3", 0);
+
+    mov_ax(4);
+    push_ax();
+
     print("msg3");
 
     // mov_ebx(67);

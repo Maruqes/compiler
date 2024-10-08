@@ -11,8 +11,6 @@
 #define REG_CX 0x1
 #define REG_DX 0x2
 #define REG_BX 0x3
-#define REG_SP 0x4
-#define REG_BP 0x5
 #define REG_SI 0x6
 #define REG_DI 0x7
 
@@ -184,3 +182,69 @@ void mov_var_from_cx(char *symbol, int var_offset) { mov_var_from_reg16(REG_CX, 
 void mov_var_from_dx(char *symbol, int var_offset) { mov_var_from_reg16(REG_DX, symbol, var_offset); }
 void mov_var_from_si(char *symbol, int var_offset) { mov_var_from_reg16(REG_SI, symbol, var_offset); }
 void mov_var_from_di(char *symbol, int var_offset) { mov_var_from_reg16(REG_DI, symbol, var_offset); }
+
+void push_reg16(uint8_t reg_code)
+{
+    char *opcode_bytes = malloc(2);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0x66;
+    opcode_bytes[1] = 0x50 + reg_code;
+
+    OpCode new_opcode;
+    new_opcode.size = 2;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void push_ax() { push_reg16(REG_AX); }
+void push_bx() { push_reg16(REG_BX); }
+void push_cx() { push_reg16(REG_CX); }
+void push_dx() { push_reg16(REG_DX); }
+void push_si() { push_reg16(REG_SI); }
+void push_di() { push_reg16(REG_DI); }
+
+void pop_reg16(uint8_t reg_code)
+{
+    char *opcode_bytes = malloc(2);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0x66;
+    opcode_bytes[1] = 0x58 + reg_code;
+
+    OpCode new_opcode;
+    new_opcode.size = 2;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void pop_ax() { pop_reg16(REG_AX); }
+void pop_bx() { pop_reg16(REG_BX); }
+void pop_cx() { pop_reg16(REG_CX); }
+void pop_dx() { pop_reg16(REG_DX); }
+void pop_si() { pop_reg16(REG_SI); }
+void pop_di() { pop_reg16(REG_DI); }

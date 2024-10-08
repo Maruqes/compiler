@@ -43,12 +43,12 @@ void add_custom_code_size();
 void write_all_custom_code(int __fd);
 
 // mov eax, var
-void mov_eax_symbol_address(char *symbol_name);
-void mov_ebx_symbol_address(char *symbol_name);
-void mov_ecx_symbol_address(char *symbol_name);
-void mov_edx_symbol_address(char *symbol_name);
-void mov_esi_symbol_address(char *symbol_name);
-void mov_edi_symbol_address(char *symbol_name);
+void mov_eax_symbol_address(char *symbol_name, int var_offset);
+void mov_ebx_symbol_address(char *symbol_name, int var_offset);
+void mov_ecx_symbol_address(char *symbol_name, int var_offset);
+void mov_edx_symbol_address(char *symbol_name, int var_offset);
+void mov_esi_symbol_address(char *symbol_name, int var_offset);
+void mov_edi_symbol_address(char *symbol_name, int var_offset);
 
 // mov var, reg
 void mov_var_from_eax(char *symbol, int var_offset);
@@ -57,6 +57,21 @@ void mov_var_from_ecx(char *symbol, int var_offset);
 void mov_var_from_edx(char *symbol, int var_offset);
 void mov_var_from_esi(char *symbol, int var_offset);
 void mov_var_from_edi(char *symbol, int var_offset);
+
+// mov reg, var
+void mov_eax_from_var(char *symbol, int var_offset);
+void mov_ebx_from_var(char *symbol, int var_offset);
+void mov_ecx_from_var(char *symbol, int var_offset);
+void mov_edx_from_var(char *symbol, int var_offset);
+void mov_esi_from_var(char *symbol, int var_offset);
+void mov_edi_from_var(char *symbol, int var_offset);
+
+void inc_eax();
+void inc_ebx();
+void inc_ecx();
+void inc_edx();
+void inc_esi();
+void inc_edi();
 
 void cleanup();
 

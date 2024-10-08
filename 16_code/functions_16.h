@@ -34,4 +34,18 @@ void mov_var_from_dx(char *symbol, int var_offset);
 void mov_var_from_si(char *symbol, int var_offset);
 void mov_var_from_di(char *symbol, int var_offset);
 
+void push_ax();
+void push_bx();
+void push_cx();
+void push_dx();
+void push_si();
+void push_di();
+
+void pop_ax();
+void pop_bx();
+void pop_cx();
+void pop_dx();
+void pop_si();
+void pop_di();
+
 #endif // FUNCTIONS_16_H
