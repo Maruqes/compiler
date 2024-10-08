@@ -1,0 +1,93 @@
+Arithmetic Instructions
+    add, adc: Add; adc adds with carry.
+    sub, sbb: Subtract; sbb subtracts with borrow.
+    mul, imul: Multiply; unsigned and signed multiplication.
+    div, idiv: Divide; unsigned and signed division.
+    inc, dec: Increment and decrement by one.
+    neg: Negate; computes two's complement.
+    cmp: Compare two operands (sets flags based on the result).
+    daa, das, aaa, aas: Decimal and ASCII adjust after arithmetic operations.
+
+Bitwise and Logical Instructions
+    and, or, xor: Bitwise logical operations.
+    not: Bitwise NOT.
+    shl, shr: Shift bits left or right (logical shift).
+    sal, sar: Shift bits left or right (arithmetic shift).
+    rol, ror: Rotate bits left or right.
+    rcl, rcr: Rotate bits through carry flag.
+    bt, bts, btr, btc: Bit test and modify instructions.
+    bsf, bsr: Bit scan forward/reverse; finds the first set bit.
+
+Control Flow Instructions
+    Unconditional Jumps:
+        jmp: Jump to a specified address.
+
+    Conditional Jumps:
+        je/jz: Jump if equal/zero.
+        jne/jnz: Jump if not equal/not zero.
+        jg/jnle: Jump if greater (signed).
+        jge/jnl: Jump if greater or equal (signed).
+        jl/jnge: Jump if less (signed).
+        jle/jng: Jump if less or equal (signed).
+        ja/jnbe: Jump if above (unsigned).
+        jae/jnb: Jump if above or equal (unsigned).
+        jb/jnae: Jump if below (unsigned).
+        jbe/jna: Jump if below or equal (unsigned).
+        loop, loope, loopne: Loop control instructions based on ecx/cx.
+
+    Procedure Calls and Returns:
+        call: Call a procedure.
+        ret/retn/retf: Return from procedure (near and far returns).
+
+    Interrupts and Exceptions:
+        int: Software interrupt.
+        iret/iretd: Return from interrupt.
+
+Stack Operations
+
+    push, pop: Push and pop data onto/from the stack.
+    pusha, pushad: Push all general-purpose registers onto the stack.
+    popa, popad: Pop all general-purpose registers from the stack.
+    enter, leave: Set up and tear down stack frames for procedures.
+
+String and Data Transfer Instructions
+
+    String Operations (operate on esi and edi):
+        movs/movsb/movsw/movsd: Move string data.
+        cmps/cmpsb/cmpsw/cmpsd: Compare string data.
+        scas/scasb/scasw/scasd: Scan string data.
+        lods/lodsb/lodsw/lodsd: Load string data into al/ax/eax.
+        stos/stosb/stosw/stosd: Store string data from al/ax/eax.
+    Repeat Prefixes:
+        rep: Repeat following instruction ecx times.
+        repe/repz: Repeat while equal/zero.
+        repne/repnz: Repeat while not equal/not zero.
+
+Flag Control Instructions
+
+    clc, stc, cmc: Clear, set, and complement the carry flag.
+    cld, std: Clear and set the direction flag.
+    cli, sti: Clear and set the interrupt flag.
+
+    nop: No operation.
+
+Floating-Point Instructions (x87 FPU)
+
+    Data Transfer:
+        fld, fst, fstp: Load/store floating-point values.
+
+    Arithmetic Operations:
+        fadd, fsub, fmul, fdiv: Floating-point arithmetic.
+        fsqrt: Compute square root.
+        fabs: Absolute value.
+        fchs: Change sign.
+
+    Comparison:
+        fcom, fcomp, fcompp: Compare floating-point values.
+
+    Transcendental Functions:
+        fsin, fcos, fptan, fpatan: Trigonometric operations.
+
+    Control Instructions:
+        fninit: Initialize floating-point unit.
+        fwait: Wait until the FPU completes the current instruction.

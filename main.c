@@ -9,6 +9,8 @@
 #include "mov_reg_reg.h"
 #include "push_pop.h"
 #include "16_code/functions_16.h"
+#include "8low_code/functions_8low.h"
+#include "8high_code/functions_8high.h"
 
 // ELF header structure for 32-bit executable
 struct Elf32_Ehdr
@@ -46,9 +48,7 @@ struct Elf32_Phdr
 
 void print(char *symbol_name)
 {
-    mov_eax(0);
-    pop_ax();
-
+    mov_eax(4);
     mov_ebx(0x01);
     mov_ecx_symbol_address(symbol_name, 0);
     mov_edx(22);
@@ -57,12 +57,8 @@ void print(char *symbol_name)
 
 int main()
 {
-    mov_eax(66);
-    mov_eax_from_var("msg2", 0);
-    mov_var_from_eax("msg3", 0);
-
-    mov_ax(4);
-    push_ax();
+    mov_al(48);
+    mov_var_from_al("msg3", 0);
 
     print("msg3");
 

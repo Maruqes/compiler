@@ -13,6 +13,7 @@
         "system_error": "c",
         "*.tcc": "c",
         "stdio.h": "c",
-        "mov_reg_reg.h": "c"
+        "mov_reg_reg.h": "c",
+        "functions_8high.h": "c"
     }
 }

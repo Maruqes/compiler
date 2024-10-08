@@ -52,46 +52,6 @@ void mov_dx(uint16_t value) { mov_reg16(REG_DX, value); }
 void mov_si(uint16_t value) { mov_reg16(REG_SI, value); }
 void mov_di(uint16_t value) { mov_reg16(REG_DI, value); }
 
-// Function to move symbol address into a 16-bit register
-void mov_reg16_symbol_address(uint8_t reg_code, char *symbol_name)
-{
-    char *opcode_bytes = malloc(6); // 1-byte prefix + 1-byte opcode + 4-byte immediate
-    if (!opcode_bytes)
-    {
-        perror("Failed to allocate memory for opcode_bytes");
-        exit(EXIT_FAILURE);
-    }
-
-    opcode_bytes[0] = 0x66;            // Operand-size override prefix
-    opcode_bytes[1] = 0xB8 + reg_code; // Opcode for 'mov reg16, imm16'
-
-    memset(&opcode_bytes[2], 0, 4); // Placeholder for address
-
-    OpCode new_opcode;
-    new_opcode.size = 6; // 1-byte prefix + 1-byte opcode + 4-byte immediate
-    new_opcode.code = opcode_bytes;
-
-    // Add fixup for the symbol address
-    add_fixup(op_codes_array_size, symbol_name, 2, 0); // Offset is 2 due to prefix and opcode
-
-    // Add the opcode to the array
-    op_codes_array = realloc(op_codes_array,
-                             (op_codes_array_size + 1) * sizeof(OpCode));
-    if (!op_codes_array)
-    {
-        perror("Failed to reallocate memory for op_codes_array");
-        exit(EXIT_FAILURE);
-    }
-    op_codes_array[op_codes_array_size++] = new_opcode;
-}
-
-// Functions to move symbol addresses into 16-bit registers
-void mov_ax_symbol_address(char *symbol_name) { mov_reg16_symbol_address(REG_AX, symbol_name); }
-void mov_bx_symbol_address(char *symbol_name) { mov_reg16_symbol_address(REG_BX, symbol_name); }
-void mov_cx_symbol_address(char *symbol_name) { mov_reg16_symbol_address(REG_CX, symbol_name); }
-void mov_dx_symbol_address(char *symbol_name) { mov_reg16_symbol_address(REG_DX, symbol_name); }
-void mov_si_symbol_address(char *symbol_name) { mov_reg16_symbol_address(REG_SI, symbol_name); }
-void mov_di_symbol_address(char *symbol_name) { mov_reg16_symbol_address(REG_DI, symbol_name); }
 
 // Function to move data from memory to a 16-bit register
 void mov_reg16_from_var(uint8_t reg_code, char *symbol, int var_offset)

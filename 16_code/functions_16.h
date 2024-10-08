@@ -11,14 +11,6 @@ void mov_dx(uint16_t value);
 void mov_si(uint16_t value);
 void mov_di(uint16_t value);
 
-// Function prototypes for moving symbol addresses into 16-bit registers
-void mov_ax_symbol_address(char *symbol_name);
-void mov_bx_symbol_address(char *symbol_name);
-void mov_cx_symbol_address(char *symbol_name);
-void mov_dx_symbol_address(char *symbol_name);
-void mov_si_symbol_address(char *symbol_name);
-void mov_di_symbol_address(char *symbol_name);
-
 // Function prototypes for moving data between memory and 16-bit registers
 void mov_ax_from_var(char *symbol, int var_offset);
 void mov_bx_from_var(char *symbol, int var_offset);
