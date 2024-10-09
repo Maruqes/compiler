@@ -20,10 +20,10 @@ Bitwise and Logical Instructions
 
 Control Flow Instructions
     Unconditional Jumps:
-        jmp: Jump to a specified address.
+        jmp: Jump to a specified address.                                                           DONE
 
     Conditional Jumps:
-        je/jz: Jump if equal/zero.
+        je/jz: Jump if equal/zero.                                                                  DONE
         jne/jnz: Jump if not equal/not zero.
         jg/jnle: Jump if greater (signed).
         jge/jnl: Jump if greater or equal (signed).

@@ -115,12 +115,7 @@ void cleanup()
 }
 
 // MOV code FUNCTIONS
-#define REG_EAX 0x0
-#define REG_EBX 0x3
-#define REG_ECX 0x1
-#define REG_EDX 0x2
-#define REG_ESI 0x6
-#define REG_EDI 0x7
+
 
 // Function to move immediate value into a 32-bit register
 void mov_reg32(uint8_t reg_code, uint32_t value)
@@ -525,7 +520,7 @@ void jmp(char *name)
     jmp_reg32(REG_EAX);
 }
 
-void testcrl()
+void cmp_reg32(uint8_t reg1, uint8_t reg2)
 {
     char *opcode_bytes = malloc(2);
     if (!opcode_bytes)
@@ -535,7 +530,7 @@ void testcrl()
     }
 
     opcode_bytes[0] = 0x39;
-    opcode_bytes[1] = 0xC0;
+    opcode_bytes[1] = 0xC0 + reg1 + (reg2 * 8);
 
     OpCode new_opcode;
     new_opcode.size = 2; // Total instruction size
@@ -554,7 +549,6 @@ void testcrl()
 
 void small_jump(char *name)
 {
-    testcrl();
     char *opcode_bytes = malloc(6);
     if (!opcode_bytes)
     {

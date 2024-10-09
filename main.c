@@ -66,7 +66,9 @@ int main()
     // mov_var_from_eax("msg3", 0);
 
     print("msg3");
-
+    mov_eax(5);
+    mov_ecx(6);
+    cmp_reg32(REG_EAX, REG_ECX);
     small_jump("label1");
 
     mov_eax(0x01); // sys_exit
