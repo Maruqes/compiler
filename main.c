@@ -57,17 +57,17 @@ void print(char *symbol_name)
 
 int main()
 {
-    mov_al(48);
-    mov_var_from_al("msg3", 0);
-
-    print("msg");
-
-    create_label("label1");
-
-    print("msg2");
     print("msg3");
 
-    jmp("label1");
+    create_label("label1", 1);
+    // mov_eax_from_var("uint0", 0);
+    // inc_eax();
+    // mov_var_from_eax("uint0", 0);
+    // mov_var_from_eax("msg3", 0);
+
+    print("msg3");
+
+    small_jump("label1");
 
     mov_eax(0x01); // sys_exit
     mov_ebx(0x00); // Exit code 0
@@ -114,7 +114,7 @@ int main()
     create_constant_string("msg3", "asas mano bue malouco\n", phdr.p_vaddr + custom_code_size + data_size);
 
     // All uint32
-    create_constant_uint32("uint0", 4, phdr.p_vaddr + custom_code_size + data_size);
+    create_constant_uint32("uint0", 48, phdr.p_vaddr + custom_code_size + data_size);
 
     fix_label_addresses(phdr.p_vaddr);
 

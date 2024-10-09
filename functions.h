@@ -13,9 +13,10 @@ extern size_t custom_code_size;
 typedef struct
 {
     uint32_t opcode_index;
-    uint32_t offset_in_opcode;
+    uint32_t offset_in_opcode; // Offset where the address should be inserted
     char *symbol_name;
-    uint32_t var_offset;
+    uint32_t var_offset;  // offset of the variable in the data section
+    uint32_t code_offset; // offset of the instruction in the code
 } Fixup;
 
 typedef struct
@@ -28,6 +29,8 @@ typedef struct Jump_struct
 {
     char *var_name;
     uint32_t var_address;
+    uint8_t small_jump;
+    uint32_t fix_addr;
 } Jump_struct;
 
 extern Fixup *fixups_array;
@@ -85,8 +88,9 @@ void add_fixup(int index, char *symbol_name, int offset, uint32_t var_offset);
 
 void jmp_reg32(uint8_t reg_code);
 
-void create_label(char *name);
+void create_label(char *name, uint8_t small_jump);
 void fix_label_addresses(uint32_t fix_size);
 void jmp(char *name);
+void small_jump(char *name);
 
 #endif // FUNCTIONS_H
