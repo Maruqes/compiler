@@ -36,18 +36,15 @@ Control Flow Instructions
         loop, loope, loopne: Loop control instructions based on ecx/cx.
 
     Procedure Calls and Returns:
-        call: Call a procedure.
-        ret/retn/retf: Return from procedure (near and far returns).
-
-    Interrupts and Exceptions:
-        int: Software interrupt.
-        iret/iretd: Return from interrupt.
+        call: Call a procedure.                                                                 DONE                                        
+        ret/retn/retf: Return from procedure (near and far returns).                            DONE                              
+                               
 
 Stack Operations
 
-    push, pop: Push and pop data onto/from the stack.                        DONE
-    pusha, pushad: Push all general-purpose registers onto the stack.        DONE
-    popa, popad: Pop all general-purpose registers from the stack.           DONE   
+    push, pop: Push and pop data onto/from the stack.                                           DONE
+    pusha, pushad: Push all general-purpose registers onto the stack.                           DONE
+    popa, popad: Pop all general-purpose registers from the stack.                              DONE   
     enter, leave: Set up and tear down stack frames for procedures.
 
 String and Data Transfer Instructions
@@ -69,7 +66,10 @@ Flag Control Instructions
     cld, std: Clear and set the direction flag.
     cli, sti: Clear and set the interrupt flag.
 
-    nop: No operation.                                                                DONE                          
+    nop: No operation.                                                                          DONE                          
+
+
+
 
 Floating-Point Instructions (x87 FPU)
 
