@@ -3,6 +3,11 @@
 
 #include <stdint.h>
 
+#define REG_AL 0x0
+#define REG_CL 0x1
+#define REG_DL 0x2
+#define REG_BL 0x3
+
 // Function prototypes for moving immediate values into 8-bit registers
 void mov_al(uint8_t value);
 void mov_bl(uint8_t value);
@@ -20,6 +25,6 @@ void mov_var_from_bl(char *symbol, int var_offset);
 void mov_var_from_cl(char *symbol, int var_offset);
 void mov_var_from_dl(char *symbol, int var_offset);
 
-
+void cmp_reg8(uint8_t reg1, uint8_t reg2);
 
 #endif

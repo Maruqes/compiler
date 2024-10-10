@@ -20,15 +20,15 @@ Bitwise and Logical Instructions
 
 Control Flow Instructions
     Unconditional Jumps:
-        jmp: Jump to a specified address.                                                           DONE
+        jmp: Jump to a specified address.                                                        DONE
 
     Conditional Jumps:
-        je/jz: Jump if equal/zero.                                                                  DONE
-        jne/jnz: Jump if not equal/not zero.
-        jg/jnle: Jump if greater (signed).
-        jge/jnl: Jump if greater or equal (signed).
-        jl/jnge: Jump if less (signed).
-        jle/jng: Jump if less or equal (signed).
+        je/jz: Jump if equal/zero.                                                               DONE
+        jne/jnz: Jump if not equal/not zero.                                                     DONE 
+        jg/jnle: Jump if greater (signed).                                                       DONE
+        jge/jnl: Jump if greater or equal (signed).                                              DONE
+        jl/jnge: Jump if less (signed).                                                          DONE
+        jle/jng: Jump if less or equal (signed).                                                 DONE
         ja/jnbe: Jump if above (unsigned).
         jae/jnb: Jump if above or equal (unsigned).
         jb/jnae: Jump if below (unsigned).
@@ -45,9 +45,9 @@ Control Flow Instructions
 
 Stack Operations
 
-    push, pop: Push and pop data onto/from the stack.
-    pusha, pushad: Push all general-purpose registers onto the stack.
-    popa, popad: Pop all general-purpose registers from the stack.
+    push, pop: Push and pop data onto/from the stack.                        DONE
+    pusha, pushad: Push all general-purpose registers onto the stack.        DONE
+    popa, popad: Pop all general-purpose registers from the stack.           DONE   
     enter, leave: Set up and tear down stack frames for procedures.
 
 String and Data Transfer Instructions
@@ -69,7 +69,7 @@ Flag Control Instructions
     cld, std: Clear and set the direction flag.
     cli, sti: Clear and set the interrupt flag.
 
-    nop: No operation.
+    nop: No operation.                                                                DONE                          
 
 Floating-Point Instructions (x87 FPU)
 

@@ -24,6 +24,7 @@ typedef struct
     char *symbol_name;
     uint32_t var_offset;  // offset of the variable in the data section
     uint32_t code_offset; // offset of the instruction in the code
+    uint32_t jump_offset; // if a jump (good type, not the eax jump) this should be the lenght of the bytes of the jump
 } Fixup;
 
 typedef struct
@@ -36,7 +37,6 @@ typedef struct Jump_struct
 {
     char *var_name;
     uint32_t var_address;
-    uint8_t small_jump;
     uint32_t fix_addr;
 } Jump_struct;
 
@@ -91,15 +91,13 @@ void inc_edi();
 
 void cleanup();
 
-void add_fixup(int index, char *symbol_name, int offset, uint32_t var_offset);
-
-void jmp_reg32(uint8_t reg_code);
-
-void create_label(char *name, uint8_t small_jump);
-void fix_label_addresses(uint32_t fix_size);
-void jmp(char *name);
-void small_jump(char *name);
+void add_fixup(int index, char *symbol_name, int offset, uint32_t var_offset, uint32_t jump_offset);
 
 void cmp_reg32(uint8_t reg1, uint8_t reg2);
+
+void create_label(char *name);\
+void fix_label_addresses(uint32_t fix_size);
+void ret();
+void nop();
 
 #endif // FUNCTIONS_H

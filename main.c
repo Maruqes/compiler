@@ -11,6 +11,7 @@
 #include "16_code/functions_16.h"
 #include "8low_code/functions_8low.h"
 #include "8high_code/functions_8high.h"
+#include "jumps.h"
 
 // ELF header structure for 32-bit executable
 struct Elf32_Ehdr
@@ -48,28 +49,35 @@ struct Elf32_Phdr
 
 void print(char *symbol_name)
 {
+    pusha();
     mov_eax(4);
     mov_ebx(0x01);
     mov_ecx_symbol_address(symbol_name, 0);
     mov_edx(22);
     our_syscall();
+    popa();
 }
 
 int main()
 {
-    print("msg3");
+    jmp("start");
 
-    create_label("label1", 1);
-    // mov_eax_from_var("uint0", 0);
-    // inc_eax();
-    // mov_var_from_eax("uint0", 0);
-    // mov_var_from_eax("msg3", 0);
-
+    create_label("print_msg");
     print("msg3");
+    mov_ebx(5);
+    cmp_reg32(REG_EBX, REG_EAX);
+    jump_if_not_equal("ab2");
+    create_label("ab1");
+    print("msg");
+    ret();
+    create_label("ab2");
+    print("msg2");
+    ret();
+
+    create_label("start");
+
     mov_eax(5);
-    mov_ecx(6);
-    cmp_reg32(REG_EAX, REG_ECX);
-    small_jump("label1");
+    call("print_msg");
 
     mov_eax(0x01); // sys_exit
     mov_ebx(0x00); // Exit code 0

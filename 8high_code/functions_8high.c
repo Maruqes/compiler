@@ -6,11 +6,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#define REG_AH 0x4
-#define REG_CH 0x5
-#define REG_DH 0x6
-#define REG_BH 0x7
-
 void mov_reg8_high(uint8_t reg_code, uint8_t value)
 {
     char *opcode_bytes = malloc(2);
@@ -62,7 +57,7 @@ void mov_reg8_high_from_var(uint8_t reg_code, char *symbol, int var_offset)
     new_opcode.code = opcode_bytes;
 
     // Add fixup for the address
-    add_fixup(op_codes_array_size, symbol, 2, var_offset);
+    add_fixup(op_codes_array_size, symbol, 2, var_offset, 0);
 
     // Add the opcode to the array
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
@@ -100,7 +95,7 @@ void mov_var_from_reg8_high(uint8_t reg_code, char *symbol, int var_offset)
     new_opcode.code = opcode_bytes;
 
     // Add fixup for the address
-    add_fixup(op_codes_array_size, symbol, 2, var_offset);
+    add_fixup(op_codes_array_size, symbol, 2, var_offset, 0);
 
     // Add the opcode to the array
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
@@ -118,3 +113,4 @@ void mov_var_from_ah(char *symbol, int var_offset) { mov_var_from_reg8_high(REG_
 void mov_var_from_ch(char *symbol, int var_offset) { mov_var_from_reg8_high(REG_CH, symbol, var_offset); }
 void mov_var_from_dh(char *symbol, int var_offset) { mov_var_from_reg8_high(REG_DH, symbol, var_offset); }
 void mov_var_from_bh(char *symbol, int var_offset) { mov_var_from_reg8_high(REG_BH, symbol, var_offset); }
+

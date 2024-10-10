@@ -13,7 +13,7 @@ uint32_t fixups_array_size = 0;
 Jump_struct *jump_array = NULL;
 uint32_t jump_array_size = 0;
 
-void add_fixup(int index, char *symbol_name, int offset, uint32_t var_offset)
+void add_fixup(int index, char *symbol_name, int offset, uint32_t var_offset, uint32_t jump_offset)
 {
     uint32_t addr = 0;
     for (uint32_t i = 0; i < op_codes_array_size; i++)
@@ -30,6 +30,7 @@ void add_fixup(int index, char *symbol_name, int offset, uint32_t var_offset)
     }
 
     Fixup new_fixup;
+    new_fixup.jump_offset = jump_offset;
     new_fixup.opcode_index = index;
     new_fixup.offset_in_opcode = offset; // Offset where the address should be inserted
     new_fixup.var_offset = var_offset;
@@ -68,22 +69,14 @@ void fixup_addresses()
         {
             if (strcmp(fixup.symbol_name, jump_array[j].var_name) == 0)
             {
-                if (jump_array[j].small_jump == 1)
-                {
-                    int32_t displacement = jump_array[j].var_address - (fixup.code_offset) - 6;
+                int32_t displacement = jump_array[j].var_address - (fixup.code_offset) - fixup.jump_offset;
 
-                    printf("\nvar address: %d\n", jump_array[j].var_address);
-                    printf("opcode index: %d\n", fixup.code_offset);
-                    printf("displacement: %d\n\n", displacement);
+                printf("\nvar address: %d\n", jump_array[j].var_address);
+                printf("opcode index: %d\n", fixup.code_offset);
+                printf("displacement: %d\n\n", displacement);
 
-                    symbol_address = displacement;
-                    break;
-                }
-                else
-                {
-                    symbol_address = jump_array[j].var_address + jump_array[j].fix_addr;
-                    break;
-                }
+                symbol_address = displacement;
+                break;
             }
         }
 
@@ -115,7 +108,6 @@ void cleanup()
 }
 
 // MOV code FUNCTIONS
-
 
 // Function to move immediate value into a 32-bit register
 void mov_reg32(uint8_t reg_code, uint32_t value)
@@ -196,7 +188,7 @@ void mov_reg32_symbol_address(uint8_t reg_code, char *symbol_name, int var_offse
     new_opcode.code = opcode_bytes;
 
     // Add fixup for the symbol address
-    add_fixup(op_codes_array_size, symbol_name, 1, var_offset); // Offset is 1 due to opcode
+    add_fixup(op_codes_array_size, symbol_name, 1, var_offset, 0); // Offset is 1 due to opcode
 
     // Add the opcode to the array
     op_codes_array = realloc(op_codes_array,
@@ -302,7 +294,7 @@ void mov_var_from_reg32(uint8_t reg_code, char *symbol, int var_offset)
     new_opcode.code = opcode_bytes;
 
     // Add fixup for the address
-    add_fixup(op_codes_array_size, symbol, 2, var_offset); // Offset is 2 due to opcode and ModR/M
+    add_fixup(op_codes_array_size, symbol, 2, var_offset, 0); // Offset is 2 due to opcode and ModR/M
 
     // Add the opcode to the array
     op_codes_array = realloc(op_codes_array,
@@ -364,7 +356,7 @@ void mov_reg32_from_var(uint8_t reg_code, char *symbol, int var_offset)
     new_opcode.code = opcode_bytes;
 
     // Add fixup for the address
-    add_fixup(op_codes_array_size, symbol, 2, var_offset); // Offset is 2 due to opcode and ModR/M
+    add_fixup(op_codes_array_size, symbol, 2, var_offset, 0); // Offset is 2 due to opcode and ModR/M
 
     // Add the opcode to the array
     op_codes_array = realloc(op_codes_array,
@@ -463,34 +455,7 @@ void inc_edi()
     inc_reg32(REG_EDI);
 }
 
-void jmp_reg32(uint8_t reg_code)
-{
-    char *opcode_bytes = malloc(2); // 1-byte opcode + 1-byte ModR/M
-    if (!opcode_bytes)
-    {
-        perror("Failed to allocate memory for opcode_bytes");
-        exit(EXIT_FAILURE);
-    }
-
-    opcode_bytes[0] = 0xFF;            // Opcode for group 5 instructions
-    opcode_bytes[1] = 0xE0 | reg_code; // ModR/M byte: Mod=11, Reg=100 (jump), R/M=reg_code
-
-    OpCode new_opcode;
-    new_opcode.size = 2; // Total instruction size
-    new_opcode.code = opcode_bytes;
-
-    // Add the opcode to the array
-    op_codes_array = realloc(op_codes_array,
-                             (op_codes_array_size + 1) * sizeof(OpCode));
-    if (!op_codes_array)
-    {
-        perror("Failed to reallocate memory for op_codes_array");
-        exit(EXIT_FAILURE);
-    }
-    op_codes_array[op_codes_array_size++] = new_opcode;
-}
-
-void create_label(char *name, uint8_t small_jump)
+void create_label(char *name)
 {
     uint32_t addr = 0;
     for (uint32_t i = 0; i < op_codes_array_size; i++)
@@ -501,7 +466,6 @@ void create_label(char *name, uint8_t small_jump)
     jump_array = realloc(jump_array, sizeof(Jump_struct) * (jump_array_size + 1));
     jump_array[jump_array_size].var_name = name;
     jump_array[jump_array_size].var_address = addr;
-    jump_array[jump_array_size].small_jump = small_jump;
     jump_array_size++;
     printf("Label %s at %d\n", name, jump_array[jump_array_size - 1].var_address);
 }
@@ -512,12 +476,6 @@ void fix_label_addresses(uint32_t fix_size)
     {
         jump_array[i].fix_addr = fix_size;
     }
-}
-
-void jmp(char *name)
-{
-    mov_eax_symbol_address(name, 0);
-    jmp_reg32(REG_EAX);
 }
 
 void cmp_reg32(uint8_t reg1, uint8_t reg2)
@@ -547,24 +505,45 @@ void cmp_reg32(uint8_t reg1, uint8_t reg2)
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
-void small_jump(char *name)
+void ret()
 {
-    char *opcode_bytes = malloc(6);
+    char *opcode_bytes = malloc(1);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0x0F;
-    opcode_bytes[1] = 0x84;
-
-    memset(&opcode_bytes[2], 0, 4); // Placeholder for address
-
-    add_fixup(op_codes_array_size, name, 2, 0); // Offset is 2 due to opcode
+    opcode_bytes[0] = 0xC3;
 
     OpCode new_opcode;
-    new_opcode.size = 6; // Total instruction size
+    new_opcode.size = 1; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void nop()
+{
+    char *opcode_bytes = malloc(1);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0x90;
+
+    OpCode new_opcode;
+    new_opcode.size = 1; // Total instruction size
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array

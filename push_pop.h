@@ -27,4 +27,7 @@ void pop_esi();
 void pop_edi();
 void pop_symbol(char *symbol_name);
 
+void pusha();
+void popa();
+
 #endif

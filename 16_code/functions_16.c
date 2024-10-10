@@ -7,12 +7,6 @@
 #include <stdio.h>
 
 // Define register codes for 16-bit registers
-#define REG_AX 0x0
-#define REG_CX 0x1
-#define REG_DX 0x2
-#define REG_BX 0x3
-#define REG_SI 0x6
-#define REG_DI 0x7
 
 // Function to move immediate value into a 16-bit register
 void mov_reg16(uint8_t reg_code, uint16_t value)
@@ -52,7 +46,6 @@ void mov_dx(uint16_t value) { mov_reg16(REG_DX, value); }
 void mov_si(uint16_t value) { mov_reg16(REG_SI, value); }
 void mov_di(uint16_t value) { mov_reg16(REG_DI, value); }
 
-
 // Function to move data from memory to a 16-bit register
 void mov_reg16_from_var(uint8_t reg_code, char *symbol, int var_offset)
 {
@@ -77,7 +70,7 @@ void mov_reg16_from_var(uint8_t reg_code, char *symbol, int var_offset)
     new_opcode.code = opcode_bytes;
 
     // Add fixup for the address
-    add_fixup(op_codes_array_size, symbol, 3, var_offset); // Offset is 3 due to prefix, opcode, and ModR/M
+    add_fixup(op_codes_array_size, symbol, 3, var_offset, 0); // Offset is 3 due to prefix, opcode, and ModR/M
 
     // Add the opcode to the array
     op_codes_array = realloc(op_codes_array,
@@ -122,7 +115,7 @@ void mov_var_from_reg16(uint8_t reg_code, char *symbol, int var_offset)
     new_opcode.code = opcode_bytes;
 
     // Add fixup for the address
-    add_fixup(op_codes_array_size, symbol, 3, var_offset); // Offset is 3 due to prefix, opcode, and ModR/M
+    add_fixup(op_codes_array_size, symbol, 3, var_offset, 0); // Offset is 3 due to prefix, opcode, and ModR/M
 
     // Add the opcode to the array
     op_codes_array = realloc(op_codes_array,
@@ -208,3 +201,31 @@ void pop_cx() { pop_reg16(REG_CX); }
 void pop_dx() { pop_reg16(REG_DX); }
 void pop_si() { pop_reg16(REG_SI); }
 void pop_di() { pop_reg16(REG_DI); }
+
+void cmp_reg16(uint8_t reg1, uint8_t reg2)
+{
+    char *opcode_bytes = malloc(3);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0x66;
+    opcode_bytes[1] = 0x39;
+    opcode_bytes[2] = 0xC0 + reg1 + (reg2 * 8);
+
+    OpCode new_opcode;
+    new_opcode.size = 3; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}

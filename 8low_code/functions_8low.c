@@ -6,11 +6,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#define REG_AL 0x0
-#define REG_CL 0x1
-#define REG_DL 0x2
-#define REG_BL 0x3
-
 void mov_reg8(uint8_t reg_code, uint8_t value)
 {
     char *opcode_bytes = malloc(2);
@@ -62,7 +57,7 @@ void mov_reg8_from_var(uint8_t reg_code, char *symbol, int var_offset)
     new_opcode.code = opcode_bytes;
 
     // Add fixup for the address
-    add_fixup(op_codes_array_size, symbol, 2, var_offset);
+    add_fixup(op_codes_array_size, symbol, 2, var_offset, 0);
 
     // Add the opcode to the array
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
@@ -100,7 +95,7 @@ void mov_var_from_reg8(uint8_t reg_code, char *symbol, int var_offset)
     new_opcode.code = opcode_bytes;
 
     // Add fixup for the address
-    add_fixup(op_codes_array_size, symbol, 2, var_offset);
+    add_fixup(op_codes_array_size, symbol, 2, var_offset, 0);
 
     // Add the opcode to the array
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
@@ -118,3 +113,30 @@ void mov_var_from_al(char *symbol, int var_offset) { mov_var_from_reg8(REG_AL, s
 void mov_var_from_cl(char *symbol, int var_offset) { mov_var_from_reg8(REG_CL, symbol, var_offset); }
 void mov_var_from_dl(char *symbol, int var_offset) { mov_var_from_reg8(REG_DL, symbol, var_offset); }
 void mov_var_from_bl(char *symbol, int var_offset) { mov_var_from_reg8(REG_BL, symbol, var_offset); }
+
+void cmp_reg8(uint8_t reg1, uint8_t reg2)
+{
+    char *opcode_bytes = malloc(2);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0x38;
+    opcode_bytes[1] = 0xC0 + reg1 + (reg2 * 8);
+
+    OpCode new_opcode;
+    new_opcode.size = 2; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}

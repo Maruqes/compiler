@@ -3,6 +3,13 @@
 
 #include <stdint.h>
 
+#define REG_AX 0x0
+#define REG_CX 0x1
+#define REG_DX 0x2
+#define REG_BX 0x3
+#define REG_SI 0x6
+#define REG_DI 0x7
+
 // Function prototypes for moving immediate values into 16-bit registers
 void mov_ax(uint16_t value);
 void mov_bx(uint16_t value);
@@ -39,5 +46,7 @@ void pop_cx();
 void pop_dx();
 void pop_si();
 void pop_di();
+
+void cmp_reg16(uint8_t reg1, uint8_t reg2);
 
 #endif // FUNCTIONS_16_H
