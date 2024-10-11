@@ -1,5 +1,5 @@
 #include "uint32.h"
-#include "functions.h"
+#include "../functions/functions.h"
 #include "strings.h"
 
 Constant_uint32 *constant_uint32s = 0;

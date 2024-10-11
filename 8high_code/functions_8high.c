@@ -1,7 +1,7 @@
 // functions_16.c
 
 #include "functions_8high.h"
-#include "../functions.h" // Adjust the path as needed
+#include "../functions/functions.h" // Adjust the path as needed
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -113,4 +113,3 @@ void mov_var_from_ah(char *symbol, int var_offset) { mov_var_from_reg8_high(REG_
 void mov_var_from_ch(char *symbol, int var_offset) { mov_var_from_reg8_high(REG_CH, symbol, var_offset); }
 void mov_var_from_dh(char *symbol, int var_offset) { mov_var_from_reg8_high(REG_DH, symbol, var_offset); }
 void mov_var_from_bh(char *symbol, int var_offset) { mov_var_from_reg8_high(REG_BH, symbol, var_offset); }
-

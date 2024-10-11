@@ -3,15 +3,16 @@
 #include <stdint.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include "uint32.h"
-#include "functions.h"
-#include "strings.h"
-#include "mov_reg_reg.h"
-#include "push_pop.h"
+#include "types/uint32.h"
+#include "functions/functions.h"
+#include "types/strings.h"
+#include "mov_reg_reg/mov_reg_reg.h"
+#include "push_pop/push_pop.h"
 #include "16_code/functions_16.h"
 #include "8low_code/functions_8low.h"
 #include "8high_code/functions_8high.h"
-#include "jumps.h"
+#include "jumps/jumps.h"
+#include "arithmetic/arithmetic.h"
 
 // ELF header structure for 32-bit executable
 struct Elf32_Ehdr
@@ -47,36 +48,45 @@ struct Elf32_Phdr
 
 #define BASE_ADDRESS 0x08048000 // Common base address for 32-bit executables
 
-void print(char *symbol_name)
+void print(char *symbol_name, uint32_t size)
 {
     pusha();
     mov_eax(4);
     mov_ebx(0x01);
     mov_ecx_symbol_address(symbol_name, 0);
-    mov_edx(22);
+    mov_edx(size);
     our_syscall();
     popa();
 }
 
 int main()
 {
+
     jmp("start");
 
     create_label("print_msg");
-    print("msg3");
-    mov_ebx(5);
-    cmp_reg32(REG_EBX, REG_EAX);
-    jump_if_not_equal("ab2");
-    create_label("ab1");
-    print("msg");
+
+    mov_ebx(4);
+    mov_ecx(0x01);
+    add_reg32(REG_EBX, REG_ECX);
+
+    cmp_reg32(REG_EAX, REG_EBX);
+    jump_if_equal("ab2");
+
+    print("msg2", 5);
     ret();
+
     create_label("ab2");
-    print("msg2");
+    print("msg3", 5);
     ret();
 
+    // start
     create_label("start");
+    print("msg", 9);
 
-    mov_eax(5);
+    mov_eax(4);
+    add(REG_EAX, 1);
+
     call("print_msg");
 
     mov_eax(0x01); // sys_exit
@@ -119,9 +129,9 @@ int main()
     phdr.p_align = 0x1000;                     // Alignment (page size)
 
     // All strings
-    create_constant_string("msg", "Hello, World!\n", phdr.p_vaddr + custom_code_size + data_size);
-    create_constant_string("msg2", "1234567890\n", phdr.p_vaddr + custom_code_size + data_size);
-    create_constant_string("msg3", "asas mano bue malouco\n", phdr.p_vaddr + custom_code_size + data_size);
+    create_constant_string("msg", "Start :D\n", phdr.p_vaddr + custom_code_size + data_size);
+    create_constant_string("msg2", "msg2\n", phdr.p_vaddr + custom_code_size + data_size);
+    create_constant_string("msg3", "msg3\n", phdr.p_vaddr + custom_code_size + data_size);
 
     // All uint32
     create_constant_uint32("uint0", 48, phdr.p_vaddr + custom_code_size + data_size);

@@ -1,7 +1,7 @@
 // functions_16.c
 
 #include "functions_16.h"
-#include "../functions.h" // Adjust the path as needed
+#include "../functions/functions.h" // Adjust the path as needed
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>

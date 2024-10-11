@@ -95,7 +95,7 @@ void add_fixup(int index, char *symbol_name, int offset, uint32_t var_offset, ui
 
 void cmp_reg32(uint8_t reg1, uint8_t reg2);
 
-void create_label(char *name);\
+void create_label(char *name);
 void fix_label_addresses(uint32_t fix_size);
 void ret();
 void nop();

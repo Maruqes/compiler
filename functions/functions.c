@@ -1,6 +1,6 @@
 #include "functions.h"
-#include "strings.h"
-#include "uint32.h"
+#include "../types/strings.h"
+#include "../types/uint32.h"
 
 size_t custom_code_size = 0;
 

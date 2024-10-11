@@ -1,5 +1,5 @@
 #include "jumps.h"
-#include "functions.h"
+#include "../functions/functions.h"
 
 void call(char *name)
 {

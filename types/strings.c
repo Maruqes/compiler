@@ -1,5 +1,5 @@
 #include "strings.h"
-#include "functions.h"
+#include "../functions/functions.h"
 
 Constant_string *constant_strings = 0;
 uint32_t constant_string_count = 0;
@@ -22,5 +22,16 @@ void write_all_string_constants(int __fd)
     {
         printf("Writing %s\n", constant_strings[i].var_value);
         write(__fd, constant_strings[i].var_value, strlen(constant_strings[i].var_value));
+    }
+}
+
+uint32_t get_string_len(char *str)
+{
+    for (int i = 0; i < constant_string_count; i++)
+    {
+        if (strcmp(constant_strings[i].var_value, str) == 0)
+        {
+            return strlen(constant_strings[i].var_value);
+        }
     }
 }

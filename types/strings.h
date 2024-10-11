@@ -22,4 +22,6 @@ extern size_t data_size;
 void create_constant_string(char *var_name, char *var_value, uint32_t var_address);
 void write_all_string_constants(int __fd);
 void fixup_addresses();
+uint32_t get_string_len(char *str);
+
 #endif

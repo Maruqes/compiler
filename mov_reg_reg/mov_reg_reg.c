@@ -1,5 +1,5 @@
 #include "mov_reg_reg.h"
-#include "functions.h"
+#include "../functions/functions.h"
 #include "strings.h"
 
 void mov_reg_reg(int b1, int b2)
