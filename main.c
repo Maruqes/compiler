@@ -66,26 +66,27 @@ int main()
 
     create_label("print_msg");
 
-    mov_ebx(7);
-    sub(REG_EBX, 2);
+    mov_ebx(2);
+    mov_ecx(2);
 
-    cmp_reg32(REG_EAX, REG_EBX);
+    mov_al(5);
+    mov_reg8_reg8(REG_AH, REG_AL);
+
+    cmp_reg8(REG_AH, REG_AL);
     jump_if_equal("ab2");
 
-    print("msg2", 5);
+    print("msg3", 6);
     ret();
 
     create_label("ab2");
-    print("msg3", 5);
+    print("msg2", 5);
     ret();
 
     // start
     create_label("start");
     print("msg", 9);
 
-    mov_eax(6);
-    sub(REG_EAX, 1);
-
+    mov_eax(10);
     call("print_msg");
 
     mov_eax(0x01); // sys_exit
@@ -129,8 +130,8 @@ int main()
 
     // All strings
     create_constant_string("msg", "Start :D\n", phdr.p_vaddr + custom_code_size + data_size);
-    create_constant_string("msg2", "msg2\n", phdr.p_vaddr + custom_code_size + data_size);
-    create_constant_string("msg3", "msg3\n", phdr.p_vaddr + custom_code_size + data_size);
+    create_constant_string("msg2", "same\n", phdr.p_vaddr + custom_code_size + data_size);
+    create_constant_string("msg3", "diff\n", phdr.p_vaddr + custom_code_size + data_size);
 
     // All uint32
     create_constant_uint32("uint0", 48, phdr.p_vaddr + custom_code_size + data_size);

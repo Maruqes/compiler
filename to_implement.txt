@@ -1,7 +1,7 @@
 Arithmetic Instructions
     add, adc: Add; adc adds with carry.                                                         DONE                                                                                                    
-    sub, sbb: Subtract; sbb subtracts with borrow.
-    mul, imul: Multiply; unsigned and signed multiplication.
+    sub, sbb: Subtract; sbb subtracts with borrow.                                              DONE 
+    mul, imul: Multiply; unsigned and signed multiplication.                                    DONE
     div, idiv: Divide; unsigned and signed division.
     inc, dec: Increment and decrement by one.
     neg: Negate; computes two's complement.
@@ -77,7 +77,7 @@ Floating-Point Instructions (x87 FPU)
 
     Arithmetic Operations:
         fadd, fsub, fmul, fdiv: Floating-point arithmetic.
-        fsqrt: Compute square root.
+        fsqrt: Compute square root.\
         fabs: Absolute value.
         fchs: Change sign.
 

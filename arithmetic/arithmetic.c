@@ -1,5 +1,7 @@
 #include "arithmetic.h"
 #include "../functions/functions.h"
+#include "../push_pop/push_pop.h"
+#include "../mov_reg_reg/mov_reg_reg.h"
 
 void add_eax(uint32_t value)
 {
@@ -149,4 +151,64 @@ void sub(uint8_t reg, uint32_t value)
         exit(EXIT_FAILURE);
     }
     op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void sub_reg32(uint8_t reg1, uint8_t reg2)
+{
+    char *opcode_bytes = malloc(2); // 1-byte opcode + 4-byte immediate
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0x29;
+    opcode_bytes[1] = 0xC0 + reg1 + (reg2 * 8);
+
+    OpCode new_opcode;
+    new_opcode.size = 2; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+// mul
+void mul_reg32(uint8_t reg1, uint8_t reg2)
+{
+    push_eax();
+    mov_reg32_reg32(REG_EAX, reg1);
+
+    char *opcode_bytes = malloc(2); // 1-byte opcode + 4-byte immediate
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xf7;
+    opcode_bytes[1] = 0xE0 + reg2;
+
+    OpCode new_opcode;
+    new_opcode.size = 2; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+
+    mov_reg32_reg32(reg1, REG_EAX);
+
+    pop_eax();
 }
