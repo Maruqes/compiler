@@ -12,4 +12,6 @@
 void add(uint8_t reg, uint32_t value);
 void add_reg32(uint8_t reg1, uint8_t reg2);
 
+void sub(uint8_t reg, uint32_t value);
+
 #endif // ARITHMETIC_H

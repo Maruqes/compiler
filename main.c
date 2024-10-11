@@ -66,9 +66,8 @@ int main()
 
     create_label("print_msg");
 
-    mov_ebx(4);
-    mov_ecx(0x01);
-    add_reg32(REG_EBX, REG_ECX);
+    mov_ebx(7);
+    sub(REG_EBX, 2);
 
     cmp_reg32(REG_EAX, REG_EBX);
     jump_if_equal("ab2");
@@ -84,8 +83,8 @@ int main()
     create_label("start");
     print("msg", 9);
 
-    mov_eax(4);
-    add(REG_EAX, 1);
+    mov_eax(6);
+    sub(REG_EAX, 1);
 
     call("print_msg");
 

@@ -1,11 +1,11 @@
 Arithmetic Instructions
-    add, adc: Add; adc adds with carry.
+    add, adc: Add; adc adds with carry.                                                         DONE                                                                                                    
     sub, sbb: Subtract; sbb subtracts with borrow.
     mul, imul: Multiply; unsigned and signed multiplication.
     div, idiv: Divide; unsigned and signed division.
     inc, dec: Increment and decrement by one.
     neg: Negate; computes two's complement.
-    cmp: Compare two operands (sets flags based on the result).
+    cmp: Compare two operands (sets flags based on the result).                                 DONE
     daa, das, aaa, aas: Decimal and ASCII adjust after arithmetic operations.
 
 Bitwise and Logical Instructions
@@ -45,7 +45,6 @@ Stack Operations
     push, pop: Push and pop data onto/from the stack.                                           DONE
     pusha, pushad: Push all general-purpose registers onto the stack.                           DONE
     popa, popad: Pop all general-purpose registers from the stack.                              DONE   
-    enter, leave: Set up and tear down stack frames for procedures.
 
 String and Data Transfer Instructions
 
