@@ -9,9 +9,11 @@
 #include <stdlib.h>
 
 #define REG_EAX 0x0
-#define REG_EBX 0x3
 #define REG_ECX 0x1
 #define REG_EDX 0x2
+#define REG_EBX 0x3
+#define REG_ESP 0x4
+#define REG_EBP 0x5
 #define REG_ESI 0x6
 #define REG_EDI 0x7
 

@@ -15,6 +15,13 @@
         "stdio.h": "c",
         "mov_reg_reg.h": "c",
         "functions_8high.h": "c",
-        "arithmetic.h": "c"
+        "arithmetic.h": "c",
+        "push_pop.h": "c",
+        "optional": "c",
+        "array": "c",
+        "functional": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c"
     }
 }

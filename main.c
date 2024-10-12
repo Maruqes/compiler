@@ -14,6 +14,7 @@
 #include "jumps/jumps.h"
 #include "arithmetic/arithmetic.h"
 #include "logic/logic.h"
+#include "variables/variables.h"
 
 // ELF header structure for 32-bit executable
 struct Elf32_Ehdr
@@ -62,18 +63,16 @@ void print(char *symbol_name, uint32_t size)
 
 int main()
 {
+    create_new_stack();
 
+    create_var("test", 4);
+    create_var("test2", 4);
     jmp("start");
 
     create_label("print_msg");
 
-    mov_ebx(4);
-    mov_ecx(40);
-    div_reg32(REG_ECX, REG_EBX);
-
-    inc_reg32(REG_ECX);
-    dec_reg32(REG_ECX);
-    dec_reg32(REG_ECX);
+    get_var(REG_ECX, "test2");
+    sub(REG_ECX, 10);
 
     cmp_reg32(REG_ECX, REG_EAX);
     jump_if_equal("ab2");
@@ -86,12 +85,18 @@ int main()
     ret();
 
     // start
-    create_label("start");
-    print("msg", 9);
 
-    mov_eax(9);
+    create_label("start");
+
+    set_var("test2", 20);
+    set_var("test", 10);
+
+    get_var(REG_EAX, "test");
+
+    print("msg", 9);
     call("print_msg");
 
+    restore_stack();
     mov_eax(0x01); // sys_exit
     mov_ebx(0x00); // Exit code 0
     our_syscall();

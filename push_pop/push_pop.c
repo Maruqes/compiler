@@ -58,6 +58,11 @@ void push_edi()
     push_reg(7);
 }
 
+void push_ebp()
+{
+    push_reg(5);
+}
+
 void pre_push_symbol_address()
 {
     char *opcode_bytes = malloc(5);
@@ -180,6 +185,11 @@ void pop_esi()
 void pop_edi()
 {
     pop_reg(7);
+}
+
+void pop_ebp()
+{
+    pop_reg(5);
 }
 
 void pre_pop_symbol()
