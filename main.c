@@ -13,6 +13,7 @@
 #include "8high_code/functions_8high.h"
 #include "jumps/jumps.h"
 #include "arithmetic/arithmetic.h"
+#include "logic/logic.h"
 
 // ELF header structure for 32-bit executable
 struct Elf32_Ehdr
@@ -66,13 +67,15 @@ int main()
 
     create_label("print_msg");
 
-    mov_ebx(2);
-    mov_ecx(2);
+    mov_ebx(4);
+    mov_ecx(40);
+    div_reg32(REG_ECX, REG_EBX);
 
-    mov_al(5);
-    mov_reg8_reg8(REG_AH, REG_AL);
+    inc_reg32(REG_ECX);
+    dec_reg32(REG_ECX);
+    dec_reg32(REG_ECX);
 
-    cmp_reg8(REG_AH, REG_AL);
+    cmp_reg32(REG_ECX, REG_EAX);
     jump_if_equal("ab2");
 
     print("msg3", 6);
@@ -86,7 +89,7 @@ int main()
     create_label("start");
     print("msg", 9);
 
-    mov_eax(10);
+    mov_eax(9);
     call("print_msg");
 
     mov_eax(0x01); // sys_exit

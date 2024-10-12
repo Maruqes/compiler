@@ -1,6 +1,7 @@
 #include "functions.h"
 #include "../types/strings.h"
 #include "../types/uint32.h"
+#include "../arithmetic/arithmetic.h"
 
 size_t custom_code_size = 0;
 
@@ -397,32 +398,6 @@ void mov_esi_from_var(char *symbol, int var_offset)
 void mov_edi_from_var(char *symbol, int var_offset)
 {
     mov_reg32_from_var(REG_EDI, symbol, var_offset);
-}
-
-void inc_reg32(uint8_t reg_code)
-{
-    char *opcode_bytes = malloc(1); // 1-byte opcode
-    if (!opcode_bytes)
-    {
-        perror("Failed to allocate memory for opcode_bytes");
-        exit(EXIT_FAILURE);
-    }
-
-    opcode_bytes[0] = 0x40 + reg_code; // Opcode for 'inc reg32'
-
-    OpCode new_opcode;
-    new_opcode.size = 1; // Total instruction size
-    new_opcode.code = opcode_bytes;
-
-    // Add the opcode to the array
-    op_codes_array = realloc(op_codes_array,
-                             (op_codes_array_size + 1) * sizeof(OpCode));
-    if (!op_codes_array)
-    {
-        perror("Failed to reallocate memory for op_codes_array");
-        exit(EXIT_FAILURE);
-    }
-    op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
 void inc_eax()

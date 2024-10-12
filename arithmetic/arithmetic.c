@@ -212,3 +212,127 @@ void mul_reg32(uint8_t reg1, uint8_t reg2)
 
     pop_eax();
 }
+
+// if you need the reminder change the code it should be in edx but look at the pop(edx)
+void div_reg32(uint8_t reg1, uint8_t reg2)
+{
+    if (reg2 == REG_EDX || reg1 == REG_EDX)
+    {
+        perror("Division with EDX is not allowed it need to be cleared before division");
+        exit(EXIT_FAILURE);
+    }
+
+    push_eax();
+    push_edx();
+
+    mov_edx(0);
+
+    mov_reg32_reg32(REG_EAX, reg1);
+
+    char *opcode_bytes = malloc(2); // 1-byte opcode + 4-byte immediate
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xf7;
+    opcode_bytes[1] = 0xF0 + reg2;
+
+    OpCode new_opcode;
+    new_opcode.size = 2; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+
+    mov_reg32_reg32(reg1, REG_EAX);
+
+    pop_edx();
+    pop_eax();
+}
+
+void inc_reg32(uint8_t reg_code)
+{
+    char *opcode_bytes = malloc(1); // 1-byte opcode
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0x40 + reg_code; // Opcode for 'inc reg32'
+
+    OpCode new_opcode;
+    new_opcode.size = 1; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void dec_reg32(uint8_t reg_code)
+{
+    char *opcode_bytes = malloc(1); // 1-byte opcode
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0x48 + reg_code; // Opcode for 'dec reg32'
+
+    OpCode new_opcode;
+    new_opcode.size = 1; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void neg(uint8_t reg_code)
+{
+    char *opcode_bytes = malloc(2); // 1-byte opcode + 1-byte ModR/M
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xF7; // Opcode for 'neg r/m32'
+    opcode_bytes[1] = 0xD8 + reg_code; // ModR/M byte for 'r/m32'
+
+    OpCode new_opcode;
+    new_opcode.size = 2; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}

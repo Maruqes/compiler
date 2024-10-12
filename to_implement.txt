@@ -2,15 +2,15 @@ Arithmetic Instructions
     add, adc: Add; adc adds with carry.                                                         DONE                                                                                                    
     sub, sbb: Subtract; sbb subtracts with borrow.                                              DONE 
     mul, imul: Multiply; unsigned and signed multiplication.                                    DONE
-    div, idiv: Divide; unsigned and signed division.
-    inc, dec: Increment and decrement by one.
-    neg: Negate; computes two's complement.
+    div, idiv: Divide; unsigned and signed division.                                            DONE
+    inc, dec: Increment and decrement by one.                                                   DONE
+    neg: Negate; computes two's complement.                                                     DONE                             
     cmp: Compare two operands (sets flags based on the result).                                 DONE
     daa, das, aaa, aas: Decimal and ASCII adjust after arithmetic operations.
 
 Bitwise and Logical Instructions
-    and, or, xor: Bitwise logical operations.
-    not: Bitwise NOT.
+    and, or, xor: Bitwise logical operations.                                                   DONE                    
+    not: Bitwise NOT.                                                                           DONE            
     shl, shr: Shift bits left or right (logical shift).
     sal, sar: Shift bits left or right (arithmetic shift).
     rol, ror: Rotate bits left or right.
