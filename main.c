@@ -65,36 +65,46 @@ int main()
 {
     create_new_stack();
 
-    create_var("test", 4);
-    create_var("test2", 4);
     jmp("start");
+    mov_eax(0);
 
-    create_label("print_msg");
+    // criar uma funcao que est no example
 
-    get_var(REG_ECX, "test2");
-    sub(REG_ECX, 10);
+    create_label("func_name"); // func int name(){
+    create_new_stack();
 
-    cmp_reg32(REG_ECX, REG_EAX);
-    jump_if_equal("ab2");
+    create_var("i", 4); // int i;
+    set_var("i", 0);    // i = 0;
 
-    print("msg3", 6);
+    create_var("a", 4); // int a;
+    set_var("a", 47);   // a = 0;
+
+    create_label("loop1");
+    get_var(REG_EAX, "i");
+    mov_ebx(10);
+    cmp_reg32(REG_EAX, REG_EBX);
+    jump_if_equal("end_loop1");
+
+    get_var(REG_EAX, "a");
+    inc_reg32(REG_EAX);
+    set_var_with_reg("a", REG_EAX); // a++;
+    mov_var_from_al("msg2", 0);     // printf("Xloop\n");
+    print("msg2", 6);
+
+    get_var(REG_EAX, "i");
+    inc_reg32(REG_EAX);
+    set_var_with_reg("i", REG_EAX); // i++;
+    jmp("loop1");
+
+    create_label("end_loop1");
+
+    print("msg", 7);
+
+    restore_stack();
     ret();
-
-    create_label("ab2");
-    print("msg2", 5);
-    ret();
-
-    // start
 
     create_label("start");
-
-    set_var("test2", 20);
-    set_var("test", 10);
-
-    get_var(REG_EAX, "test");
-
-    print("msg", 9);
-    call("print_msg");
+    call("func_name");
 
     restore_stack();
     mov_eax(0x01); // sys_exit
@@ -137,8 +147,8 @@ int main()
     phdr.p_align = 0x1000;                     // Alignment (page size)
 
     // All strings
-    create_constant_string("msg", "Start :D\n", phdr.p_vaddr + custom_code_size + data_size);
-    create_constant_string("msg2", "same\n", phdr.p_vaddr + custom_code_size + data_size);
+    create_constant_string("msg", "END :D\n", phdr.p_vaddr + custom_code_size + data_size);
+    create_constant_string("msg2", "Xloop\n", phdr.p_vaddr + custom_code_size + data_size);
     create_constant_string("msg3", "diff\n", phdr.p_vaddr + custom_code_size + data_size);
 
     // All uint32
