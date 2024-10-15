@@ -173,6 +173,19 @@ void get_var(uint8_t reg, char *symbol)
     exit(EXIT_FAILURE);
 }
 
+int does_var_exist(char *symbol)
+{
+    for (uint32_t i = 0; i < variables_array_size; i++)
+    {
+        if (strcmp(symbol, variables_array[i].symbol) == 0)
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 void create_new_stack()
 {
     push_reg(REG_EBP);

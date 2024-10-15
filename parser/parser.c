@@ -107,6 +107,8 @@ void start_parsing(char *filename)
 
             free(type);
             free(name);
+            free(token);
+            continue;
         }
 
         if (strcmp(token, "return") == 0)
@@ -120,6 +122,8 @@ void start_parsing(char *filename)
             ret();
 
             free(val);
+            free(token);
+            continue;
         }
 
         if (strcmp(token, "int") == 0)
@@ -135,6 +139,23 @@ void start_parsing(char *filename)
 
             free(name);
             free(value);
+            free(token);
+            continue;
+        }
+
+        // needs to be after all the initializers of variables
+        int ident_question = does_var_exist(token);
+
+        if (ident_question == 1)
+        {
+            get_token(file); // skip '='
+            char *value = get_token(file);
+
+            set_var(token, atoi(value));
+
+            free(value);
+            free(token);
+            continue;
         }
 
         free(token);
