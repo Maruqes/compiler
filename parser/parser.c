@@ -17,6 +17,8 @@ char *funcs_tokens[] = {"func", "endfunc", "return", "for", "endfor"};
 char *vars_tokens[] = {"int"};
 char *symbol_tokens[] = {";", "=", "+", "<", "(", "{", "}", ")", ">", "=="};
 
+char **token_save;
+
 int is_symbol(char token)
 {
     for (int i = 0; i < sizeof(symbol_tokens) / sizeof(symbol_tokens[0]); i++)
@@ -31,10 +33,8 @@ int is_symbol(char token)
 
 char *get_token(FILE *fp)
 {
-
     int c;
     char *token = malloc(100);
-
     do
     {
         c = fgetc(fp);
@@ -53,7 +53,10 @@ char *get_token(FILE *fp)
         {
             token[i++] = c;
         }
+        if (c != EOF)
+            ungetc(c, fp);
         token[i] = '\0';
+        return token;
     }
 
     if (isdigit(c))
@@ -64,8 +67,10 @@ char *get_token(FILE *fp)
         {
             token[i++] = c;
         }
-
+        if (c != EOF)
+            ungetc(c, fp);
         token[i] = '\0';
+        return token;
     }
 
     if (is_symbol(c))
@@ -73,9 +78,8 @@ char *get_token(FILE *fp)
         int i = 0;
         token[i++] = c;
         token[i] = '\0';
+        return token;
     }
-
-    return token;
 }
 
 void start_parsing(char *filename)
@@ -86,12 +90,12 @@ void start_parsing(char *filename)
         printf("Error: Could not open file %s\n", filename);
         exit(1);
     }
-    char *token = get_token(file);
-    printf("Token: %s\n", token);
-    while (token != NULL)
+
+    char *token;
+    while ((token = get_token(file)) != NULL)
     {
-        token = get_token(file);
-        printf("Token: %s\n", token);
+        printf("%s\n", token);
+        free(token);
     }
 
     fclose(file);
