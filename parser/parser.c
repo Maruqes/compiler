@@ -94,7 +94,49 @@ void start_parsing(char *filename)
     char *token;
     while ((token = get_token(file)) != NULL)
     {
-        printf("%s\n", token);
+
+        if (strcmp(token, "func") == 0)
+        {
+            char *type = get_token(file);
+            char *name = get_token(file);
+
+            printf("func %s %s\n", type, name);
+
+            create_label(name);
+            create_new_stack();
+
+            free(type);
+            free(name);
+        }
+
+        if (strcmp(token, "return") == 0)
+        {
+            char *val = get_token(file);
+
+            printf("return %s\n", val);
+
+            get_var(REG_EAX, "a");
+            restore_stack();
+            ret();
+
+            free(val);
+        }
+
+        if (strcmp(token, "int") == 0)
+        {
+            char *name = get_token(file);
+            get_token(file); // skip '='
+            char *value = get_token(file);
+
+            printf("int %s = %s\n", name, value);
+
+            create_var(name, 4);
+            set_var(name, atoi(value));
+
+            free(name);
+            free(value);
+        }
+
         free(token);
     }
 

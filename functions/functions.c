@@ -439,7 +439,13 @@ void create_label(char *name)
     }
 
     jump_array = realloc(jump_array, sizeof(Jump_struct) * (jump_array_size + 1));
-    jump_array[jump_array_size].var_name = name;
+    jump_array[jump_array_size].var_name = malloc(strlen(name) + 1);
+    if (!jump_array[jump_array_size].var_name)
+    {
+        perror("Failed to allocate memory for jump_array[jump_array_size].var_name");
+        exit(EXIT_FAILURE);
+    }
+    strcpy(jump_array[jump_array_size].var_name, name);
     jump_array[jump_array_size].var_address = addr;
     jump_array_size++;
     printf("Label %s at %d\n", name, jump_array[jump_array_size - 1].var_address);

@@ -11,7 +11,13 @@ uint64_t variables_size = 0;
 void add_var_to_array(char *symbol, uint32_t size)
 {
     Variable new_var;
-    new_var.symbol = symbol;
+    new_var.symbol = malloc(strlen(symbol) + 1);
+    if (!new_var.symbol)
+    {
+        perror("Failed to allocate memory for new_var.symbol");
+        exit(EXIT_FAILURE);
+    }
+    strcpy(new_var.symbol, symbol);
     new_var.size = size;
     new_var.offset = variables_size + size;
 
@@ -155,6 +161,7 @@ void get_var(uint8_t reg, char *symbol)
 {
     for (uint32_t i = 0; i < variables_array_size; i++)
     {
+        printf("symbol: %s\n", variables_array[i].symbol);
         if (strcmp(symbol, variables_array[i].symbol) == 0)
         {
             mov_reg_reg_offset(reg, REG_EBP, -variables_array[i].offset);
