@@ -15,6 +15,7 @@
 #include "arithmetic/arithmetic.h"
 #include "logic/logic.h"
 #include "variables/variables.h"
+#include "parser/parser.h"
 
 // ELF header structure for 32-bit executable
 struct Elf32_Ehdr
@@ -63,6 +64,10 @@ void print(char *symbol_name, uint32_t size)
 
 int main()
 {
+
+    start_parsing("example_code");
+
+    return 0;
     create_new_stack();
 
     jmp("start");
