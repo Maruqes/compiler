@@ -1,5 +1,6 @@
 #include "parser.h"
 #include <ctype.h>
+#include <math.h>
 #include "../types/uint32.h"
 #include "../functions/functions.h"
 #include "../types/strings.h"
@@ -15,8 +16,8 @@
 
 char *funcs_tokens[] = {"func", "endfunc", "return", "for", "endfor"};
 char *vars_tokens[] = {"int"};
-char *symbol_tokens[] = {";", "=", "+", "<", "(", "{", "}", ")", ">", "=="};
-
+char *symbol_tokens[] = {";", "=", "<", "(", "{", "}", ")", ">", "=="};
+char *arithmetic_symbols[] = {"+", "-", "*", "/", "^"};
 char **token_save;
 
 int is_symbol(char token)
@@ -28,6 +29,15 @@ int is_symbol(char token)
             return 1;
         }
     }
+
+    for (int i = 0; i < sizeof(arithmetic_symbols) / sizeof(arithmetic_symbols[0]); i++)
+    {
+        if (token == arithmetic_symbols[i][0])
+        {
+            return 1;
+        }
+    }
+
     return 0;
 }
 
@@ -82,6 +92,115 @@ char *get_token(FILE *fp)
     }
 }
 
+uint32_t parse_next_values_arithemtic(FILE *file, uint32_t *val)
+{
+    char *next_token = get_token(file);
+
+    while (next_token[0] != ';')
+    {
+        if (next_token[0] == '+')
+        {
+            char *var = get_token(file);
+            *val += atoi(var);
+            free(var);
+        }
+        else if (next_token[0] == '-')
+        {
+            char *var = get_token(file);
+            *val -= atoi(var);
+            free(var);
+        }
+        else if (next_token[0] == '/')
+        {
+            char *var = get_token(file);
+            *val /= atoi(var);
+            free(var);
+        }
+        else if (next_token[0] == '*')
+        {
+            char *var = get_token(file);
+            *val *= atoi(var);
+            free(var);
+        }
+        else if (next_token[0] == '^')
+        {
+            char *var = get_token(file);
+            *val = pow(*val, atoi(var));
+            free(var);
+        }
+
+        next_token = get_token(file);
+    }
+}
+
+void parse_create_function(FILE *file, char *token)
+{
+    char *type = get_token(file);
+    char *name = get_token(file);
+
+    printf("func %s %s\n", type, name);
+
+    create_label(name);
+    create_new_stack();
+
+    free(type);
+    free(name);
+    free(token);
+}
+
+void parse_create_return(FILE *file, char *token)
+{
+    char *val = get_token(file);
+
+    printf("return %s\n", val);
+
+    get_var(REG_EAX, "a");
+    restore_stack();
+    ret();
+
+    free(val);
+    free(token);
+}
+
+void parse_create_int(FILE *file, char *token)
+{
+    char *name = get_token(file);
+    get_token(file); // skip '='
+    char *value = get_token(file);
+
+    printf("int %s = %s\n", name, value);
+
+    create_var(name, 4);
+    set_var(name, atoi(value));
+
+    free(name);
+    free(value);
+    free(token);
+}
+
+void parse_int_setter(FILE *file, char *token)
+{
+    get_token(file); // skip '='
+    char *value = get_token(file);
+    uint32_t val = 0;
+
+    if (does_var_exist(value))
+    {
+        printf("EXISTE %s\n", value);
+        get_var(REG_EAX, value);
+        set_var_with_reg(token, REG_EAX);
+    }
+    else
+    {
+        val = atoi(value);
+        parse_next_values_arithemtic(file, &val);
+        set_var(token, val);
+    }
+
+    free(value);
+    free(token);
+}
+
 void start_parsing(char *filename)
 {
     FILE *file = fopen(filename, "r");
@@ -97,49 +216,19 @@ void start_parsing(char *filename)
 
         if (strcmp(token, "func") == 0)
         {
-            char *type = get_token(file);
-            char *name = get_token(file);
-
-            printf("func %s %s\n", type, name);
-
-            create_label(name);
-            create_new_stack();
-
-            free(type);
-            free(name);
-            free(token);
+            parse_create_function(file, token);
             continue;
         }
 
         if (strcmp(token, "return") == 0)
         {
-            char *val = get_token(file);
-
-            printf("return %s\n", val);
-
-            get_var(REG_EAX, "a");
-            restore_stack();
-            ret();
-
-            free(val);
-            free(token);
+            parse_create_return(file, token);
             continue;
         }
 
         if (strcmp(token, "int") == 0)
         {
-            char *name = get_token(file);
-            get_token(file); // skip '='
-            char *value = get_token(file);
-
-            printf("int %s = %s\n", name, value);
-
-            create_var(name, 4);
-            set_var(name, atoi(value));
-
-            free(name);
-            free(value);
-            free(token);
+            parse_create_int(file, token);
             continue;
         }
 
@@ -148,13 +237,7 @@ void start_parsing(char *filename)
 
         if (ident_question == 1)
         {
-            get_token(file); // skip '='
-            char *value = get_token(file);
-
-            set_var(token, atoi(value));
-
-            free(value);
-            free(token);
+            parse_int_setter(file, token);
             continue;
         }
 
