@@ -57,6 +57,12 @@ void fixup_addresses()
             }
         }
 
+        // uint8_t enc = 0;
+        // for (uint32_t j = 0; j < constant_string_count && !enc; enc = !strcmp(fixup.symbol_name, constant_strings[j++].var_name))
+        // {
+        //     symbol_address = constant_strings[j].var_address;
+        // }
+
         for (uint32_t j = 0; j < constant_uint32_count; j++)
         {
             if (strcmp(fixup.symbol_name, constant_uint32s[j].var_name) == 0)
