@@ -101,31 +101,60 @@ uint32_t parse_next_values_arithemtic(FILE *file, uint32_t *val)
         if (next_token[0] == '+')
         {
             char *var = get_token(file);
-            *val += atoi(var);
-            free(var);
+            if (does_var_exist(var))
+            {
+                get_var(REG_EBX, var);
+                add_reg32(REG_EAX, REG_EBX);
+            }
+            else
+            {
+                mov_ebx(atoi(var));
+                add_reg32(REG_EAX, REG_EBX);
+            }
         }
         else if (next_token[0] == '-')
         {
             char *var = get_token(file);
-            *val -= atoi(var);
+            if (does_var_exist(var))
+            {
+                get_var(REG_EBX, var);
+                sub_reg32(REG_EAX, REG_EBX);
+            }
+            else
+            {
+                mov_ebx(atoi(var));
+                sub_reg32(REG_EAX, REG_EBX);
+            }
             free(var);
         }
         else if (next_token[0] == '/')
         {
             char *var = get_token(file);
-            *val /= atoi(var);
+            if (does_var_exist(var))
+            {
+                get_var(REG_EBX, var);
+                div_reg32(REG_EAX, REG_EBX);
+            }
+            else
+            {
+                mov_ebx(atoi(var));
+                div_reg32(REG_EAX, REG_EBX);
+            }
             free(var);
         }
         else if (next_token[0] == '*')
         {
             char *var = get_token(file);
-            *val *= atoi(var);
-            free(var);
-        }
-        else if (next_token[0] == '^')
-        {
-            char *var = get_token(file);
-            *val = pow(*val, atoi(var));
+            if (does_var_exist(var))
+            {
+                get_var(REG_EBX, var);
+                mul_reg32(REG_EAX, REG_EBX);
+            }
+            else
+            {
+                mov_ebx(atoi(var));
+                mul_reg32(REG_EAX, REG_EBX);
+            }
             free(var);
         }
 
@@ -186,23 +215,108 @@ void parse_int_setter(FILE *file, char *token)
 
     if (does_var_exist(value))
     {
-        printf("EXISTE %s\n", value);
         get_var(REG_EAX, value);
+
+        parse_next_values_arithemtic(file, &val);
+
         set_var_with_reg(token, REG_EAX);
+        printf("int %s = %s\n", token, value);
     }
     else
     {
         val = atoi(value);
+        mov_eax(val);
+        
         parse_next_values_arithemtic(file, &val);
-        set_var(token, val);
+
+        set_var_with_reg(token, REG_EAX);
+        printf("int %s = %d\n", token, val);
     }
 
     free(value);
     free(token);
 }
 
+int parse_it(char *token, FILE *file)
+{
+    if (strcmp(token, "func") == 0)
+    {
+        parse_create_function(file, token);
+        return 1;
+    }
+
+    if (strcmp(token, "return") == 0)
+    {
+        parse_create_return(file, token);
+        return 1;
+    }
+
+    if (strcmp(token, "int") == 0)
+    {
+        parse_create_int(file, token);
+        return 1;
+    }
+
+    // conditionals
+    if (strcmp(token, "if") == 0)
+    {
+        char *left_condition = get_token(file);
+
+        char *condition = get_token(file);
+        char *right_condition = get_token(file);
+
+        if (strcmp(condition, "=") == 0)
+        {
+            printf("if %s %s %s\n", left_condition, condition, right_condition);
+
+            if (does_var_exist(left_condition))
+            {
+                get_var(REG_EAX, left_condition);
+            }
+            else
+            {
+                uint32_t val = atoi(left_condition);
+                mov_eax(val);
+            }
+
+            if (does_var_exist(right_condition))
+            {
+                get_var(REG_EBX, right_condition);
+            }
+            else
+            {
+                uint32_t val = atoi(right_condition);
+                mov_ebx(val);
+            }
+
+            cmp_reg32(REG_EAX, REG_EBX);
+            jump_if_not_equal("if1");
+
+            token = get_token(file);
+            while (strcmp(token, "}") != 0)
+            {
+                parse_it(token, file);
+                token = get_token(file);
+            }
+            create_label("if1");
+        }
+
+        return 1;
+    }
+
+    // needs to be after all the initializers of variables
+    int ident_question = does_var_exist(token);
+
+    if (ident_question == 1)
+    {
+        parse_int_setter(file, token);
+        return 1;
+    }
+}
+
 void start_parsing(char *filename)
 {
+    printf("Parsing file %s\n\n\n\n\n\n\n\n", filename);
     FILE *file = fopen(filename, "r");
     if (file == NULL)
     {
@@ -213,36 +327,13 @@ void start_parsing(char *filename)
     char *token;
     while ((token = get_token(file)) != NULL)
     {
-
-        if (strcmp(token, "func") == 0)
+        if (parse_it(token, file) == 1)
         {
-            parse_create_function(file, token);
             continue;
         }
-
-        if (strcmp(token, "return") == 0)
-        {
-            parse_create_return(file, token);
-            continue;
-        }
-
-        if (strcmp(token, "int") == 0)
-        {
-            parse_create_int(file, token);
-            continue;
-        }
-
-        // needs to be after all the initializers of variables
-        int ident_question = does_var_exist(token);
-
-        if (ident_question == 1)
-        {
-            parse_int_setter(file, token);
-            continue;
-        }
-
-        free(token);
     }
+
+    printf("\n\n\n\n\n\nFinished parsing file %s\n", filename);
 
     fclose(file);
 }
