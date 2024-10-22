@@ -301,12 +301,55 @@ void parse_ifs(FILE *file, char *token)
 void parse_fors(FILE *file, char *token)
 {
     token = get_token(file);
-    parse_it(token, file);
+    parse_it(token, file); // for i = 0;
 
     char *left_condition = get_token(file);
     char *condition = get_token(file);
     char *right_condition = get_token(file);
-    printf("for %s %s %s\n", left_condition, condition, right_condition);
+    printf("for %s %s %s\n", left_condition, condition, right_condition); // i < 10;
+
+    get_token(file); // skip ';'
+
+    jmp("for2label");
+
+    token = get_token(file);
+    create_label("for1label");
+    parse_it(token, file); // i = i + 1;
+
+    create_label("for2label");
+    if ((condition[0] == '<'))
+    {
+        if (does_var_exist(left_condition))
+        {
+            get_var(REG_EAX, left_condition);
+        }
+        else
+        {
+            mov_eax(atoi(left_condition));
+        }
+
+        if (does_var_exist(right_condition))
+        {
+            get_var(REG_EBX, right_condition);
+        }
+        else
+        {
+            mov_ebx(atoi(right_condition));
+        }
+
+        cmp_reg32(REG_EAX, REG_EBX);
+        jump_if_greater_or_equal("endfor");
+    }
+
+    token = get_token(file);
+    while (strcmp(token, "}") != 0)
+    {
+        parse_it(token, file);
+        token = get_token(file);
+    }
+    jmp("for1label");
+
+    create_label("endfor");
 }
 
 int parse_it(char *token, FILE *file)
@@ -338,6 +381,7 @@ int parse_it(char *token, FILE *file)
 
     if (strcmp(token, "for") == 0)
     {
+        printf("\n\n\nFOR LOOP\n");
         parse_fors(file, token);
         return 1;
     }

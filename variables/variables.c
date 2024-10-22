@@ -161,7 +161,6 @@ void get_var(uint8_t reg, char *symbol)
 {
     for (uint32_t i = 0; i < variables_array_size; i++)
     {
-        printf("symbol: %s\n", variables_array[i].symbol);
         if (strcmp(symbol, variables_array[i].symbol) == 0)
         {
             mov_reg_reg_offset(reg, REG_EBP, -variables_array[i].offset);

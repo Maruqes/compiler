@@ -14,5 +14,7 @@ void jump_if_equal(char *name);
 void jump_if_not_equal(char *name);
 void jump_if_greater(char *name);
 void jump_if_greater_or_equal(char *name);
+void jump_if_less(char *name);
+void jump_if_less_or_equal(char *name);
 
 #endif // JUMPS_H

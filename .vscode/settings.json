@@ -28,6 +28,7 @@
         "typeinfo": "c",
         "functions_16.h": "c",
         "functions_8low.h": "c",
-        "jumps.h": "c"
+        "jumps.h": "c",
+        "random": "cpp"
     }
 }
