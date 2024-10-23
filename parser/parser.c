@@ -14,6 +14,18 @@
 #include "../logic/logic.h"
 #include "../variables/variables.h"
 
+/*
+todo crl
+whiles
+functions
+logical tipo && ! ||
+funcoes por default
+
+extra dar acesso a umas funcs ai do assembly mm
+
+labels nos ifs/loops etc
+*/
+
 char *funcs_tokens[] = {"func", "endfunc", "return", "for", "endfor"};
 char *vars_tokens[] = {"int"};
 char *symbol_tokens[] = {";", "=", "<", "(", "{", "}", ")", ">", "=="};
@@ -183,9 +195,17 @@ void parse_create_return(FILE *file, char *token)
 {
     char *val = get_token(file);
 
+    if (does_var_exist(val))
+    {
+        get_var(REG_EAX, val);
+    }
+    else
+    {
+        mov_eax(atoi(val));
+    }
+
     printf("return %s\n", val);
 
-    get_var(REG_EAX, "a");
     restore_stack();
     ret();
 
