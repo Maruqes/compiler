@@ -9,5 +9,6 @@
 #include <stdlib.h>
 
 void start_parsing(char *filename);
+char *get_token(FILE *fp);
 
 #endif

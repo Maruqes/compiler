@@ -1,3 +1,17 @@
+func int test()
+{
+    int h = 5;  
+    return h;  
+}
+
+func int test2()
+{
+    int h = 10;  
+    return h;  
+}
+
+
+
 func int name()
 {
     int a = 10;
@@ -13,6 +27,8 @@ func int name()
     }
 
     a = a - 50;
+
+    a = a + test + test2 + 5;
 
     return a;
 }
