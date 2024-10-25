@@ -18,13 +18,15 @@
 /*
 todo crl
 
-whiles
+IMPORTANTE
+ifs/while/for nao chamam funcoes
+
 logical tipo && ! ||
-funcoes por default
 
 extra dar acesso a umas funcs ai do assembly mm
 
 functions -> feito ja tem returns de ints
+whiles-> feito
 */
 
 char *funcs_tokens[] = {"func", "endfunc", "return", "for", "endfor"};
@@ -231,7 +233,7 @@ void parse_fors(FILE *file, char *token)
     parse_it(token, file); // i = i + 1;
 
     create_label(for2Label);
-    if ((condition[0] == '<'))
+    if ((condition[0] == '<')) // falta aceitar funcoes como parametros
     {
         if (does_var_exist(left_condition))
         {
@@ -274,6 +276,62 @@ void parse_fors(FILE *file, char *token)
     free(endfor);
 }
 
+void parse_while(FILE *file, char *token)
+{
+    char *left_condition = get_token(file);
+    char *condition = get_token(file);
+    char *right_condition = get_token(file);
+
+    char *temp_label_name = create_temp_label();
+    char *temp_label_name_end = create_temp_label();
+
+    if (strcmp(condition, "<") == 0) // falta aceitar funcoes como parametros
+    {
+        printf("while %s %s %s\n", left_condition, condition, right_condition);
+
+        create_label(temp_label_name);
+
+        if (does_var_exist(left_condition))
+        {
+            get_var(REG_EAX, left_condition);
+        }
+        else
+        {
+            uint32_t val = atoi(left_condition);
+            mov_eax(val);
+        }
+
+        if (does_var_exist(right_condition))
+        {
+            get_var(REG_EBX, right_condition);
+        }
+        else
+        {
+            uint32_t val = atoi(right_condition);
+            mov_ebx(val);
+        }
+
+        cmp_reg32(REG_EAX, REG_EBX);
+
+        jump_if_greater_or_equal(temp_label_name_end);
+
+        token = get_token(file);
+        while (strcmp(token, "}") != 0)
+        {
+            parse_it(token, file);
+            token = get_token(file);
+        }
+        jmp(temp_label_name);
+        create_label(temp_label_name_end);
+    }
+    free(left_condition);
+    free(condition);
+    free(right_condition);
+    free(token);
+
+    free(temp_label_name);
+}
+
 int parse_it(char *token, FILE *file)
 {
     if (strcmp(token, "func") == 0)
@@ -305,6 +363,13 @@ int parse_it(char *token, FILE *file)
     {
         printf("\n\n\nFOR LOOP\n");
         parse_fors(file, token);
+        return 1;
+    }
+
+    if (strcmp(token, "while") == 0)
+    {
+        printf("\n\n\nWHILE LOOP\n");
+        parse_while(file, token);
         return 1;
     }
 

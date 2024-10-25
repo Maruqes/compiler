@@ -30,5 +30,11 @@ func int name()
 
     a = a + test + test2 + 5;
 
+    while a < 100 {
+        a = a + 1;
+    }
+
+    a = a - 75;
+
     return a;
 }
