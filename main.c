@@ -17,6 +17,12 @@
 #include "variables/variables.h"
 #include "parser/parser.h"
 
+/*
+BIG TODO:
+    - Fazer documentacao BOUA para isto, exemplo:
+        explicar como as variaves funcionam, com o base pointer etc, links para outros docs;
+*/
+
 // ELF header structure for 32-bit executable
 struct Elf32_Ehdr
 {
