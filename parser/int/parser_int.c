@@ -137,7 +137,7 @@ void parse_create_int_pointer(FILE *file, char *token)
         create_var(name, 4);
 
         Variable var = return_var_struct(value);
-
+        printf("mov eax, %d\n", -var.offset);
         mov_eax(-var.offset);
         set_var_with_reg(name, REG_EAX);
     }
@@ -162,6 +162,18 @@ void parse_set_value_in_the_address(FILE *file, char *token)
     free(token);
 }
 
+void parse_set_var_with_address_value(FILE *file, char *name)
+{
+    char *var_ptr = get_token(file);
+
+    printf("%s = *%s\n", name, var_ptr);
+
+    get_var(REG_ECX, var_ptr);
+    mov_reg_reg_with_offset(REG_EAX, REG_EBP, REG_ECX);
+
+    set_var_with_reg(name, REG_EAX);
+}
+
 // normal ints
 void parse_create_int(FILE *file, char *token)
 {
@@ -175,7 +187,15 @@ void parse_create_int(FILE *file, char *token)
 
     char *value = get_token(file);
 
-    if (does_var_exist(value))
+    if (value[0] == '*')
+    {
+        create_var(name, 4);
+        mov_eax(0);
+        set_var_with_reg(name, REG_EAX);
+
+        parse_set_var_with_address_value(file, name);
+    }
+    else if (does_var_exist(value))
     {
 
         printf("int %s = %s\n", name, value);

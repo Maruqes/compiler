@@ -22,6 +22,8 @@ void restore_stack();
 void set_var_with_reg(char *symbol, uint8_t reg);
 void mov_reg_reg_offset(uint8_t reg_dest, uint8_t reg_base, int32_t offset);
 void mov_reg_with_regOffset_value(uint8_t reg, uint8_t reg2, uint32_t value);
+void mov_reg_reg_with_offset(uint8_t reg, uint8_t reg_base, uint8_t reg_offset);
+
 void set_var(char *symbol, uint32_t value);
 void get_var(uint8_t reg, char *symbol);
 int does_var_exist(char *symbol);

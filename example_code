@@ -20,7 +20,9 @@ func int name()
 
     c* = 25;
 
+    int d = *c;
+
    
 
-    return a;
+    return d;
 }
