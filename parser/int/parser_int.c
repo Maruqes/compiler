@@ -120,9 +120,57 @@ uint32_t parse_next_values_arithemtic(FILE *file)
     free(next_token);
 }
 
+// pointers int
+void parse_create_int_pointer(FILE *file, char *token)
+{
+    char *name = get_token(file);
+    get_token(file); // skip '='
+
+    char *value = get_token(file);
+
+    printf("int *%s = %s\n", name, value);
+
+    if (does_var_exist(value))
+    {
+
+        printf("int %s = %s\n", name, value);
+        create_var(name, 4);
+
+        Variable var = return_var_struct(value);
+
+        mov_eax(-var.offset);
+        set_var_with_reg(name, REG_EAX);
+    }
+
+    free(name);
+    free(value);
+    free(token);
+}
+
+void parse_set_value_in_the_address(FILE *file, char *token)
+{
+    char *p = get_token(file); // skip '='
+    char *value = get_token(file);
+
+    printf("%s* = %s\n", token, value);
+
+    // vamos assumir que value é um inteiro
+    get_var(REG_EAX, token);
+    mov_reg_with_regOffset_value(REG_EBP, REG_EAX, atoi(value)); // mov [ebp + offset(REG_EAX)], value
+
+    free(value);
+    free(token);
+}
+
+// normal ints
 void parse_create_int(FILE *file, char *token)
 {
     char *name = get_token(file);
+    if (name[0] == '*')
+    {
+        parse_create_int_pointer(file, name);
+        return;
+    }
     get_token(file); // skip '='
 
     char *value = get_token(file);
@@ -164,7 +212,13 @@ void parse_create_int(FILE *file, char *token)
 
 void parse_int_setter(FILE *file, char *token)
 {
-    get_token(file); // skip '='
+    char *p = get_token(file); // skip '='
+    if (p[0] == '*')
+    {
+        parse_set_value_in_the_address(file, token);
+        return;
+    }
+
     char *value = get_token(file);
     uint32_t val = 0;
 

@@ -61,6 +61,36 @@ void mov_reg_offset_reg2(uint8_t reg, uint32_t offset, uint8_t reg2)
     op_codes_array_size++;
 }
 
+// mov [reg_base + reg2], value
+void mov_reg_with_regOffset_value(uint8_t reg_base, uint8_t reg2, uint32_t value)
+{
+    char *opcode_bytes = malloc(7);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[0] = 0xC7;
+    opcode_bytes[1] = 0x04;
+    opcode_bytes[2] = (reg_base * 8) + reg2;
+
+    memcpy(&opcode_bytes[3], &value, 4);
+
+    OpCode new_opcode;
+    new_opcode.size = 7;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}
+
 // mov [reg_base + offset], value
 void mov_reg_offset_value(uint8_t reg, int32_t offset, uint32_t value)
 {
@@ -183,6 +213,20 @@ int does_var_exist(char *symbol)
     }
 
     return 0;
+}
+
+Variable return_var_struct(char *symbol)
+{
+    for (uint32_t i = 0; i < variables_array_size; i++)
+    {
+        if (strcmp(symbol, variables_array[i].symbol) == 0)
+        {
+            return variables_array[i];
+        }
+    }
+
+    fprintf(stderr, "Error: Symbol %s not found\n", symbol);
+    exit(EXIT_FAILURE);
 }
 
 void create_new_stack()

@@ -20,10 +20,12 @@ todo crl
 
 IMPORTANTE
 ifs/while/for nao chamam funcoes
+isolar stack de cada funcao (ja é isolada mas isolar o nome das variaveis, arr das vars é global)
+
 
 logical tipo && ! ||
-
 extra dar acesso a umas funcs ai do assembly mm
+
 
 functions -> feito ja tem returns de ints
 whiles-> feito
@@ -31,7 +33,7 @@ whiles-> feito
 
 char *funcs_tokens[] = {"func", "endfunc", "return", "for", "endfor"};
 char *vars_tokens[] = {"int"};
-char *symbol_tokens[] = {";", "=", "<", "(", "{", "}", ")", ">", "=="};
+char *symbol_tokens[] = {";", "=", "<", "(", "{", "}", ")", ">", "==", "*"};
 char *arithmetic_symbols[] = {"+", "-", "*", "/", "^"};
 char **token_save;
 
@@ -407,7 +409,6 @@ void start_parsing(char *filename)
     {
         if (parse_it(token, file) == 1)
         {
-            continue;
         }
     }
 
