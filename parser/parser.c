@@ -33,7 +33,7 @@ whiles-> feito
 
 char *funcs_tokens[] = {"func", "endfunc", "return", "for", "endfor"};
 char *vars_tokens[] = {"int"};
-char *symbol_tokens[] = {";", "=", "<", "(", "{", "}", ")", ">", "==", "*"};
+char *symbol_tokens[] = {";", "=", "<", "(", "{", "}", ")", ">", "==", "*", "&"};
 char *arithmetic_symbols[] = {"+", "-", "*", "/", "^"};
 char **token_save;
 
@@ -372,6 +372,12 @@ int parse_it(char *token, FILE *file)
     {
         printf("\n\n\nWHILE LOOP\n");
         parse_while(file, token);
+        return 1;
+    }
+
+    if (token[0] == '*')
+    {
+        parse_set_value_in_the_address(file);
         return 1;
     }
 

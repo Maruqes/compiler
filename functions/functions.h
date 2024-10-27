@@ -55,6 +55,7 @@ void mov_ecx(uint32_t code);
 void mov_edx(uint32_t code);
 void mov_esi(uint32_t code);
 void mov_edi(uint32_t code);
+void mov_reg32(uint8_t reg_code, uint32_t value);
 void our_syscall();
 
 void add_custom_code_size();

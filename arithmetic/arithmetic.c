@@ -182,6 +182,11 @@ void sub_reg32(uint8_t reg1, uint8_t reg2)
 // mul
 void mul_reg32(uint8_t reg1, uint8_t reg2)
 {
+    if (reg1 == REG_EAX || reg2 == REG_EAX)
+    {
+        perror("Multiplication with REG_EAX is not allowed it need to be cleared before multiplication");
+        exit(EXIT_FAILURE);
+    }
     push_eax();
     mov_reg32_reg32(REG_EAX, reg1);
 
@@ -216,9 +221,9 @@ void mul_reg32(uint8_t reg1, uint8_t reg2)
 // if you need the reminder change the code it should be in edx but look at the pop(edx)
 void div_reg32(uint8_t reg1, uint8_t reg2)
 {
-    if (reg2 == REG_EDX || reg1 == REG_EDX)
+    if (reg2 == REG_EAX || reg1 == REG_EAX || reg2 == REG_EDX || reg1 == REG_EDX)
     {
-        perror("Division with EDX is not allowed it need to be cleared before division");
+        perror("Division with EAX or EDX is not allowed it need to be cleared before division");
         exit(EXIT_FAILURE);
     }
 
@@ -319,7 +324,7 @@ void neg(uint8_t reg_code)
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0xF7; // Opcode for 'neg r/m32'
+    opcode_bytes[0] = 0xF7;            // Opcode for 'neg r/m32'
     opcode_bytes[1] = 0xD8 + reg_code; // ModR/M byte for 'r/m32'
 
     OpCode new_opcode;

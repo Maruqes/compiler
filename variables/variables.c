@@ -33,6 +33,34 @@ void add_var_to_array(char *symbol, uint32_t size)
     variables_size += size;
 }
 
+// mov [reg_base + reg2], reg3
+void mov_reg_with_regOffset_reg(uint8_t reg_base, uint8_t reg2, uint8_t reg3)
+{
+    char *opcode_bytes = malloc(3);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[0] = 0x89;
+    opcode_bytes[1] = 0x04 + (reg3 * 8);
+    opcode_bytes[2] = (reg_base * 8) + reg2;
+
+    OpCode new_opcode;
+    new_opcode.size = 3;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}
+
 // mov reg, [reg_base + reg_offset]
 void mov_reg_reg_with_offset(uint8_t reg, uint8_t reg_base, uint8_t reg_offset)
 {

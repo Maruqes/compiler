@@ -1,28 +1,11 @@
-func int test()
-{
-    int h = 5;  
-    return h;  
-}
-
-func int test2()
-{
-    int h = 10;  
-    return h;  
-}
-
-
-
 func int name()
 {
-    int a = 10;
-    int b = 10;
-    int *c = a;
+    int a = 5;
+    int b = 12;
+    int* p = &a;
+    int* q = &b;
 
-    c* = 25;
+    int result = *p + *q * 2;
 
-    int d = *c;
-
-   
-
-    return d;
+    return result;
 }

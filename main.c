@@ -79,7 +79,7 @@ int main()
     create_label("start");
     call("name");
 
-    mov_ebx(25);
+    mov_ebx(34);
     cmp_reg32(REG_EAX, REG_EBX);
     jump_if_not_equal("notequal");
     print("msg", 9);

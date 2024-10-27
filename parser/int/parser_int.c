@@ -16,101 +16,106 @@
 #include "../parser.h"
 #include "../parser_help.h"
 
-uint32_t parse_next_values_arithemtic(FILE *file)
+// will parse normal ints/poinetrs functions and vars
+void parse_data_types(FILE *file, char *token, uint8_t reg)
+{ // handle arithemetics
+    /*
+        tipos de data
+            normal-20
+            funcao- func return 20
+            var- a = 20
+            var pointer- a = &b
+    */
+    // return no eax  que esta depois do =
+    // check tipo de data
+
+    if (reg == REG_ECX)
+    {
+        printf("ECX can not be used here func: parse_data_types\n");
+        exit(1);
+    }
+
+    if (does_var_exist(token))
+    {
+        get_var(reg, token);
+    }
+    else if (token[0] == '*')
+    {
+        char *var = get_token(file);
+        get_var(REG_ECX, var);
+        mov_reg_reg_with_offset(reg, REG_EBP, REG_ECX);
+        free(var);
+    }
+    else if (token[0] == '&')
+    {
+        char *var = get_token(file);
+
+        Variable var_struct = return_var_struct(var);
+        mov_reg32(reg, -var_struct.offset);
+        free(var);
+    }
+    else if (is_a_function(token))
+    {
+        push_eax();
+        call(token);
+        mov_reg32_reg32(reg, REG_EAX);
+        pop_eax();
+    }
+    else
+    {
+        uint32_t val = atoi(token);
+        mov_reg32(reg, val);
+    }
+}
+
+// returns in EAX the value of the expression
+void parse_after_equal(FILE *file)
 {
     char *next_token = get_token(file);
+    if (next_token[0] == ';')
+    {
+        return;
+    }
 
+    parse_data_types(file, next_token, REG_EAX);
+
+    next_token = get_token(file);
     while (next_token[0] != ';')
     {
         if (next_token[0] == '+')
         {
             char *var = get_token(file);
-            if (does_var_exist(var))
-            {
-                get_var(REG_EBX, var);
-                add_reg32(REG_EAX, REG_EBX);
-            }
-            else if (is_a_function(var))
-            {
-                push_eax();
-                call(var);
-                mov_reg32_reg32(REG_EBX, REG_EAX);
-                pop_eax();
-                add_reg32(REG_EAX, REG_EBX);
-            }
-            else
-            {
-                mov_ebx(atoi(var));
-                add_reg32(REG_EAX, REG_EBX);
-            }
+            parse_data_types(file, var, REG_EBX);
+            add_reg32(REG_EAX, REG_EBX);
+            free(var);
         }
         else if (next_token[0] == '-')
         {
             char *var = get_token(file);
-            if (does_var_exist(var))
-            {
-                get_var(REG_EBX, var);
-                sub_reg32(REG_EAX, REG_EBX);
-            }
-            else if (is_a_function(var))
-            {
-                push_eax();
-                call(var);
-                mov_reg32_reg32(REG_EBX, REG_EAX);
-                pop_eax();
-                sub_reg32(REG_EAX, REG_EBX);
-            }
-            else
-            {
-                mov_ebx(atoi(var));
-                sub_reg32(REG_EAX, REG_EBX);
-            }
+            parse_data_types(file, var, REG_EBX);
+            sub_reg32(REG_EAX, REG_EBX);
             free(var);
         }
         else if (next_token[0] == '/')
         {
             char *var = get_token(file);
-            if (does_var_exist(var))
-            {
-                get_var(REG_EBX, var);
-                div_reg32(REG_EAX, REG_EBX);
-            }
-            else if (is_a_function(var))
-            {
-                push_eax();
-                call(var);
-                mov_reg32_reg32(REG_EBX, REG_EAX);
-                pop_eax();
-                div_reg32(REG_EAX, REG_EBX);
-            }
-            else
-            {
-                mov_ebx(atoi(var));
-                div_reg32(REG_EAX, REG_EBX);
-            }
+            parse_data_types(file, var, REG_EBX);
+
+            mov_reg32_reg32(REG_ECX, REG_EAX);
+            div_reg32(REG_ECX, REG_EBX);
+            mov_reg32_reg32(REG_EAX, REG_ECX);
+
             free(var);
         }
         else if (next_token[0] == '*')
         {
             char *var = get_token(file);
-            if (does_var_exist(var))
-            {
-                get_var(REG_EBX, var);
-                mul_reg32(REG_EAX, REG_EBX);
-            }
-            else if (is_a_function(var))
-            {
-                push_eax();
-                call(var);
-                mov_reg32_reg32(REG_EBX, REG_EAX);
-                pop_eax();
-                mul_reg32(REG_EAX, REG_EBX);
-            }
-            else
-            {
-                mov_ebx(atoi(var));
-                mul_reg32(REG_EAX, REG_EBX);
-            }
+            parse_data_types(file, var, REG_EBX);
+
+            mov_reg32_reg32(REG_ECX, REG_EAX);
+            mul_reg32(REG_ECX, REG_EBX);
+            mov_reg32_reg32(REG_EAX, REG_ECX);
+
             free(var);
         }
 
@@ -126,52 +131,31 @@ void parse_create_int_pointer(FILE *file, char *token)
     char *name = get_token(file);
     get_token(file); // skip '='
 
-    char *value = get_token(file);
+    create_var(name, 4);
 
-    printf("int *%s = %s\n", name, value);
+    parse_after_equal(file);
+    set_var_with_reg(name, REG_EAX);
 
-    if (does_var_exist(value))
-    {
-
-        printf("int %s = %s\n", name, value);
-        create_var(name, 4);
-
-        Variable var = return_var_struct(value);
-        printf("mov eax, %d\n", -var.offset);
-        mov_eax(-var.offset);
-        set_var_with_reg(name, REG_EAX);
-    }
+    printf("int*%s\n", name);
 
     free(name);
-    free(value);
     free(token);
 }
 
-void parse_set_value_in_the_address(FILE *file, char *token)
+void parse_set_value_in_the_address(FILE *file)
 {
+    char *var = get_token(file);
     char *p = get_token(file); // skip '='
-    char *value = get_token(file);
 
-    printf("%s* = %s\n", token, value);
+    printf("*%s\n", var);
+
+    parse_after_equal(file);
 
     // vamos assumir que value é um inteiro
-    get_var(REG_EAX, token);
-    mov_reg_with_regOffset_value(REG_EBP, REG_EAX, atoi(value)); // mov [ebp + offset(REG_EAX)], value
+    get_var(REG_ECX, var);
+    mov_reg_with_regOffset_reg(REG_EBP, REG_ECX, REG_EAX); // mov [ebp + offset(REG_ECX)], REG_EAX
 
-    free(value);
-    free(token);
-}
-
-void parse_set_var_with_address_value(FILE *file, char *name)
-{
-    char *var_ptr = get_token(file);
-
-    printf("%s = *%s\n", name, var_ptr);
-
-    get_var(REG_ECX, var_ptr);
-    mov_reg_reg_with_offset(REG_EAX, REG_EBP, REG_ECX);
-
-    set_var_with_reg(name, REG_EAX);
+    free(var);
 }
 
 // normal ints
@@ -185,91 +169,21 @@ void parse_create_int(FILE *file, char *token)
     }
     get_token(file); // skip '='
 
-    char *value = get_token(file);
-
-    if (value[0] == '*')
-    {
-        create_var(name, 4);
-        mov_eax(0);
-        set_var_with_reg(name, REG_EAX);
-
-        parse_set_var_with_address_value(file, name);
-    }
-    else if (does_var_exist(value))
-    {
-
-        printf("int %s = %s\n", name, value);
-        create_var(name, 4);
-
-        get_var(REG_EAX, value);
-        parse_next_values_arithemtic(file);
-        set_var_with_reg(name, REG_EAX);
-    }
-    else if (is_a_function(value))
-    {
-        // functions calls return
-        create_var(name, 4);
-
-        printf("Calling function %s\n", value);
-        call(value);
-        parse_next_values_arithemtic(file);
-        set_var_with_reg(name, REG_EAX);
-    }
-    else
-    {
-        printf("int %s = %s\n", name, value);
-        create_var(name, 4);
-
-        mov_eax(atoi(value));
-        parse_next_values_arithemtic(file);
-        set_var_with_reg(name, REG_EAX);
-    }
+    printf("int %s\n", name);
+    create_var(name, 4);
+    parse_after_equal(file);
+    set_var_with_reg(name, REG_EAX);
 
     free(name);
-    free(value);
     free(token);
 }
 
 void parse_int_setter(FILE *file, char *token)
 {
-    char *p = get_token(file); // skip '='
-    if (p[0] == '*')
-    {
-        parse_set_value_in_the_address(file, token);
-        return;
-    }
+    get_token(file); // skip '='
 
-    char *value = get_token(file);
-    uint32_t val = 0;
+    parse_after_equal(file);
+    set_var_with_reg(token, REG_EAX);
 
-    // var
-    if (does_var_exist(value))
-    {
-        get_var(REG_EAX, value);
-        parse_next_values_arithemtic(file);
-        set_var_with_reg(token, REG_EAX);
-
-        printf("int %s = %s\n", token, value);
-    }
-    else if (is_a_function(value))
-    {
-        // functions calls return
-        printf("Calling function %s\n", value);
-        call(value);
-        parse_next_values_arithemtic(file);
-        set_var_with_reg(token, REG_EAX);
-    }
-    else
-    {
-        val = atoi(value);
-        mov_eax(val);
-
-        parse_next_values_arithemtic(file);
-
-        set_var_with_reg(token, REG_EAX);
-        printf("int %s = %d\n", token, val);
-    }
-
-    free(value);
     free(token);
 }
