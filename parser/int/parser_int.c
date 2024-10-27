@@ -16,6 +16,32 @@
 #include "../parser.h"
 #include "../parser_help.h"
 
+void multiple_dereference(FILE *file, char *var, uint8_t reg)
+{
+    if (reg == REG_EDX)
+    {
+        printf("EDX can not be used here func: multiple_dereference\n");
+        exit(1);
+    }
+
+    int number_of_dereferences = 0; // only the extra
+
+    while (var[0] == '*')
+    {
+        var = get_token(file);
+        number_of_dereferences++;
+    }
+
+    get_var(REG_ECX, var);
+    for (int i = 0; i < number_of_dereferences; i++)
+    {
+        mov_reg_reg_with_offset(REG_EDX, REG_EBP, REG_ECX); // ebp + ecx = value da var, entao edx = value da var
+                                                            // valor esse que tambem é um address, repetir o processo
+        mov_reg32_reg32(REG_ECX, REG_EDX);
+    }
+
+    mov_reg_reg_with_offset(reg, REG_EBP, REG_ECX);
+}
 // will parse normal ints/poinetrs functions and vars
 void parse_data_types(FILE *file, char *token, uint8_t reg)
 { // handle arithemetics
@@ -42,8 +68,7 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
     else if (token[0] == '*')
     {
         char *var = get_token(file);
-        get_var(REG_ECX, var);
-        mov_reg_reg_with_offset(reg, REG_EBP, REG_ECX);
+        multiple_dereference(file, var, reg);
         free(var);
     }
     else if (token[0] == '&')
@@ -142,7 +167,7 @@ void parse_create_int_pointer(FILE *file, char *token)
     free(token);
 }
 
-void parse_set_value_in_the_address(FILE *file)
+void parse_set_value_in_the_pointer_address(FILE *file)
 {
     char *var = get_token(file);
     char *p = get_token(file); // skip '='

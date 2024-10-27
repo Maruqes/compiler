@@ -10,6 +10,6 @@
 
 void parse_int_setter(FILE *file, char *token);
 void parse_create_int(FILE *file, char *token);
-void parse_set_value_in_the_address(FILE *file);
+void parse_set_value_in_the_pointer_address(FILE *file);
 
 #endif

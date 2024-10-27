@@ -377,7 +377,7 @@ int parse_it(char *token, FILE *file)
 
     if (token[0] == '*')
     {
-        parse_set_value_in_the_address(file);
+        parse_set_value_in_the_pointer_address(file);
         return 1;
     }
 

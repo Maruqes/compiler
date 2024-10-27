@@ -1,11 +1,11 @@
 func int name()
 {
     int a = 5;
-    int b = 12;
-    int* p = &a;
-    int* q = &b;
+    int*b = &a;
+    int*c = &b;
+    int*d = &c;
 
-    int result = *p + *q * 2;
+    int result = ***d;
 
     return result;
 }
