@@ -19,9 +19,8 @@
 todo crl
 
 IMPORTANTE
-ifs/while/for nao chamam funcoes
 isolar stack de cada funcao (ja é isolada mas isolar o nome das variaveis, arr das vars é global)
-
+criar o resto das condicoes para os whiles fors etc 
 
 logical tipo && ! ||
 extra dar acesso a umas funcs ai do assembly mm
@@ -142,14 +141,7 @@ void parse_create_return(FILE *file, char *token)
 {
     char *val = get_token(file);
 
-    if (does_var_exist(val))
-    {
-        get_var(REG_EAX, val);
-    }
-    else
-    {
-        mov_eax(atoi(val));
-    }
+    parse_data_types(file, val, REG_EAX);
 
     printf("return %s\n", val);
 
@@ -172,25 +164,8 @@ void parse_ifs(FILE *file, char *token)
     {
         printf("if %s %s %s\n", left_condition, condition, right_condition);
 
-        if (does_var_exist(left_condition))
-        {
-            get_var(REG_EAX, left_condition);
-        }
-        else
-        {
-            uint32_t val = atoi(left_condition);
-            mov_eax(val);
-        }
-
-        if (does_var_exist(right_condition))
-        {
-            get_var(REG_EBX, right_condition);
-        }
-        else
-        {
-            uint32_t val = atoi(right_condition);
-            mov_ebx(val);
-        }
+        parse_data_types(file, left_condition, REG_EAX);
+        parse_data_types(file, right_condition, REG_EBX);
 
         cmp_reg32(REG_EAX, REG_EBX);
 
@@ -237,23 +212,8 @@ void parse_fors(FILE *file, char *token)
     create_label(for2Label);
     if ((condition[0] == '<')) // falta aceitar funcoes como parametros
     {
-        if (does_var_exist(left_condition))
-        {
-            get_var(REG_EAX, left_condition);
-        }
-        else
-        {
-            mov_eax(atoi(left_condition));
-        }
-
-        if (does_var_exist(right_condition))
-        {
-            get_var(REG_EBX, right_condition);
-        }
-        else
-        {
-            mov_ebx(atoi(right_condition));
-        }
+        parse_data_types(file, left_condition, REG_EAX);
+        parse_data_types(file, right_condition, REG_EBX);
 
         cmp_reg32(REG_EAX, REG_EBX);
         jump_if_greater_or_equal(endfor);
@@ -293,25 +253,8 @@ void parse_while(FILE *file, char *token)
 
         create_label(temp_label_name);
 
-        if (does_var_exist(left_condition))
-        {
-            get_var(REG_EAX, left_condition);
-        }
-        else
-        {
-            uint32_t val = atoi(left_condition);
-            mov_eax(val);
-        }
-
-        if (does_var_exist(right_condition))
-        {
-            get_var(REG_EBX, right_condition);
-        }
-        else
-        {
-            uint32_t val = atoi(right_condition);
-            mov_ebx(val);
-        }
+        parse_data_types(file, left_condition, REG_EAX);
+        parse_data_types(file, right_condition, REG_EBX);
 
         cmp_reg32(REG_EAX, REG_EBX);
 
