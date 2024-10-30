@@ -16,6 +16,7 @@
 #include "../parser.h"
 #include "../parser_help.h"
 
+// will get something like int *****a = &b; and return the value of *****b, go to the root of the pointers
 void multiple_dereference(FILE *file, char *var, uint8_t reg)
 {
     if (reg == REG_EDX)
@@ -88,8 +89,16 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
     }
     else
     {
-        uint32_t val = atoi(token);
-        mov_reg32(reg, val);
+        if (isdigit(token[0]) || (token[0] == '-' && isdigit(token[1])))
+        {
+            uint32_t val = atoi(token);
+            mov_reg32(reg, val);
+        }
+        else
+        {
+            printf("Error: Symbol '%s' not found\n", token);
+            exit(1);
+        }
     }
 }
 

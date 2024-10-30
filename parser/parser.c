@@ -20,7 +20,7 @@ todo crl
 
 IMPORTANTE
 isolar stack de cada funcao (ja é isolada mas isolar o nome das variaveis, arr das vars é global)
-criar o resto das condicoes para os whiles fors etc 
+criar o resto das condicoes para os whiles fors etc
 
 logical tipo && ! ||
 extra dar acesso a umas funcs ai do assembly mm
@@ -179,6 +179,11 @@ void parse_ifs(FILE *file, char *token)
         }
         create_label(temp_label_name);
     }
+    else
+    {
+        printf("Error: Condition %s not found\n", condition);
+        exit(EXIT_FAILURE);
+    }
     free(left_condition);
     free(condition);
     free(right_condition);
@@ -217,6 +222,11 @@ void parse_fors(FILE *file, char *token)
 
         cmp_reg32(REG_EAX, REG_EBX);
         jump_if_greater_or_equal(endfor);
+    }
+    else
+    {
+        printf("Error: Condition %s not found\n", condition);
+        exit(EXIT_FAILURE);
     }
 
     token = get_token(file);
@@ -268,6 +278,11 @@ void parse_while(FILE *file, char *token)
         }
         jmp(temp_label_name);
         create_label(temp_label_name_end);
+    }
+    else
+    {
+        printf("Error: Condition %s not found\n", condition);
+        exit(EXIT_FAILURE);
     }
     free(left_condition);
     free(condition);
@@ -340,6 +355,14 @@ int parse_it(char *token, FILE *file)
 
         parse_int_setter(file, token);
         return 1;
+    }
+    else
+    {
+        if (!is_symbol(token[0]))
+        {
+            printf("Error: Symbol %s not found\n", token);
+            exit(EXIT_FAILURE);
+        }
     }
 }
 
