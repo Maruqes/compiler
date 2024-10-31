@@ -24,4 +24,7 @@ void write_all_string_constants(int __fd);
 void fixup_addresses();
 uint32_t get_string_len(char *str);
 
+void create_constant_string_before(char *var_name, char *var_value);
+void fix_before_strings(uint32_t var_address);
+
 #endif

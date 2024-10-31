@@ -6,6 +6,7 @@ func int test(){
 
 func int name()
 {
+    const string testS = "Hello\n";
     int a = 5;
     int*b = &a;
     int*c = &b;

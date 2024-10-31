@@ -22,6 +22,7 @@ feito convem testart melhor:
     isolar stack de cada funcao (ja é isolada mas isolar o nome das variaveis, arr das vars é global)
     criar o resto das condicoes para os whiles fors etc
 
+contantes para string e int
 extra dar acesso a umas funcs ai do assembly mm
 
 
@@ -105,6 +106,7 @@ char *get_token(FILE *fp)
 
     if (c == EOF)
     {
+        free(token);
         return NULL;
     }
 
@@ -136,6 +138,31 @@ char *get_token(FILE *fp)
         return token;
     }
 
+    if (c == '"')
+    {
+        int i = 0;
+        while ((c = fgetc(fp)) != '"' && c != EOF)
+        {
+            if (c == '\\')
+            {
+                c = fgetc(fp);
+                if (c == 'n')
+                {
+                    token[i++] = '\n';
+                    continue;
+                }
+                else if (c == '0')
+                {
+                    token[i++] = '\0';
+                    continue;
+                }
+            }
+            token[i++] = c;
+        }
+        token[i] = '\0';
+        return token;
+    }
+
     if (is_symbol(c))
     {
         int i = 0;
@@ -143,6 +170,9 @@ char *get_token(FILE *fp)
         token[i] = '\0';
         return token;
     }
+
+    free(token);
+    return NULL;
 }
 
 void parse_create_function(FILE *file, char *token)
@@ -301,6 +331,30 @@ void parse_while(FILE *file, char *token)
     free(temp_label_name);
 }
 
+void parse_create_constant(FILE *file, char *token)
+{
+    // can be -> const int a = 10;  const string a = "hello";
+    char *type = get_token(file);
+    char *name = get_token(file);
+    get_token(file); // skip '='
+    char *value = get_token(file);
+
+    if (strcmp(type, "int") == 0)
+    {
+        printf("Creating int %s with value %s\n", name, value);
+    }
+    else if (strcmp(type, "string") == 0)
+    {
+        printf("Creating string %s with value %s\n", name, value);
+        create_constant_string_before(name, value);
+    }
+    else
+    {
+        printf("Error: Type %s not found\n", type);
+        exit(EXIT_FAILURE);
+    }
+}
+
 int parse_it(char *token, FILE *file)
 {
     if (strcmp(token, "func") == 0)
@@ -318,6 +372,12 @@ int parse_it(char *token, FILE *file)
     if (strcmp(token, "int") == 0)
     {
         parse_create_int(file, token);
+        return 1;
+    }
+
+    if (strcmp(token, "const") == 0)
+    {
+        parse_create_constant(file, token);
         return 1;
     }
 

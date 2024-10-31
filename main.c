@@ -79,6 +79,8 @@ int main()
     create_label("start");
     call("name");
 
+    print("testS", 6);
+
     mov_ebx(10);
     cmp_reg32(REG_EAX, REG_EBX);
     jump_if_not_equal("notequal");
@@ -132,6 +134,7 @@ int main()
     create_constant_string("msg", "FUNCIONA\n", phdr.p_vaddr + custom_code_size + data_size);
     create_constant_string("msg2", "SALTO\n", phdr.p_vaddr + custom_code_size + data_size);
     create_constant_string("msg3", "diff\n", phdr.p_vaddr + custom_code_size + data_size);
+    fix_before_strings(phdr.p_vaddr + custom_code_size + data_size);
 
     // All uint32
     create_constant_uint32("uint0", 48, phdr.p_vaddr + custom_code_size + data_size);
