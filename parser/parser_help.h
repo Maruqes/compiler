@@ -21,4 +21,7 @@ int checkFuncType(char *type);
 extern Function_struct *functions;
 extern uint32_t functions_count;
 
+void set_current_scope(char *scope);
+char *get_current_scope();
+
 #endif

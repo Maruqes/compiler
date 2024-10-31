@@ -13,6 +13,7 @@ typedef struct Variable
     char *symbol;
     uint32_t size;
     uint32_t offset;
+    char *scope;
 } Variable;
 
 void create_var(char *symbol, uint32_t size);

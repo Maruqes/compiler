@@ -47,3 +47,20 @@ int checkFuncType(char *type)
     }
     return 0;
 }
+
+char *current_scope = NULL;
+
+void set_current_scope(char *scope)
+{
+    if (current_scope != NULL)
+    {
+        free(current_scope);
+    }
+    current_scope = malloc(strlen(scope) + 1);
+    strcpy(current_scope, scope);
+}
+
+char *get_current_scope()
+{
+    return current_scope;
+}

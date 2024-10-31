@@ -18,11 +18,10 @@
 /*
 todo crl
 
-IMPORTANTE
-isolar stack de cada funcao (ja é isolada mas isolar o nome das variaveis, arr das vars é global)
-criar o resto das condicoes para os whiles fors etc
+feito convem testart melhor:
+    isolar stack de cada funcao (ja é isolada mas isolar o nome das variaveis, arr das vars é global)
+    criar o resto das condicoes para os whiles fors etc
 
-logical tipo && ! ||
 extra dar acesso a umas funcs ai do assembly mm
 
 
@@ -162,6 +161,8 @@ void parse_create_function(FILE *file, char *token)
     create_new_stack();
 
     add_function(name, type);
+
+    set_current_scope(name);
 
     free(type);
     free(name);

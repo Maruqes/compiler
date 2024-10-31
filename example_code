@@ -1,5 +1,7 @@
+
 func int test(){
-    return 6;
+    int a = 20;
+    return a;
 }
 
 func int name()
@@ -26,6 +28,9 @@ func int name()
         result = result + 1;
     }
     result = result - 5;
+
+    result = result + test;
+    result = result - 20;
 
     
 
