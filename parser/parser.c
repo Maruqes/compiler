@@ -123,6 +123,11 @@ char *get_token(FILE *fp)
 void parse_create_function(FILE *file, char *token)
 {
     char *type = get_token(file);
+    if (checkFuncType(type) == 1)
+    {
+        printf("Error: Function return type must be int\n");
+        exit(1);
+    }
     char *name = get_token(file);
 
     printf("func %s %s\n", type, name);

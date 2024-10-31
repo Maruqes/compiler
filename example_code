@@ -1,5 +1,5 @@
-func test(){
-    return 5;
+func int test(){
+    return 10;
 }
 
 func int name()
@@ -26,6 +26,12 @@ func int name()
         result = result + 1;
     }
     result = result - 10;
+
+    if a = test {
+        result = result + 1;
+    }
+    result = result - 1;
+    
 
     return result;
 }

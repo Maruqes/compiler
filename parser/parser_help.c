@@ -31,9 +31,19 @@ int is_a_function(char *token)
 
 void add_function(char *name, char *return_type)
 {
+    printf("Adding function %s\n", name);
     functions = realloc(functions, sizeof(Function_struct) * (functions_count + 1));
     functions[functions_count].name = malloc(strlen(name) + 1);
     strcpy(functions[functions_count].name, name);
     functions[functions_count].return_type = return_type;
     functions_count++;
+}
+
+int checkFuncType(char *type)
+{
+    if (strcmp(type, "int") != 0)
+    {
+        return 1;
+    }
+    return 0;
 }

@@ -16,6 +16,7 @@ typedef struct Function_struct
 
 int is_a_function(char *token);
 void add_function(char *name, char *return_type);
+int checkFuncType(char *type);
 
 extern Function_struct *functions;
 extern uint32_t functions_count;
