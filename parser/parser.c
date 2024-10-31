@@ -32,7 +32,7 @@ whiles-> feito
 
 char *funcs_tokens[] = {"func", "endfunc", "return", "for", "endfor"};
 char *vars_tokens[] = {"int"};
-char *symbol_tokens[] = {";", "=", "<", "(", "{", "}", ")", ">", "==", "*", "&"};
+char *symbol_tokens[] = {";", "=", "<", "(", "{", "}", ")", ">", "*", "&", "!"};
 char *arithmetic_symbols[] = {"+", "-", "*", "/", "^"};
 char **token_save;
 
@@ -67,6 +67,32 @@ int is_symbol(char token)
     }
 
     return 0;
+}
+
+void create_comparion_bytes(char *condition, char *temp_label_name)
+{
+    if (strcmp(condition, "=") == 0)
+    {
+        jump_if_not_equal(temp_label_name);
+        return;
+    }
+    if (strcmp(condition, "<") == 0)
+    {
+        jump_if_greater_or_equal(temp_label_name);
+        return;
+    }
+    if (strcmp(condition, ">") == 0)
+    {
+        jump_if_less_or_equal(temp_label_name);
+        return;
+    }
+    if (strcmp(condition, "!") == 0)
+    {
+        jump_if_equal(temp_label_name);
+        return;
+    }
+    printf("Error: Condition %s not found\n", condition);
+    exit(EXIT_FAILURE);
 }
 
 char *get_token(FILE *fp)
@@ -165,30 +191,22 @@ void parse_ifs(FILE *file, char *token)
 
     char *temp_label_name = create_temp_label();
 
-    if (strcmp(condition, "=") == 0)
+    printf("if %s %s %s\n", left_condition, condition, right_condition);
+
+    parse_data_types(file, left_condition, REG_EAX);
+    parse_data_types(file, right_condition, REG_EBX);
+
+    cmp_reg32(REG_EAX, REG_EBX);
+    create_comparion_bytes(condition, temp_label_name);
+
+    token = get_token(file);
+    while (strcmp(token, "}") != 0)
     {
-        printf("if %s %s %s\n", left_condition, condition, right_condition);
-
-        parse_data_types(file, left_condition, REG_EAX);
-        parse_data_types(file, right_condition, REG_EBX);
-
-        cmp_reg32(REG_EAX, REG_EBX);
-
-        jump_if_not_equal(temp_label_name);
-
+        parse_it(token, file);
         token = get_token(file);
-        while (strcmp(token, "}") != 0)
-        {
-            parse_it(token, file);
-            token = get_token(file);
-        }
-        create_label(temp_label_name);
     }
-    else
-    {
-        printf("Error: Condition %s not found\n", condition);
-        exit(EXIT_FAILURE);
-    }
+    create_label(temp_label_name);
+
     free(left_condition);
     free(condition);
     free(right_condition);
@@ -220,19 +238,12 @@ void parse_fors(FILE *file, char *token)
     parse_it(token, file); // i = i + 1;
 
     create_label(for2Label);
-    if ((condition[0] == '<')) // falta aceitar funcoes como parametros
-    {
-        parse_data_types(file, left_condition, REG_EAX);
-        parse_data_types(file, right_condition, REG_EBX);
 
-        cmp_reg32(REG_EAX, REG_EBX);
-        jump_if_greater_or_equal(endfor);
-    }
-    else
-    {
-        printf("Error: Condition %s not found\n", condition);
-        exit(EXIT_FAILURE);
-    }
+    parse_data_types(file, left_condition, REG_EAX);
+    parse_data_types(file, right_condition, REG_EBX);
+
+    cmp_reg32(REG_EAX, REG_EBX);
+    create_comparion_bytes(condition, endfor);
 
     token = get_token(file);
     while (strcmp(token, "}") != 0)
@@ -262,33 +273,25 @@ void parse_while(FILE *file, char *token)
     char *temp_label_name = create_temp_label();
     char *temp_label_name_end = create_temp_label();
 
-    if (strcmp(condition, "<") == 0) // falta aceitar funcoes como parametros
+    printf("while %s %s %s\n", left_condition, condition, right_condition);
+
+    create_label(temp_label_name);
+
+    parse_data_types(file, left_condition, REG_EAX);
+    parse_data_types(file, right_condition, REG_EBX);
+
+    cmp_reg32(REG_EAX, REG_EBX);
+    create_comparion_bytes(condition, temp_label_name_end);
+
+    token = get_token(file);
+    while (strcmp(token, "}") != 0)
     {
-        printf("while %s %s %s\n", left_condition, condition, right_condition);
-
-        create_label(temp_label_name);
-
-        parse_data_types(file, left_condition, REG_EAX);
-        parse_data_types(file, right_condition, REG_EBX);
-
-        cmp_reg32(REG_EAX, REG_EBX);
-
-        jump_if_greater_or_equal(temp_label_name_end);
-
+        parse_it(token, file);
         token = get_token(file);
-        while (strcmp(token, "}") != 0)
-        {
-            parse_it(token, file);
-            token = get_token(file);
-        }
-        jmp(temp_label_name);
-        create_label(temp_label_name_end);
     }
-    else
-    {
-        printf("Error: Condition %s not found\n", condition);
-        exit(EXIT_FAILURE);
-    }
+    jmp(temp_label_name);
+    create_label(temp_label_name_end);
+
     free(left_condition);
     free(condition);
     free(right_condition);
