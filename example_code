@@ -7,7 +7,9 @@ func int test(){
 func int name()
 {
     const string testS = "Hello\n";
-    int a = 5;
+    const int32 uint = 23;
+
+    int a = 0;
     int*b = &a;
     int*c = &b;
     int*d = &c;
@@ -32,6 +34,9 @@ func int name()
 
     result = result + test;
     result = result - 20;
+
+    result = result + uint;
+    result = result - 23;
 
     
 

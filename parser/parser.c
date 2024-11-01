@@ -339,9 +339,10 @@ void parse_create_constant(FILE *file, char *token)
     get_token(file); // skip '='
     char *value = get_token(file);
 
-    if (strcmp(type, "int") == 0)
+    if (strcmp(type, "int32") == 0)
     {
-        printf("Creating int %s with value %s\n", name, value);
+        printf("Creating uint32 %s with value %s\n", name, value);
+        create_constant_uint32_before(name, atoi(value));
     }
     else if (strcmp(type, "string") == 0)
     {
@@ -429,7 +430,7 @@ int parse_it(char *token, FILE *file)
     {
         if (!is_symbol(token[0]))
         {
-            printf("Error: Symbol %s not found\n", token);
+            printf("Error parse_it: Symbol %s not found\n", token);
             exit(EXIT_FAILURE);
         }
     }

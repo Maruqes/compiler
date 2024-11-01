@@ -87,6 +87,11 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
         mov_reg32_reg32(reg, REG_EAX);
         pop_eax();
     }
+    else if (is_a_uint32_beforeconstant(token))
+    {
+        printf("HEHEHEHEHEHHE uint32 %s\n", token);
+        mov_reg32_from_var(reg, token, 0);
+    }
     else
     {
         if (isdigit(token[0]) || (token[0] == '-' && isdigit(token[1])))
@@ -96,7 +101,7 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
         }
         else
         {
-            printf("Error: Symbol '%s' not found\n", token);
+            printf("Error parse_data_types: Symbol '%s' not found\n", token);
             exit(1);
         }
     }

@@ -88,8 +88,6 @@ int main()
 
     create_label("notequal");
 
-    print("msg2", 6);
-
     restore_stack();
     mov_eax(0x01); // sys_exit
     mov_ebx(0x00); // Exit code 0
@@ -138,6 +136,7 @@ int main()
 
     // All uint32
     create_constant_uint32("uint0", 48, phdr.p_vaddr + custom_code_size + data_size);
+    fix_before_uint32s(phdr.p_vaddr + custom_code_size + data_size);
 
     fix_label_addresses(phdr.p_vaddr);
 
