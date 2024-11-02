@@ -138,6 +138,11 @@ int main()
     create_constant_uint32("uint0", 48, phdr.p_vaddr + custom_code_size + data_size);
     fix_before_uint32s(phdr.p_vaddr + custom_code_size + data_size);
 
+    // All uint32 arrays
+    // uint32_t arr[] = {1, 2, 3, 4, 10};
+    // create_constant_uint32_arr("arr132", arr, phdr.p_vaddr + custom_code_size + data_size, 5);
+    fix_before_uint32_arrs(phdr.p_vaddr + custom_code_size + data_size);
+
     fix_label_addresses(phdr.p_vaddr);
 
     fixup_addresses();
@@ -165,6 +170,7 @@ int main()
     write_all_custom_code(fd);
     write_all_string_constants(fd);
     write_all_uint32_constants(fd);
+    write_all_uint32_arr_constants(fd);
 
     close(fd);
 

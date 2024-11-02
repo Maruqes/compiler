@@ -40,6 +40,7 @@ Constant_string *constant_strings_before = 0;
 uint32_t constant_string_count_before = 0;
 void create_constant_string_before(char *var_name, char *var_value)
 {
+    
     constant_strings_before = realloc(constant_strings_before, sizeof(Constant_string) * (constant_string_count_before + 1));
     constant_strings_before[constant_string_count_before].var_name = var_name;
     constant_strings_before[constant_string_count_before].var_value = var_value;

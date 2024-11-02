@@ -29,4 +29,22 @@ void fix_before_uint32s(uint32_t var_address);
 
 int is_a_uint32_beforeconstant(char *token);
 
+// ARRAY
+typedef struct Constant_uint32_arr
+{
+    char *var_name;
+    uint32_t *var_values;
+    uint32_t var_address;
+    uint32_t number_of_values;
+} Constant_uint32_arr;
+
+extern Constant_uint32_arr *constant_uint32_arrs;
+extern uint32_t constant_uint32_arr_count;
+
+void create_constant_uint32_arr(char *var_name, uint32_t *var_values, uint32_t var_address, uint32_t number_of_values);
+void write_all_uint32_arr_constants(int __fd);
+void create_constant_uint32_arr_before(char *var_name, uint32_t *var_values, uint32_t number_of_values);
+void fix_before_uint32_arrs(uint32_t var_address);
+int is_a_uint32_arr_beforeconstant(char *token);
+
 #endif

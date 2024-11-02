@@ -38,6 +38,11 @@ func int name()
     result = result + uint;
     result = result - 23;
 
+    int[5] arrHEHE = {5, 4, 3, 2, 10};
+
+    arrHEHE[1] = 69;
+    result = result - arrHEHE[1];
+    result = result + 69;
     
 
     return result;

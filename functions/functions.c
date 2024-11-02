@@ -87,6 +87,15 @@ void fixup_addresses()
             }
         }
 
+        for (uint32_t j = 0; j < constant_uint32_arr_count; j++)
+        {
+            if (strcmp(fixup.symbol_name, constant_uint32_arrs[j].var_name) == 0)
+            {
+                symbol_address = constant_uint32_arrs[j].var_address;
+                break;
+            }
+        }
+
         if (symbol_address == 0)
         {
             fprintf(stderr, "Undefined symbol: %s\n", fixup.symbol_name);

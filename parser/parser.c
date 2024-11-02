@@ -23,7 +23,11 @@ feito convem testart melhor:
     criar o resto das condicoes para os whiles fors etc
 
 contantes para string e int
+arrays
 extra dar acesso a umas funcs ai do assembly mm
+negative numbers
+function params
+ands ors not etc
 
 
 functions -> feito ja tem returns de ints
@@ -32,7 +36,21 @@ whiles-> feito
 
 char *funcs_tokens[] = {"func", "endfunc", "return", "for", "endfor"};
 char *vars_tokens[] = {"int"};
-char *symbol_tokens[] = {";", "=", "<", "(", "{", "}", ")", ">", "*", "&", "!"};
+char *symbol_tokens[] = {
+    ";",
+    "=",
+    "<",
+    "(",
+    "{",
+    "}",
+    ")",
+    ">",
+    "*",
+    "&",
+    "!",
+    "[",
+    "]",
+    ","};
 char *arithmetic_symbols[] = {"+", "-", "*", "/", "^"};
 char **token_save;
 
@@ -354,6 +372,9 @@ void parse_create_constant(FILE *file, char *token)
         printf("Error: Type %s not found\n", type);
         exit(EXIT_FAILURE);
     }
+    // dont free name and value because they are used in the constant
+    free(type);
+    free(token);
 }
 
 int parse_it(char *token, FILE *file)
@@ -414,6 +435,13 @@ int parse_it(char *token, FILE *file)
     {
         printf("Calling function %s\n", token);
         call(token);
+        return 1;
+    }
+
+    if (is_a_uint32_arr_beforeconstant(token))
+    {
+        printf("setting uint32 array value %s\n", token);
+        parse_int_array_value_setter(file, token);
         return 1;
     }
 
