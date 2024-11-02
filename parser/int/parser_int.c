@@ -59,8 +59,6 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
     // return no eax  que esta depois do =
     // check tipo de data
 
-    printf("%s\n", token);
-
     if (reg == REG_ECX)
     {
         printf("ECX can not be used here func: parse_data_types\n");
@@ -276,7 +274,6 @@ void parse_int_setter(FILE *file, char *token)
 // array
 void parse_int_array_value_setter(FILE *file, char *arr_var_name)
 {
-    printf("%s uihdn", arr_var_name);
     char *token = get_token(file);
     if (token[0] != '[')
     {

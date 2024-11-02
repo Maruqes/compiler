@@ -104,8 +104,6 @@ int is_a_uint32_arr_beforeconstant(char *token)
 {
     for (size_t i = 0; i < constant_uint32_arr_count_before; i++)
     {
-        printf("token: %s\n", token);
-        printf("var_name: %s\n", constant_uint32_arrs_before[0].var_name);
         if (strcmp(token, constant_uint32_arrs_before[0].var_name) == 0)
         {
             return 1;
