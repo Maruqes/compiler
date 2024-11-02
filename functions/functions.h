@@ -61,7 +61,9 @@ void our_syscall();
 void add_custom_code_size();
 void write_all_custom_code(int __fd);
 
-// mov reg, var
+// ALL OF VARS HERE ARE REALLY CONSTANTS IN THE DATA SECTION (that can be actually changed using mov_var_from_reg32)
+
+// mov reg, var        //the actual address of the variable
 void mov_reg32_symbol_address(uint8_t reg_code, char *symbol_name, int var_offset);
 void mov_eax_symbol_address(char *symbol_name, int var_offset);
 void mov_ebx_symbol_address(char *symbol_name, int var_offset);
@@ -70,7 +72,7 @@ void mov_edx_symbol_address(char *symbol_name, int var_offset);
 void mov_esi_symbol_address(char *symbol_name, int var_offset);
 void mov_edi_symbol_address(char *symbol_name, int var_offset);
 
-// mov var, reg
+// mov [var + var_offset], reg
 void mov_var_from_reg32(uint8_t reg_code, char *symbol, int var_offset);
 void mov_var_from_eax(char *symbol, int var_offset);
 void mov_var_from_ebx(char *symbol, int var_offset);
@@ -79,7 +81,7 @@ void mov_var_from_edx(char *symbol, int var_offset);
 void mov_var_from_esi(char *symbol, int var_offset);
 void mov_var_from_edi(char *symbol, int var_offset);
 
-// mov reg, [var]
+// mov reg, [var + var_offset]
 void mov_reg32_from_var(uint8_t reg_code, char *symbol, int var_offset);
 void mov_eax_from_var(char *symbol, int var_offset);
 void mov_ebx_from_var(char *symbol, int var_offset);
