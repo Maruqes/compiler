@@ -38,6 +38,7 @@ void mov_cl(uint8_t value) { mov_reg8(REG_CL, value); }
 void mov_dl(uint8_t value) { mov_reg8(REG_DL, value); }
 void mov_bl(uint8_t value) { mov_reg8(REG_BL, value); }
 
+// mov reg, [var + var_offset]
 void mov_reg8_from_var(uint8_t reg_code, char *symbol, int var_offset)
 {
     char *opcode_bytes = malloc(6); // 1-byte opcode + 1-byte ModR/M + 4-byte address
@@ -76,6 +77,7 @@ void mov_cl_from_var(char *symbol, int var_offset) { mov_reg8_from_var(REG_CL, s
 void mov_dl_from_var(char *symbol, int var_offset) { mov_reg8_from_var(REG_DL, symbol, var_offset); }
 void mov_bl_from_var(char *symbol, int var_offset) { mov_reg8_from_var(REG_BL, symbol, var_offset); }
 
+// mov [var + var_offset], reg8
 void mov_var_from_reg8(uint8_t reg_code, char *symbol, int var_offset)
 {
     char *opcode_bytes = malloc(6); // 1-byte opcode + 1-byte ModR/M + 4-byte address

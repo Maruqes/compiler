@@ -9,6 +9,7 @@
 #define REG_BH 0x7
 
 // Function prototypes for moving immediate vahues into 8-bit registers
+void mov_reg8_high(uint8_t reg_code, uint8_t value);
 void mov_ah(uint8_t vahue);
 void mov_bh(uint8_t vahue);
 void mov_ch(uint8_t vahue);

@@ -121,6 +121,12 @@ void cleanup()
         free(fixups_array[i].symbol_name);
     }
     free(fixups_array);
+
+    // Free jump array
+    for (uint32_t i = 0; i < jump_array_size; i++)
+    {
+        free(jump_array[i].var_name);
+    }
 }
 
 // MOV code FUNCTIONS
@@ -546,6 +552,183 @@ void nop()
     op_codes_array = realloc(op_codes_array,
                              (op_codes_array_size + 1) * sizeof(OpCode));
     if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+/*
+    EXTRA FUNCTIONS
+    these functions are more specific and are used in the code generation
+*/
+// mov [reg_base + reg2], reg3
+void mov_reg_with_regOffset_reg(uint8_t reg_base, uint8_t reg2, uint8_t reg3)
+{
+    char *opcode_bytes = malloc(3);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[0] = 0x89;
+    opcode_bytes[1] = 0x04 + (reg3 * 8);
+    opcode_bytes[2] = (reg_base * 8) + reg2;
+
+    OpCode new_opcode;
+    new_opcode.size = 3;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}
+
+// mov reg, [reg_base + reg_offset]
+void mov_reg_reg_with_offset(uint8_t reg, uint8_t reg_base, uint8_t reg_offset)
+{
+    char *opcode_bytes = malloc(3);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[0] = 0x8B;
+    opcode_bytes[1] = 0x04 + (reg * 8);
+    opcode_bytes[2] = (reg_base * 8) + reg_offset;
+
+    OpCode new_opcode;
+    new_opcode.size = 3;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}
+
+// mov [reg_base + reg2], value
+void mov_reg_with_regOffset_value(uint8_t reg_base, uint8_t reg2, uint32_t value)
+{
+    char *opcode_bytes = malloc(7);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[0] = 0xC7;
+    opcode_bytes[1] = 0x04;
+    opcode_bytes[2] = (reg_base * 8) + reg2;
+
+    memcpy(&opcode_bytes[3], &value, 4);
+
+    OpCode new_opcode;
+    new_opcode.size = 7;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}
+
+// mov [reg_base + offset], reg2
+void mov_reg_offset_reg2(uint8_t reg, uint32_t offset, uint8_t reg2)
+{
+    char *opcode_bytes = malloc(6);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[0] = 0x89;
+    opcode_bytes[1] = 0x80 + reg + (reg2 * 8);
+    memcpy(&opcode_bytes[2], &offset, 4);
+
+    OpCode new_opcode;
+    new_opcode.size = 6;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}
+
+// mov [reg_base + offset], value
+void mov_reg_offset_value(uint8_t reg, int32_t offset, uint32_t value)
+{
+    char *opcode_bytes = malloc(10);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[0] = 0xC7;
+    opcode_bytes[1] = 0x80 + reg;
+    memcpy(&opcode_bytes[2], &offset, 4);
+    memcpy(&opcode_bytes[6], &value, 4);
+
+    OpCode new_opcode;
+    new_opcode.size = 10;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}
+
+// mov reg, [reg_base + offset]
+void mov_reg_reg_offset(uint8_t reg_dest, uint8_t reg_base, int32_t offset)
+{
+    char *opcode_bytes = malloc(6);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0x8B;                             // Opcode for MOV reg32, r/m32
+    opcode_bytes[1] = 0x80 + reg_base + (reg_dest * 8); // Constructed ModR/M byte
+
+    memcpy(&opcode_bytes[2], &offset, 4);
+
+    OpCode new_opcode;
+    new_opcode.size = 6;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
     {
         perror("Failed to reallocate memory for op_codes_array");
         exit(EXIT_FAILURE);

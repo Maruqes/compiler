@@ -50,7 +50,8 @@ char *symbol_tokens[] = {
     "!",
     "[",
     "]",
-    ","};
+    ",",
+    "'"};
 char *arithmetic_symbols[] = {"+", "-", "*", "/", "^"};
 char **token_save;
 
@@ -260,7 +261,6 @@ void parse_ifs(FILE *file, char *token)
     free(condition);
     free(right_condition);
     free(token);
-
     free(temp_label_name);
 }
 
@@ -442,6 +442,13 @@ int parse_it(char *token, FILE *file)
     {
         printf("setting uint32 array value %s\n", token);
         parse_int_array_value_setter(file, token);
+        return 1;
+    }
+
+    if (is_a_string_beforeconstant(token))
+    {
+        printf("setting string value %s\n", token);
+        parse_string_array_value_setter(file, token);
         return 1;
     }
 

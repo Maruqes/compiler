@@ -54,3 +54,15 @@ void fix_before_strings(uint32_t var_address)
         create_constant_string(constant_strings_before[i].var_name, constant_strings_before[i].var_value, var_address);
     }
 }
+
+int is_a_string_beforeconstant(char *token)
+{
+    for (size_t i = 0; i < constant_string_count_before; i++)
+    {
+        if (strcmp(token, constant_strings_before[0].var_name) == 0)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}

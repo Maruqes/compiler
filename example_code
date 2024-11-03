@@ -43,6 +43,12 @@ func int name()
     arrHEHE[1] = 69 + arrHEHE[1] - 4;
     result = result - arrHEHE[1];
     result = result + 69;
+
+    for i = 10; i > 0; i = i - 1;{
+        testS[0] = 'A';
+    }
+
+    
     
 
     return result;

@@ -90,6 +90,14 @@ void mov_edx_from_var(char *symbol, int var_offset);
 void mov_esi_from_var(char *symbol, int var_offset);
 void mov_edi_from_var(char *symbol, int var_offset);
 
+// extra
+void mov_reg_reg_offset(uint8_t reg_dest, uint8_t reg_base, int32_t offset);
+void mov_reg_with_regOffset_value(uint8_t reg, uint8_t reg2, uint32_t value);
+void mov_reg_reg_with_offset(uint8_t reg, uint8_t reg_base, uint8_t reg_offset);
+void mov_reg_with_regOffset_reg(uint8_t reg_base, uint8_t reg2, uint8_t reg3);
+void mov_reg_offset_value(uint8_t reg, int32_t offset, uint32_t value);
+void mov_reg_offset_reg2(uint8_t reg, uint32_t offset, uint8_t reg2);
+
 void inc_eax();
 void inc_ebx();
 void inc_ecx();

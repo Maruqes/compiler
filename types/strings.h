@@ -26,5 +26,5 @@ uint32_t get_string_len(char *str);
 
 void create_constant_string_before(char *var_name, char *var_value);
 void fix_before_strings(uint32_t var_address);
-
+int is_a_string_beforeconstant(char *token);
 #endif
