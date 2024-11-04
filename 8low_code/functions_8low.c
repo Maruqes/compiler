@@ -87,8 +87,8 @@ void mov_var_from_reg8(uint8_t reg_code, char *symbol, int var_offset)
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0x88;                   // Opcode for 'mov r/m8, r8'
-    opcode_bytes[1] = (reg_code << 3) | 0x05; // ModR/M byte
+    opcode_bytes[0] = 0x88; // Opcode for 'mov r/m8, r8'
+    opcode_bytes[1] = 0x05 + (reg_code * 8);
 
     memset(&opcode_bytes[2], 0, 4); // Placeholder for the 4-byte address
 
@@ -140,5 +140,38 @@ void cmp_reg8(uint8_t reg1, uint8_t reg2)
         perror("Failed to reallocate memory for op_codes_array");
         exit(EXIT_FAILURE);
     }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+// mov [var + reg8_2], reg8_1
+void mov_var_from_reg8_offREG(uint8_t reg_code, uint8_t *symbol, uint8_t reg2)
+{
+    char *opcode_bytes = malloc(6); // 1-byte opcode + 1-byte ModR/M + 4-byte address
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0x88;
+    opcode_bytes[1] = 0x80 + (reg_code * 8) + reg2;
+
+    memset(&opcode_bytes[2], 0, 4); // Placeholder for the 4-byte address
+
+    OpCode new_opcode;
+    new_opcode.size = 6; // 1-byte opcode + 1-byte ModR/M + 4-byte address
+    new_opcode.code = opcode_bytes;
+
+    // Add fixup for the address
+    add_fixup(op_codes_array_size, symbol, 2, 0, 0);
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+
     op_codes_array[op_codes_array_size++] = new_opcode;
 }

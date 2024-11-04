@@ -81,7 +81,7 @@ int main()
 
     print("testS", 6);
 
-    mov_ebx(10);
+    mov_ebx(60);
     cmp_reg32(REG_EAX, REG_EBX);
     jump_if_not_equal("notequal");
     print("msg", 9);

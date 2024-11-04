@@ -160,23 +160,39 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
     }
     else if (is_a_uint32_arr_beforeconstant(token))
     {
+        if (reg == REG_ECX)
+        {
+            printf("ECX can not be used here func: parse_data_types\n");
+            exit(1);
+        }
+
         char *token2 = get_token(file); // skip [
         if (token2[0] != '[')
         {
             printf("Error: Expected '['\n");
             exit(1);
         }
-        char *index = get_token(file);
-        token2 = get_token(file); // skip ]
-        if (token2[0] != ']')
-        {
-            printf("Error: Expected ']'\n");
-            exit(1);
-        }
-        mov_reg32_from_var(reg, token, atoi(index) * 4);
+
+        push_reg(REG_ECX);
+        push_reg(REG_EDX);
+        push_reg(REG_EAX);
+
+        parse_inside_bracets_for_arrays(file); // get the index []
+        mov_reg32_reg32(REG_ECX, REG_EAX);
+
+        pop_reg(REG_EAX);
+
+        mov_edx(4);
+        mul_reg32(REG_ECX, REG_EDX); // ecx = ecx * 4  precisa porque o offset é em INT (4 bytes)
+        // melhor explicado em func: "parse_string_array_value_setter" parset_help.c
+
+        pop_reg(REG_EDX);
+
+        mov_reg32_from_var_offREG(reg, token, REG_ECX);
+
+        pop_reg(REG_ECX);
 
         free(token2);
-        free(index);
     }
     else
     {
@@ -251,6 +267,73 @@ void parse_after_equal(FILE *file)
 
             free(var);
         }
+        else if (next_token[0] == '\n')
+        {
+            printf("Error: Expected ';'\n");
+            exit(1);
+        }
+        else
+        {
+            printf("Error: Expected operator\n");
+            exit(1);
+        }
+        next_token = get_token(file);
+    }
+
+    free(next_token);
+}
+
+// returns in EAX whats inside [ ]
+void parse_inside_bracets_for_arrays(FILE *file)
+{
+    char *next_token = get_token(file);
+    if (next_token[0] == ']')
+    {
+        printf("Error: Expected number inside []\n");
+        exit(1);
+    }
+
+    parse_data_types(file, next_token, REG_EAX);
+
+    next_token = get_token(file);
+    while (next_token[0] != ']')
+    {
+        if (next_token[0] == '+')
+        {
+            char *var = get_token(file);
+            parse_data_types(file, var, REG_EBX);
+            add_reg32(REG_EAX, REG_EBX);
+            free(var);
+        }
+        else if (next_token[0] == '-')
+        {
+            char *var = get_token(file);
+            parse_data_types(file, var, REG_EBX);
+            sub_reg32(REG_EAX, REG_EBX);
+            free(var);
+        }
+        else if (next_token[0] == '/')
+        {
+            char *var = get_token(file);
+            parse_data_types(file, var, REG_EBX);
+
+            mov_reg32_reg32(REG_ECX, REG_EAX);
+            div_reg32(REG_ECX, REG_EBX);
+            mov_reg32_reg32(REG_EAX, REG_ECX);
+
+            free(var);
+        }
+        else if (next_token[0] == '*')
+        {
+            char *var = get_token(file);
+            parse_data_types(file, var, REG_EBX);
+
+            mov_reg32_reg32(REG_ECX, REG_EAX);
+            mul_reg32(REG_ECX, REG_EBX);
+            mov_reg32_reg32(REG_EAX, REG_ECX);
+
+            free(var);
+        }
         else
         {
             printf("Error: Expected operator\n");
@@ -265,28 +348,24 @@ void parse_after_equal(FILE *file)
 // string functions
 void parse_string_array_value_setter(FILE *file, char *arr_var_name)
 {
-    char *token = get_token(file);
+    char *token = get_token(file); // get [
     if (token[0] != '[')
     {
         printf("Error: Expected '['\n");
         exit(1);
     }
 
-    char *index = get_token(file);
-
-    token = get_token(file);
-    if (token[0] != ']')
-    {
-        printf("Error: Expected ']'\n");
-        exit(1);
-    }
+    parse_inside_bracets_for_arrays(file); // get the index []
+    mov_reg32_reg32(REG_ECX, REG_EAX);
+    // seria multiplicado por 1 porque o offset de cada byte é 1
+    // em caso de int é necessario multiplicar ecx por 4
+    // porque ecx é o offset arr[1] em inteiro é (arr_addr + 4)
 
     get_token(file); // skip '='
     parse_after_equal(file);
 
-    mov_var_from_reg8(REG_AL, arr_var_name, atoi(index) * 1);
+    mov_var_from_reg8_offREG(REG_AL, arr_var_name, REG_ECX);
 
-    free(index);
     free(token);
     free(arr_var_name);
 }

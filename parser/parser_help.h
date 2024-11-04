@@ -29,6 +29,7 @@ void multiple_dereference(FILE *file, char *var, uint8_t reg);
 void parse_data_types(FILE *file, char *token, uint8_t reg);
 // returns in EAX
 void parse_after_equal(FILE *file);
+void parse_inside_bracets_for_arrays(FILE *file);
 
 // string functions
 void parse_string_array_value_setter(FILE *file, char *token);

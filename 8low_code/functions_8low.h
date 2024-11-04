@@ -30,6 +30,8 @@ void mov_var_from_bl(char *symbol, int var_offset);
 void mov_var_from_cl(char *symbol, int var_offset);
 void mov_var_from_dl(char *symbol, int var_offset);
 
+void mov_var_from_reg8_offREG(uint8_t reg_code, uint8_t *symbol, uint8_t reg2);
+
 void cmp_reg8(uint8_t reg1, uint8_t reg2);
 
 #endif

@@ -297,6 +297,7 @@ void write_all_custom_code(int __fd)
     }
 }
 
+// mov [var + var_offset], reg
 void mov_var_from_reg32(uint8_t reg_code, char *symbol, int var_offset)
 {
     char *opcode_bytes = malloc(6); // 1-byte opcode + 1-byte ModR/M + 4-byte address
@@ -359,6 +360,7 @@ void mov_var_from_edi(char *symbol, int var_offset)
     mov_var_from_reg32(REG_EDI, symbol, var_offset);
 }
 
+// mov reg32, [var + var_offset]
 void mov_reg32_from_var(uint8_t reg_code, char *symbol, int var_offset)
 {
     char *opcode_bytes = malloc(6); // 1-byte opcode + 1-byte ModR/M + 4-byte address
@@ -729,6 +731,71 @@ void mov_reg_reg_offset(uint8_t reg_dest, uint8_t reg_base, int32_t offset)
     op_codes_array = realloc(op_codes_array,
                              (op_codes_array_size + 1) * sizeof(OpCode));
     if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+// mov [var + reg_2], reg_1
+void mov_var_from_reg32_offREG(uint8_t reg_code, char *symbol, uint8_t reg2)
+{
+    char *opcode_bytes = malloc(6); // 1-byte opcode + 1-byte ModR/M + 4-byte address
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0x89;                         // Opcode for 'mov r/m32, reg32'
+    opcode_bytes[1] = 0x80 + (reg_code * 8) + reg2; // ModR/M byte for 'disp32' addressing mode
+    memset(&opcode_bytes[2], 0, 4);                 // Placeholder for address
+
+    OpCode new_opcode;
+    new_opcode.size = 6; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    // Add fixup for the address
+    add_fixup(op_codes_array_size, symbol, 2, 0, 0); // Offset is 2 due to opcode and ModR/M
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+//  mov reg32, [var + reg2_off]
+void mov_reg32_from_var_offREG(uint8_t reg_code, char *symbol, uint8_t reg2_off)
+{
+    char *opcode_bytes = malloc(6); // 1-byte opcode + 1-byte ModR/M + 4-byte address
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0x8B;                             // Opcode for 'mov reg32, r/m32'
+    opcode_bytes[1] = 0x80 + (reg_code * 8) + reg2_off; // ModR/M byte for 'disp32' addressing mode
+
+    memset(&opcode_bytes[2], 0, 4); // Placeholder for address
+
+    OpCode new_opcode;
+    new_opcode.size = 6; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    // Add fixup for the address
+    add_fixup(op_codes_array_size, symbol, 2, 0, 0); // Offset is 2 due to opcode and ModR/M
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
     {
         perror("Failed to reallocate memory for op_codes_array");
         exit(EXIT_FAILURE);

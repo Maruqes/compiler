@@ -111,28 +111,25 @@ void parse_int_setter(FILE *file, char *token)
 // array
 void parse_int_array_value_setter(FILE *file, char *arr_var_name)
 {
-    char *token = get_token(file);
+    char *token = get_token(file); // get [
     if (token[0] != '[')
     {
         printf("Error: Expected '['\n");
         exit(1);
     }
 
-    char *index = get_token(file);
+    parse_inside_bracets_for_arrays(file); // get the index []
+    mov_reg32_reg32(REG_ECX, REG_EAX);
 
-    token = get_token(file);
-    if (token[0] != ']')
-    {
-        printf("Error: Expected ']'\n");
-        exit(1);
-    }
+    mov_edx(4);
+    mul_reg32(REG_ECX, REG_EDX); // ecx = ecx * 4  precisa porque o offset é em INT (4 bytes)
+    // melhor explicado em func: "parse_string_array_value_setter" parset_help.c
 
     get_token(file); // skip '='
     parse_after_equal(file);
 
-    mov_var_from_reg32(REG_EAX, arr_var_name, atoi(index) * 4);
+    mov_var_from_reg32_offREG(REG_EAX, arr_var_name, REG_ECX);
 
-    free(index);
     free(token);
     free(arr_var_name);
 }

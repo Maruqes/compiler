@@ -220,16 +220,13 @@ void parse_create_function(FILE *file, char *token)
 
 void parse_create_return(FILE *file, char *token)
 {
-    char *val = get_token(file);
+    parse_after_equal(file);
 
-    parse_data_types(file, val, REG_EAX);
-
-    printf("return %s\n", val);
+    printf("return \n");
 
     restore_stack();
     ret();
 
-    free(val);
     free(token);
 }
 
