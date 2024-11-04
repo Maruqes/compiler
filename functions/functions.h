@@ -98,7 +98,7 @@ void mov_reg_with_regOffset_reg(uint8_t reg_base, uint8_t reg2, uint8_t reg3);
 void mov_reg_offset_value(uint8_t reg, int32_t offset, uint32_t value);
 void mov_reg_offset_reg2(uint8_t reg, uint32_t offset, uint8_t reg2);
 void mov_var_from_reg32_offREG(uint8_t reg_code, char *symbol, uint8_t reg2);
-void mov_reg32_from_var_offREG(uint8_t reg_code, char *symbol, uint8_t reg2);
+void mov_reg32_from_var_offREG(uint8_t reg_code, char *symbol, uint8_t reg2_off);
 
 void inc_eax();
 void inc_ebx();

@@ -1,6 +1,5 @@
 #include "mov_reg_reg.h"
 #include "../functions/functions.h"
-#include "strings.h"
 
 void mov_reg32_reg32(uint8_t reg1, uint8_t reg2)
 {

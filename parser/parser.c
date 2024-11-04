@@ -60,7 +60,7 @@ uint64_t labels_count = 0;
 char *create_temp_label()
 {
     char *label = malloc(100);
-    sprintf(label, "temp_label_%ld", labels_count);
+    sprintf(label, "temp_label_%lu", labels_count);
     labels_count++;
     return label;
 }
@@ -466,6 +466,7 @@ int parse_it(char *token, FILE *file)
             exit(EXIT_FAILURE);
         }
     }
+    return 0;
 }
 
 void start_parsing(char *filename)

@@ -1,6 +1,5 @@
 #include "push_pop.h"
 #include "../functions/functions.h"
-#include "strings.h"
 
 void push_reg(int reg)
 {

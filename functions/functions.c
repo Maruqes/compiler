@@ -78,8 +78,8 @@ void fixup_addresses()
             {
                 int32_t displacement = jump_array[j].var_address - (fixup.code_offset) - fixup.jump_offset;
 
-                printf("\nvar address: %d\n", jump_array[j].var_address);
-                printf("opcode index: %d\n", fixup.code_offset);
+                printf("\nvar address: %u\n", jump_array[j].var_address);
+                printf("opcode index: %u\n", fixup.code_offset);
                 printf("displacement: %d\n\n", displacement);
 
                 symbol_address = displacement;
@@ -293,7 +293,14 @@ void write_all_custom_code(int __fd)
 {
     for (int i = 0; i < op_codes_array_size; i++)
     {
-        write(__fd, op_codes_array[i].code, op_codes_array[i].size);
+        ssize_t bytes_written = write(__fd, op_codes_array[i].code, op_codes_array[i].size);
+        if (bytes_written == -1) {
+            perror("Failed to write opcode to file");
+            exit(EXIT_FAILURE);
+        } else if (bytes_written != op_codes_array[i].size) {
+            fprintf(stderr, "Partial write occurred\n");
+            exit(EXIT_FAILURE);
+        }
     }
 }
 
@@ -462,6 +469,11 @@ void create_label(char *name)
     }
 
     jump_array = realloc(jump_array, sizeof(Jump_struct) * (jump_array_size + 1));
+    if (!jump_array)
+    {
+        perror("Failed to reallocate memory for jump_array");
+        exit(EXIT_FAILURE);
+    }
     jump_array[jump_array_size].var_name = malloc(strlen(name) + 1);
     if (!jump_array[jump_array_size].var_name)
     {
@@ -471,7 +483,7 @@ void create_label(char *name)
     strcpy(jump_array[jump_array_size].var_name, name);
     jump_array[jump_array_size].var_address = addr;
     jump_array_size++;
-    printf("Label %s at %d\n", name, jump_array[jump_array_size - 1].var_address);
+    printf("Label %s at %u\n", name, jump_array[jump_array_size - 1].var_address);
 }
 
 void fix_label_addresses(uint32_t fix_size)
@@ -622,7 +634,7 @@ void mov_reg_reg_with_offset(uint8_t reg, uint8_t reg_base, uint8_t reg_offset)
 }
 
 // mov [reg_base + reg2], value
-void mov_reg_with_regOffset_value(uint8_t reg_base, uint8_t reg2, uint32_t value)
+void mov_reg_with_regOffset_value(uint8_t reg, uint8_t reg2, uint32_t value)
 {
     char *opcode_bytes = malloc(7);
     if (opcode_bytes == NULL)
@@ -632,7 +644,7 @@ void mov_reg_with_regOffset_value(uint8_t reg_base, uint8_t reg2, uint32_t value
     }
     opcode_bytes[0] = 0xC7;
     opcode_bytes[1] = 0x04;
-    opcode_bytes[2] = (reg_base * 8) + reg2;
+    opcode_bytes[2] = (reg * 8) + reg2;
 
     memcpy(&opcode_bytes[3], &value, 4);
 

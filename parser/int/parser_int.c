@@ -139,7 +139,7 @@ void parse_int_array_creation(FILE *file, char *token, uint32_t arr_size)
     char *name = get_token(file);
     get_token(file); // skip '='
 
-    printf("int[%d] %s\n", arr_size, name);
+    printf("int[%u] %s\n", arr_size, name);
 
     char *val = get_token(file);
     if (val[0] != '{')
@@ -160,7 +160,7 @@ void parse_int_array_creation(FILE *file, char *token, uint32_t arr_size)
             val = get_token(file);
         }
 
-        printf("int %s[%d] = %s\n", name, i, val);
+        printf("int %s[%u] = %s\n", name, i, val);
         arr[i] = atoi(val);
         i++;
         val = get_token(file);

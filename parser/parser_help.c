@@ -35,6 +35,11 @@ void add_function(char *name, char *return_type)
 {
     printf("Adding function %s\n", name);
     functions = realloc(functions, sizeof(Function_struct) * (functions_count + 1));
+    if (functions == NULL)
+    {
+        printf("Error: Could not allocate memory for functions\n");
+        exit(1);
+    }
     functions[functions_count].name = malloc(strlen(name) + 1);
     strcpy(functions[functions_count].name, name);
     functions[functions_count].return_type = return_type;

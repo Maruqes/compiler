@@ -10,21 +10,21 @@
 
 // Function prototypes for moving immediate vahues into 8-bit registers
 void mov_reg8_high(uint8_t reg_code, uint8_t value);
-void mov_ah(uint8_t vahue);
-void mov_bh(uint8_t vahue);
-void mov_ch(uint8_t vahue);
-void mov_dh(uint8_t vahue);
+void mov_ah(uint8_t value);
+void mov_bh(uint8_t value);
+void mov_ch(uint8_t value);
+void mov_dh(uint8_t value);
 
 // Function prototypes for moving data between memory and 8-bit registers
-void mov_ah_from_var(char *symboh, int var_offset);
-void mov_bh_from_var(char *symboh, int var_offset);
-void mov_ch_from_var(char *symboh, int var_offset);
-void mov_dh_from_var(char *symboh, int var_offset);
+void mov_ah_from_var(char *symbol, int var_offset);
+void mov_bh_from_var(char *symbol, int var_offset);
+void mov_ch_from_var(char *symbol, int var_offset);
+void mov_dh_from_var(char *symbol, int var_offset);
 
-void mov_var_from_ah(char *symboh, int var_offset);
-void mov_var_from_bh(char *symboh, int var_offset);
-void mov_var_from_ch(char *symboh, int var_offset);
-void mov_var_from_dh(char *symboh, int var_offset);
+void mov_var_from_ah(char *symbol, int var_offset);
+void mov_var_from_bh(char *symbol, int var_offset);
+void mov_var_from_ch(char *symbol, int var_offset);
+void mov_var_from_dh(char *symbol, int var_offset);
 
 void cmp_reg8_high(uint8_t reg1, uint8_t reg2);
 

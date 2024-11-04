@@ -147,12 +147,6 @@ int main()
 
     fixup_addresses();
 
-    size_t total_data_size = 0;
-    for (uint32_t i = 0; i < constant_string_count; i++)
-    {
-        total_data_size += strlen(constant_strings[i].var_value);
-    }
-
     phdr.p_filesz = custom_code_size + data_size;
     phdr.p_memsz = custom_code_size + data_size;
 
@@ -164,8 +158,18 @@ int main()
         return 1;
     }
 
-    write(fd, &ehdr, sizeof(ehdr)); // Write ELF header
-    write(fd, &phdr, sizeof(phdr)); // Write program header
+    if (write(fd, &ehdr, sizeof(ehdr)) != sizeof(ehdr)) // Write ELF header
+    {
+        perror("write");
+        close(fd);
+        return 1;
+    }
+    if (write(fd, &phdr, sizeof(phdr)) != sizeof(phdr)) // Write program header
+    {
+        perror("write");
+        close(fd);
+        return 1;
+    }
 
     write_all_custom_code(fd);
     write_all_string_constants(fd);
