@@ -25,6 +25,12 @@ void parse_create_int_pointer(FILE *file, char *token)
     char *name = get_token(file);
     get_token(file); // skip '='
 
+    if (does_var_exist(name))
+    {
+        printf("Error: Variable %s already exists\n", name);
+        exit(1);
+    }
+
     create_var(name, 4);
 
     parse_after_equal(file);
@@ -89,6 +95,12 @@ void parse_create_int(FILE *file, char *token)
     }
     get_token(file); // skip '='
 
+    if (does_var_exist(name))
+    {
+        printf("Error: Variable %s already exists\n", name);
+        exit(1);
+    }
+
     printf("int %s\n", name);
     create_var(name, 4);
     parse_after_equal(file);
@@ -109,6 +121,7 @@ void parse_int_setter(FILE *file, char *token)
 }
 
 // array
+// arr[3] = 10;
 void parse_int_array_value_setter(FILE *file, char *arr_var_name)
 {
     char *token = get_token(file); // get [
@@ -118,17 +131,19 @@ void parse_int_array_value_setter(FILE *file, char *arr_var_name)
         exit(1);
     }
 
+    push_reg(REG_ECX);
     parse_inside_bracets_for_arrays(file); // get the index []
     mov_reg32_reg32(REG_ECX, REG_EAX);
 
     mov_edx(4);
     mul_reg32(REG_ECX, REG_EDX); // ecx = ecx * 4  precisa porque o offset é em INT (4 bytes)
-    // melhor explicado em func: "parse_string_array_value_setter" parset_help.c
-
-    get_token(file); // skip '='
+                                 // melhor explicado em func: "parse_string_array_value_setter" parset_help.c
+    get_token(file);             // skip '='
     parse_after_equal(file);
 
     mov_var_from_reg32_offREG(REG_EAX, arr_var_name, REG_ECX);
+
+    pop_reg(REG_ECX);
 
     free(token);
     free(arr_var_name);

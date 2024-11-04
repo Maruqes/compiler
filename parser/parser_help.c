@@ -163,7 +163,7 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
     {
         mov_reg32_from_var(reg, token, 0);
     }
-    else if (is_a_uint32_arr_beforeconstant(token))
+    else if (is_a_uint32_arr_beforeconstant(token)) // int a = arr[0];
     {
         if (reg == REG_ECX)
         {
@@ -236,6 +236,7 @@ void parse_after_equal(FILE *file)
     next_token = get_token(file);
     while (next_token[0] != ';')
     {
+        push_reg(REG_EBX);
         if (next_token[0] == '+')
         {
             char *var = get_token(file);
@@ -282,6 +283,7 @@ void parse_after_equal(FILE *file)
             printf("Error: Expected operator\n");
             exit(1);
         }
+        pop_reg(REG_EBX);
         next_token = get_token(file);
     }
 
