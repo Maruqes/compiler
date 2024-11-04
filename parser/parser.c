@@ -218,6 +218,7 @@ void parse_create_function(FILE *file, char *token)
     free(token);
 }
 
+//return in EAX
 void parse_create_return(FILE *file, char *token)
 {
     parse_after_equal(file);
