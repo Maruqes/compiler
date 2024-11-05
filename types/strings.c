@@ -27,7 +27,8 @@ void write_all_string_constants(int __fd)
     {
         printf("Writing %s\n", constant_strings[i].var_value);
         ssize_t bytes_written = write(__fd, constant_strings[i].var_value, strlen(constant_strings[i].var_value));
-        if (bytes_written == -1) {
+        if (bytes_written == -1)
+        {
             perror("Error writing string constant");
             exit(1);
         }
@@ -79,4 +80,11 @@ int is_a_string_beforeconstant(char *token)
         }
     }
     return 0;
+}
+
+void free_strings()
+{
+    free(constant_strings);
+
+    free(constant_strings_before);
 }

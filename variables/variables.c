@@ -49,6 +49,19 @@ void add_var_to_array(char *symbol, uint32_t size, char *scope)
     variables_size += size;
 }
 
+void free_variables_array()
+{
+    for (uint32_t i = 0; i < variables_array_size; i++)
+    {
+        free(variables_array[i].symbol);
+        if (variables_array[i].scope)
+        {
+            free(variables_array[i].scope);
+        }
+    }
+    free(variables_array);
+}
+
 void create_var(char *symbol, uint32_t size)
 {
     // check if var already exists

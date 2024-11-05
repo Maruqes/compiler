@@ -48,6 +48,9 @@ extern uint32_t fixups_array_size;
 extern OpCode *op_codes_array;
 extern uint32_t op_codes_array_size;
 
+extern Jump_struct *jump_array;
+extern uint32_t jump_array_size;
+
 // mov eax, val
 void mov_eax(uint32_t code);
 void mov_ebx(uint32_t code);

@@ -46,6 +46,15 @@ void add_function(char *name, char *return_type)
     functions_count++;
 }
 
+void free_functions()
+{
+    for (uint32_t i = 0; i < functions_count; i++)
+    {
+        free(functions[i].name);
+    }
+    free(functions);
+}
+
 int checkFuncType(char *type)
 {
     if (strcmp(type, "int") != 0)
@@ -57,12 +66,17 @@ int checkFuncType(char *type)
 
 char *current_scope = NULL;
 
-void set_current_scope(char *scope)
+void free_current_scope()
 {
     if (current_scope != NULL)
     {
         free(current_scope);
     }
+}
+
+void set_current_scope(char *scope)
+{
+    free_current_scope();
     current_scope = malloc(strlen(scope) + 1);
     strcpy(current_scope, scope);
 }

@@ -16,6 +16,7 @@ typedef struct Function_struct
 
 int is_a_function(char *token);
 void add_function(char *name, char *return_type);
+void free_functions();
 int checkFuncType(char *type);
 
 extern Function_struct *functions;
@@ -23,6 +24,7 @@ extern uint32_t functions_count;
 
 void set_current_scope(char *scope);
 char *get_current_scope();
+void free_current_scope();
 
 // parser functions
 void multiple_dereference(FILE *file, char *var, uint8_t reg);

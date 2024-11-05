@@ -16,6 +16,7 @@
 #include "logic/logic.h"
 #include "variables/variables.h"
 #include "parser/parser.h"
+#include "parser/parser_help.h"
 
 /*
 BIG TODO:
@@ -54,6 +55,34 @@ struct Elf32_Phdr
     uint32_t p_flags;  // Segment attributes
     uint32_t p_align;  // Alignment
 };
+
+void cleanup()
+{
+    for (uint32_t i = 0; i < op_codes_array_size; i++)
+    {
+        free(op_codes_array[i].code);
+    }
+    free(op_codes_array);
+
+    // Free fixups
+    for (uint32_t i = 0; i < fixups_array_size; i++)
+    {
+        free(fixups_array[i].symbol_name);
+    }
+    free(fixups_array);
+
+    // Free jump array
+    for (uint32_t i = 0; i < jump_array_size; i++)
+    {
+        free(jump_array[i].var_name);
+    }
+    free_variables_array();
+    free_current_scope();
+    free_uint32s();
+    free_uint32_arrs();
+    free_strings();
+    free_functions();
+}
 
 #define BASE_ADDRESS 0x08048000 // Common base address for 32-bit executables
 

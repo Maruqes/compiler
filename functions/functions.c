@@ -2,6 +2,8 @@
 #include "../types/strings.h"
 #include "../types/uint32.h"
 #include "../arithmetic/arithmetic.h"
+#include "../variables/variables.h"
+
 
 size_t custom_code_size = 0;
 
@@ -107,27 +109,7 @@ void fixup_addresses()
     }
 }
 
-void cleanup()
-{
-    for (uint32_t i = 0; i < op_codes_array_size; i++)
-    {
-        free(op_codes_array[i].code);
-    }
-    free(op_codes_array);
 
-    // Free fixups
-    for (uint32_t i = 0; i < fixups_array_size; i++)
-    {
-        free(fixups_array[i].symbol_name);
-    }
-    free(fixups_array);
-
-    // Free jump array
-    for (uint32_t i = 0; i < jump_array_size; i++)
-    {
-        free(jump_array[i].var_name);
-    }
-}
 
 // MOV code FUNCTIONS
 
@@ -294,10 +276,13 @@ void write_all_custom_code(int __fd)
     for (int i = 0; i < op_codes_array_size; i++)
     {
         ssize_t bytes_written = write(__fd, op_codes_array[i].code, op_codes_array[i].size);
-        if (bytes_written == -1) {
+        if (bytes_written == -1)
+        {
             perror("Failed to write opcode to file");
             exit(EXIT_FAILURE);
-        } else if (bytes_written != op_codes_array[i].size) {
+        }
+        else if (bytes_written != op_codes_array[i].size)
+        {
             fprintf(stderr, "Partial write occurred\n");
             exit(EXIT_FAILURE);
         }

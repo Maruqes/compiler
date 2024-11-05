@@ -185,5 +185,6 @@ void parse_int_array_creation(FILE *file, char *token, uint32_t arr_size)
 
     // dont free name because it will be used by constant_uint32_arr
     free(val);
+    free(arr);
     free(token);
 }

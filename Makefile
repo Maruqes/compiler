@@ -5,7 +5,7 @@ SOURCES = main.c functions/functions.c types/strings.c types/uint32.c \
 		  parser/parser.c parser/parser_help.c parser/int/parser_int.c
 
 
-run: check
+run:
 	gcc $(SOURCES) -lm -Og -g -o a.out
 	./a.out
 

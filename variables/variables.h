@@ -17,11 +17,11 @@ typedef struct Variable
 } Variable;
 
 void create_var(char *symbol, uint32_t size);
+void free_variables_array();
 void create_new_stack();
 void restore_stack();
 
 void set_var_with_reg(char *symbol, uint8_t reg);
-
 
 void set_var(char *symbol, uint32_t value);
 void get_var(uint8_t reg, char *symbol);

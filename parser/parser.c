@@ -345,6 +345,7 @@ void parse_while(FILE *file, char *token)
     free(token);
 
     free(temp_label_name);
+    free(temp_label_name_end);
 }
 
 void parse_create_constant(FILE *file, char *token)
