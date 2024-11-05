@@ -84,7 +84,11 @@ int is_a_string_beforeconstant(char *token)
 
 void free_strings()
 {
-    free(constant_strings);
 
+    for (size_t i = 0; i < constant_string_count_before; i++)
+    {
+        free(constant_strings_before[i].var_value);
+    }
+    free(constant_strings);
     free(constant_strings_before);
 }
