@@ -76,6 +76,8 @@ void cleanup()
     {
         free(jump_array[i].var_name);
     }
+    free(jump_array);
+    
     free_variables_array();
     free_current_scope();
     free_uint32s();

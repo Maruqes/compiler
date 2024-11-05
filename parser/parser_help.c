@@ -246,7 +246,7 @@ void parse_after_equal(FILE *file)
     }
 
     parse_data_types(file, next_token, REG_EAX);
-
+    free(next_token);
     next_token = get_token(file);
     while (next_token[0] != ';')
     {
@@ -298,6 +298,7 @@ void parse_after_equal(FILE *file)
             exit(1);
         }
         pop_reg(REG_EBX);
+        free(next_token);
         next_token = get_token(file);
     }
 

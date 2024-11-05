@@ -353,13 +353,15 @@ void parse_create_constant(FILE *file, char *token)
     // can be -> const int a = 10;  const string a = "hello";
     char *type = get_token(file);
     char *name = get_token(file);
-    get_token(file); // skip '='
+    char *to_free = get_token(file); // skip '='
+    free(to_free);
     char *value = get_token(file);
 
     if (strcmp(type, "int32") == 0)
     {
         printf("Creating uint32 %s with value %s\n", name, value);
         create_constant_uint32_before(name, atoi(value));
+        free(value);
     }
     else if (strcmp(type, "string") == 0)
     {
