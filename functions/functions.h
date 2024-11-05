@@ -64,6 +64,8 @@ void our_syscall();
 void add_custom_code_size();
 void write_all_custom_code(int __fd);
 
+void free_fixups();
+
 // ALL OF VARS HERE ARE REALLY CONSTANTS IN THE DATA SECTION (that can be actually changed using mov_var_from_reg32)
 
 // mov reg, var        //the actual address of the variable

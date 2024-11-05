@@ -4,7 +4,6 @@
 #include "../arithmetic/arithmetic.h"
 #include "../variables/variables.h"
 
-
 size_t custom_code_size = 0;
 
 OpCode *op_codes_array = NULL;    // Dynamic array of opcodes
@@ -108,8 +107,6 @@ void fixup_addresses()
         memcpy(&op_codes_array[fixup.opcode_index].code[fixup.offset_in_opcode], &symbol_address, sizeof(symbol_address));
     }
 }
-
-
 
 // MOV code FUNCTIONS
 
