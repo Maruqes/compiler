@@ -81,6 +81,7 @@ void parse_create_int(FILE *file)
     }
     else if (name[0] == '[')
     {
+        // creating int arr
         char *size = get_token(file); // get the ']'
         char *p = get_token(file);    // get the ']'
         if (p[0] != ']')
@@ -88,7 +89,13 @@ void parse_create_int(FILE *file)
             printf("Error: Expected ']'\n");
             exit(1);
         }
-        parse_int_array_creation(file, name, atoi(size));
+        if (!isdigit(size[0]))
+        {
+            printf("Error: Expected a number\n");
+            exit(1);
+        }
+        uint32_t arr_size = atoi(size);
+        parse_int_array_creation(file, name, arr_size);
 
         free(size);
         free(p);
@@ -113,8 +120,43 @@ void parse_create_int(FILE *file)
 
 void parse_int_setter(FILE *file, char *token)
 {
-    char *to_free = get_token(file); // skip '='
-    free(to_free);
+    char *op_type = get_token(file); // skip
+    if (op_type[0] != '=')
+    {
+        if (op_type[0] == '+')
+        {
+            char *op_type_next = get_token(file);
+            get_check_free_semicolon(file);
+            if (op_type_next[0] == '+')
+            {
+                get_var(REG_EAX, token);
+                inc_reg32(REG_EAX);
+                set_var_with_reg(token, REG_EAX);
+                free(op_type);
+                free(op_type_next);
+                free(token);
+                return;
+            }
+        }
+        else if (op_type[0] == '-')
+        {
+            char *op_type_next = get_token(file);
+            get_check_free_semicolon(file);
+            if (op_type_next[0] == '-')
+            {
+                get_var(REG_EAX, token);
+                dec_reg32(REG_EAX);
+                set_var_with_reg(token, REG_EAX);
+                free(op_type);
+                free(op_type_next);
+                free(token);
+                return;
+            }
+        }
+        printf("Error: Expected '=' '++' '--'\n");
+        exit(1);
+    }
+    free(op_type);
 
     parse_after_equal(file);
     set_var_with_reg(token, REG_EAX);

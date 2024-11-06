@@ -19,6 +19,18 @@
 Function_struct *functions;
 uint32_t functions_count = 0;
 
+int get_check_free_semicolon(FILE *f)
+{
+    char *token = get_token(f);
+    if (token[0] != ';')
+    {
+        printf("Error: Expected ';'\n");
+        exit(1);
+    }
+    free(token);
+    return 1;
+}
+
 int is_a_function(char *token)
 {
     for (int i = 0; i < functions_count; i++)

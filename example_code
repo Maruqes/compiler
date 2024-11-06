@@ -14,7 +14,7 @@ func int test_whiles(){
 
 func int test_fors(){
     int a = 0;
-    for int i = 0; i < 10; i = i + 1;{
+    for int i = 0; i < 10; i++;{
         a = a + 1;
     }
     return a;
@@ -30,7 +30,7 @@ func int test_ifs(){
 
 func int test_arrays_int(){
     int[5] arrHEHE = {5, 4, 3, 2, 10};
-    for int i = 0; i < 5; i = i + 1;{
+    for int i = 0; i < 5; i++;{
         arrHEHE[i] = 2 + 1 - 1;
     }
     return arrHEHE[0] + arrHEHE[1] + arrHEHE[2] + arrHEHE[3] + arrHEHE[4];
@@ -60,7 +60,9 @@ func int name()
     result = result + test_ifs;
     result = result + test_arrays_int;
     result = result + test_deaddressing;
-    
+        
+    result++;    
+    result--;    
 
     return result;
 }

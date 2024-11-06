@@ -19,6 +19,8 @@ void add_function(char *name, char *return_type);
 void free_functions();
 int checkFuncType(char *type);
 
+int get_check_free_semicolon(FILE *f);
+
 extern Function_struct *functions;
 extern uint32_t functions_count;
 

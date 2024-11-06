@@ -28,7 +28,7 @@ extra dar acesso a umas funcs ai do assembly mm
 negative numbers
 function params
 ands ors not etc
-
+incrementation/decrementation
 
 functions -> feito ja tem returns de ints
 whiles-> feito
@@ -269,8 +269,7 @@ void parse_fors(FILE *file)
     char *right_condition = get_token(file);
     printf("for %s %s %s\n", left_condition, condition, right_condition); // i < 10;
 
-    char *to_free = get_token(file); // skip ';'
-    free(to_free);
+    get_check_free_semicolon(file);
 
     char *for1Label = create_temp_label();
     char *for2Label = create_temp_label();
