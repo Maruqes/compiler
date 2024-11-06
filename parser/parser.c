@@ -18,20 +18,15 @@
 /*
 todo crl
 
-feito convem testart melhor:
-    isolar stack de cada funcao (ja é isolada mas isolar o nome das variaveis, arr das vars é global)
-    criar o resto das condicoes para os whiles fors etc
-
-contantes para string e int
-arrays
 extra dar acesso a umas funcs ai do assembly mm
-negative numbers
 function params
 ands ors not etc
-incrementation/decrementation
 
 functions -> feito ja tem returns de ints
-whiles-> feito
+arrays
+negative numbers
+incrementation/decrementation
+contantes para string e int
 */
 
 char *funcs_tokens[] = {"func", "endfunc", "return", "for", "endfor"};
