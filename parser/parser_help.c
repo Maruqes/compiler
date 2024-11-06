@@ -87,6 +87,7 @@ char *get_current_scope()
 }
 
 // will get something like int *****a = &b; and return the value of *****b, go to the root of the pointers
+// this should free var;
 void multiple_dereference(FILE *file, char *var, uint8_t reg)
 {
     if (reg == REG_EDX)
@@ -99,6 +100,7 @@ void multiple_dereference(FILE *file, char *var, uint8_t reg)
 
     while (var[0] == '*')
     {
+        free(var);
         var = get_token(file);
         number_of_dereferences++;
     }
@@ -112,6 +114,7 @@ void multiple_dereference(FILE *file, char *var, uint8_t reg)
     }
 
     mov_reg_reg_with_offset(reg, REG_EBP, REG_ECX);
+    free(var);
 }
 
 // will parse normal ints/poinetrs functions and vars
@@ -141,7 +144,6 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
     {
         char *var = get_token(file);
         multiple_dereference(file, var, reg);
-        free(var);
     }
     else if (token[0] == '&')
     {
@@ -317,6 +319,7 @@ void parse_inside_bracets_for_arrays(FILE *file)
 
     parse_data_types(file, next_token, REG_EAX);
 
+    free(next_token);
     next_token = get_token(file);
     while (next_token[0] != ']')
     {
@@ -361,6 +364,7 @@ void parse_inside_bracets_for_arrays(FILE *file)
             printf("Error: Expected operator\n");
             exit(1);
         }
+        free(next_token);
         next_token = get_token(file);
     }
 

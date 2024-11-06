@@ -23,7 +23,8 @@ void parse_int_array_creation(FILE *file, char *token, uint32_t arr_size);
 void parse_create_int_pointer(FILE *file, char *token)
 {
     char *name = get_token(file);
-    get_token(file); // skip '='
+    char *to_free = get_token(file); // skip '='
+    free(to_free);
 
     if (does_var_exist(name))
     {
@@ -70,7 +71,7 @@ void parse_set_value_in_the_pointer_address(FILE *file)
 }
 
 // normal ints
-void parse_create_int(FILE *file, char *token)
+void parse_create_int(FILE *file)
 {
     char *name = get_token(file);
     if (name[0] == '*')
@@ -93,7 +94,8 @@ void parse_create_int(FILE *file, char *token)
         free(p);
         return;
     }
-    get_token(file); // skip '='
+    char *to_free = get_token(file); // skip '='
+    free(to_free);
 
     if (does_var_exist(name))
     {
@@ -107,12 +109,12 @@ void parse_create_int(FILE *file, char *token)
     set_var_with_reg(name, REG_EAX);
 
     free(name);
-    free(token);
 }
 
 void parse_int_setter(FILE *file, char *token)
 {
-    get_token(file); // skip '='
+    char *to_free = get_token(file); // skip '='
+    free(to_free);
 
     parse_after_equal(file);
     set_var_with_reg(token, REG_EAX);
@@ -136,9 +138,10 @@ void parse_int_array_value_setter(FILE *file, char *arr_var_name)
     mov_reg32_reg32(REG_ECX, REG_EAX);
 
     mov_edx(4);
-    mul_reg32(REG_ECX, REG_EDX); // ecx = ecx * 4  precisa porque o offset é em INT (4 bytes)
-                                 // melhor explicado em func: "parse_string_array_value_setter" parset_help.c
-    get_token(file);             // skip '='
+    mul_reg32(REG_ECX, REG_EDX);     // ecx = ecx * 4  precisa porque o offset é em INT (4 bytes)
+                                     // melhor explicado em func: "parse_string_array_value_setter" parset_help.c
+    char *to_free = get_token(file); // skip '='
+    free(to_free);
     parse_after_equal(file);
 
     mov_var_from_reg32_offREG(REG_EAX, arr_var_name, REG_ECX);
@@ -152,7 +155,8 @@ void parse_int_array_value_setter(FILE *file, char *arr_var_name)
 void parse_int_array_creation(FILE *file, char *token, uint32_t arr_size)
 {
     char *name = get_token(file);
-    get_token(file); // skip '='
+    char *to_free = get_token(file); // skip '='
+    free(to_free);
 
     printf("int[%u] %s\n", arr_size, name);
 
@@ -164,6 +168,8 @@ void parse_int_array_creation(FILE *file, char *token, uint32_t arr_size)
     }
 
     uint32_t i = 0;
+
+    free(val);
     val = get_token(file);
 
     uint32_t *arr = malloc(sizeof(uint32_t) * arr_size);
@@ -172,12 +178,14 @@ void parse_int_array_creation(FILE *file, char *token, uint32_t arr_size)
     {
         if (val[0] == ',')
         {
+            free(val);
             val = get_token(file);
         }
 
         printf("int %s[%u] = %s\n", name, i, val);
         arr[i] = atoi(val);
         i++;
+        free(val);
         val = get_token(file);
     }
 

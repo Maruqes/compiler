@@ -194,7 +194,7 @@ char *get_token(FILE *fp)
     return NULL;
 }
 
-void parse_create_function(FILE *file, char *token)
+void parse_create_function(FILE *file)
 {
     char *type = get_token(file);
     if (checkFuncType(type) == 1)
@@ -215,11 +215,10 @@ void parse_create_function(FILE *file, char *token)
 
     free(type);
     free(name);
-    free(token);
 }
 
 // return in EAX
-void parse_create_return(FILE *file, char *token)
+void parse_create_return(FILE *file)
 {
     parse_after_equal(file);
 
@@ -227,11 +226,9 @@ void parse_create_return(FILE *file, char *token)
 
     restore_stack();
     ret();
-
-    free(token);
 }
 
-void parse_ifs(FILE *file, char *token)
+void parse_ifs(FILE *file)
 {
     char *left_condition = get_token(file);
     char *condition = get_token(file);
@@ -247,7 +244,7 @@ void parse_ifs(FILE *file, char *token)
     cmp_reg32(REG_EAX, REG_EBX);
     create_comparion_bytes(condition, temp_label_name);
 
-    token = get_token(file);
+    char *token = get_token(file);
     while (strcmp(token, "}") != 0)
     {
         parse_it(token, file);
@@ -262,9 +259,9 @@ void parse_ifs(FILE *file, char *token)
     free(temp_label_name);
 }
 
-void parse_fors(FILE *file, char *token)
+void parse_fors(FILE *file)
 {
-    token = get_token(file);
+    char *token = get_token(file);
     parse_it(token, file); // for i = 0;
 
     char *left_condition = get_token(file);
@@ -272,7 +269,8 @@ void parse_fors(FILE *file, char *token)
     char *right_condition = get_token(file);
     printf("for %s %s %s\n", left_condition, condition, right_condition); // i < 10;
 
-    get_token(file); // skip ';'
+    char *to_free = get_token(file); // skip ';'
+    free(to_free);
 
     char *for1Label = create_temp_label();
     char *for2Label = create_temp_label();
@@ -311,7 +309,7 @@ void parse_fors(FILE *file, char *token)
     free(endfor);
 }
 
-void parse_while(FILE *file, char *token)
+void parse_while(FILE *file)
 {
     char *left_condition = get_token(file);
     char *condition = get_token(file);
@@ -330,7 +328,7 @@ void parse_while(FILE *file, char *token)
     cmp_reg32(REG_EAX, REG_EBX);
     create_comparion_bytes(condition, temp_label_name_end);
 
-    token = get_token(file);
+    char *token = get_token(file);
     while (strcmp(token, "}") != 0)
     {
         parse_it(token, file);
@@ -348,7 +346,7 @@ void parse_while(FILE *file, char *token)
     free(temp_label_name_end);
 }
 
-void parse_create_constant(FILE *file, char *token)
+void parse_create_constant(FILE *file)
 {
     // can be -> const int a = 10;  const string a = "hello";
     char *type = get_token(file);
@@ -375,53 +373,60 @@ void parse_create_constant(FILE *file, char *token)
     }
     // dont free name and value because they are used in the constant
     free(type);
-    free(token);
 }
 
+// should free token;
 int parse_it(char *token, FILE *file)
 {
     if (strcmp(token, "func") == 0)
     {
-        parse_create_function(file, token);
+        parse_create_function(file);
+        free(token);
         return 1;
     }
 
     if (strcmp(token, "return") == 0)
     {
-        parse_create_return(file, token);
+        parse_create_return(file);
+        free(token);
         return 1;
     }
 
     if (strcmp(token, "int") == 0)
     {
-        parse_create_int(file, token);
+        parse_create_int(file);
+        free(token);
         return 1;
     }
 
     if (strcmp(token, "const") == 0)
     {
-        parse_create_constant(file, token);
+        parse_create_constant(file);
+        free(token);
         return 1;
     }
 
     // conditionals
     if (strcmp(token, "if") == 0)
     {
-        parse_ifs(file, token);
+        parse_ifs(file);
+        free(token);
         return 1;
     }
 
     if (strcmp(token, "for") == 0)
     {
         printf("\n\n\nFOR LOOP\n");
-        parse_fors(file, token);
+        parse_fors(file);
+        free(token);
         return 1;
     }
 
     if (strcmp(token, "while") == 0)
     {
         printf("\n\n\nWHILE LOOP\n");
-        parse_while(file, token);
+        parse_while(file);
+        free(token);
         return 1;
     }
 
@@ -436,6 +441,7 @@ int parse_it(char *token, FILE *file)
     {
         printf("Calling function %s\n", token);
         call(token);
+        free(token);
         return 1;
     }
 
@@ -487,7 +493,7 @@ void start_parsing(char *filename)
     char *token;
     while ((token = get_token(file)) != NULL)
     {
-        if (parse_it(token, file) == 1)
+        if (parse_it(token, file) == 0)
         {
         }
     }

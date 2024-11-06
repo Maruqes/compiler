@@ -88,6 +88,7 @@ void free_strings()
     for (size_t i = 0; i < constant_string_count_before; i++)
     {
         free(constant_strings_before[i].var_value);
+        free(constant_strings_before[i].var_name);
     }
     free(constant_strings);
     free(constant_strings_before);

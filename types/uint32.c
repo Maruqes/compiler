@@ -158,6 +158,7 @@ void free_uint32_arrs()
     for (size_t i = 0; i < constant_uint32_arr_count_before; i++)
     {
         free(constant_uint32_arrs_before[i].var_values);
+        free(constant_uint32_arrs_before[i].var_name);
     }
     free(constant_uint32_arrs_before);
 
