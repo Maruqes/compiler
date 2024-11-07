@@ -22,6 +22,9 @@ extra dar acesso a umas funcs ai do assembly mm
 function params
 ands ors not etc
 
+se as vars do escopo atual ja nao forem usadas(foram usadas num if for exemplo) dar chance de reutilizar
+pensar em varios ifs nested
+
 functions -> feito ja tem returns de ints
 arrays
 negative numbers
