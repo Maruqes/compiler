@@ -54,6 +54,8 @@ func int name()
 {
     int result = 0;
 
+    int mds = 60;
+
     result = result + test;
     result = result + test_whiles;
     result = result + test_fors;
@@ -64,5 +66,5 @@ func int name()
     result++;    
     result--;    
 
-    return result;
+    return mds;
 }
