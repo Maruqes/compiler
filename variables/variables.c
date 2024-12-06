@@ -5,12 +5,71 @@
 #include "../arithmetic/arithmetic.h"
 #include "../parser/parser_help.h"
 
-Variable *variables_array = NULL;
-uint32_t variables_array_size = 0;
-uint64_t variables_size = 0;
+typedef struct Scope_var
+{
+    Variable *variables_array;
+    uint32_t variables_array_size;
+    uint64_t variables_size;
+    char *scope;
+} Scope_var;
+
+Scope_var *scopes_array;
+uint32_t scopes_array_size = 0;
+
+void create_new_scope_var(char *scope)
+{
+    // Check if the scope already exists
+    for (uint32_t i = 0; i < scopes_array_size; i++)
+    {
+        if (strcmp(scope, scopes_array[i].scope) == 0)
+        {
+            printf("Scope %s already exists probably function with same name\n", scope);
+            exit(1);
+            return;
+        }
+    }
+
+    // Create a new scope
+    Scope_var new_scope;
+    new_scope.scope = malloc(strlen(scope) + 1);
+    if (!new_scope.scope)
+    {
+        perror("Failed to allocate memory for new_scope.scope");
+        exit(EXIT_FAILURE);
+    }
+    strcpy(new_scope.scope, scope);
+    new_scope.variables_array = NULL;
+    new_scope.variables_array_size = 0;
+    new_scope.variables_size = 0;
+
+    scopes_array = realloc(scopes_array,
+                           (scopes_array_size + 1) * sizeof(Scope_var));
+    if (!scopes_array)
+    {
+        perror("Failed to reallocate memory for scopes_array");
+        exit(EXIT_FAILURE);
+    }
+    scopes_array[scopes_array_size++] = new_scope;
+}
+
+Scope_var *get_scope_var(char *scope)
+{
+    for (uint32_t i = 0; i < scopes_array_size; i++)
+    {
+        if (strcmp(scope, scopes_array[i].scope) == 0)
+        {
+            return &scopes_array[i];
+        }
+    }
+
+    fprintf(stderr, "Error: Scope %s not found\n", scope);
+    exit(EXIT_FAILURE);
+}
 
 void add_var_to_array(char *symbol, uint32_t size, char *scope)
 {
+    Scope_var *current_scope = get_scope_var(scope);
+
     Variable new_var;
     new_var.symbol = malloc(strlen(symbol) + 1);
     if (!new_var.symbol)
@@ -20,7 +79,7 @@ void add_var_to_array(char *symbol, uint32_t size, char *scope)
     }
     strcpy(new_var.symbol, symbol);
     new_var.size = size;
-    new_var.offset = variables_size + size;
+    new_var.offset = current_scope->variables_size + size;
 
     if (scope)
     {
@@ -37,29 +96,33 @@ void add_var_to_array(char *symbol, uint32_t size, char *scope)
         new_var.scope = NULL;
     }
 
-    variables_array = realloc(variables_array,
-                              (variables_array_size + 1) * sizeof(Variable));
-    if (!variables_array)
+    current_scope->variables_array = realloc(current_scope->variables_array,
+                                             (current_scope->variables_array_size + 1) * sizeof(Variable));
+    if (!current_scope->variables_array)
     {
         perror("Failed to reallocate memory for variables_array");
         exit(EXIT_FAILURE);
     }
-    variables_array[variables_array_size++] = new_var;
+    current_scope->variables_array[current_scope->variables_array_size++] = new_var;
 
-    variables_size += size;
+    current_scope->variables_size += size;
 }
 
 void free_variables_array()
 {
-    for (uint32_t i = 0; i < variables_array_size; i++)
+    for (uint32_t i = 0; i < scopes_array_size; i++)
     {
-        free(variables_array[i].symbol);
-        if (variables_array[i].scope)
+        for (uint32_t j = 0; j < scopes_array[i].variables_array_size; j++)
         {
-            free(variables_array[i].scope);
+            free(scopes_array[i].variables_array[j].symbol);
+            if (scopes_array[i].variables_array[j].scope)
+            {
+                free(scopes_array[i].variables_array[j].scope);
+            }
         }
+        free(scopes_array[i].variables_array);
+        free(scopes_array[i].scope);
     }
-    free(variables_array);
 }
 
 void create_var(char *symbol, uint32_t size)
@@ -78,12 +141,16 @@ void create_var(char *symbol, uint32_t size)
 
 void set_var(char *symbol, uint32_t value)
 {
-    for (uint32_t i = 0; i < variables_array_size; i++)
+
+    for (uint32_t i = 0; i < scopes_array_size; i++)
     {
-        if (strcmp(symbol, variables_array[i].symbol) == 0 && strcmp(variables_array[i].scope, get_current_scope()) == 0)
+        for (uint32_t j = 0; j < scopes_array[i].variables_array_size; j++)
         {
-            mov_reg_offset_value(REG_EBP, -variables_array[i].offset, value);
-            return;
+            if (strcmp(symbol, scopes_array[i].variables_array[j].symbol) == 0 && strcmp(scopes_array[i].variables_array[j].scope, get_current_scope()) == 0)
+            {
+                mov_reg_offset_value(REG_EBP, -scopes_array[i].variables_array[j].offset, value);
+                return;
+            }
         }
     }
 
@@ -93,13 +160,15 @@ void set_var(char *symbol, uint32_t value)
 
 void set_var_with_reg(char *symbol, uint8_t reg)
 {
-    for (uint32_t i = 0; i < variables_array_size; i++)
+    for (uint32_t i = 0; i < scopes_array_size; i++)
     {
-        if (strcmp(symbol, variables_array[i].symbol) == 0 &&
-            strcmp(variables_array[i].scope, get_current_scope()) == 0)
+        for (uint32_t j = 0; j < scopes_array[i].variables_array_size; j++)
         {
-            mov_reg_offset_reg2(REG_EBP, -variables_array[i].offset, reg);
-            return;
+            if (strcmp(symbol, scopes_array[i].variables_array[j].symbol) == 0 && strcmp(scopes_array[i].variables_array[j].scope, get_current_scope()) == 0)
+            {
+                mov_reg_offset_reg2(REG_EBP, -scopes_array[i].variables_array[j].offset, reg);
+                return;
+            }
         }
     }
 
@@ -109,13 +178,16 @@ void set_var_with_reg(char *symbol, uint8_t reg)
 
 void get_var(uint8_t reg, char *symbol)
 {
-    for (uint32_t i = 0; i < variables_array_size; i++)
+
+    for (uint32_t i = 0; i < scopes_array_size; i++)
     {
-        if (strcmp(symbol, variables_array[i].symbol) == 0 &&
-            strcmp(variables_array[i].scope, get_current_scope()) == 0)
+        for (uint32_t j = 0; j < scopes_array[i].variables_array_size; j++)
         {
-            mov_reg_reg_offset(reg, REG_EBP, -variables_array[i].offset);
-            return;
+            if (strcmp(symbol, scopes_array[i].variables_array[j].symbol) == 0 && strcmp(scopes_array[i].variables_array[j].scope, get_current_scope()) == 0)
+            {
+                mov_reg_reg_offset(reg, REG_EBP, -scopes_array[i].variables_array[j].offset);
+                return;
+            }
         }
     }
 
@@ -125,12 +197,15 @@ void get_var(uint8_t reg, char *symbol)
 
 int does_var_exist(char *symbol)
 {
-    for (uint32_t i = 0; i < variables_array_size; i++)
+    for (uint32_t i = 0; i < scopes_array_size; i++)
     {
-        if (strcmp(symbol, variables_array[i].symbol) == 0 &&
-            strcmp(variables_array[i].scope, get_current_scope()) == 0)
+        for (uint32_t j = 0; j < scopes_array[i].variables_array_size; j++)
         {
-            return 1;
+            if (strcmp(symbol, scopes_array[i].variables_array[j].symbol) == 0 &&
+                strcmp(scopes_array[i].variables_array[j].scope, get_current_scope()) == 0)
+            {
+                return 1;
+            }
         }
     }
 
@@ -139,12 +214,15 @@ int does_var_exist(char *symbol)
 
 Variable return_var_struct(char *symbol)
 {
-    for (uint32_t i = 0; i < variables_array_size; i++)
+    for (uint32_t i = 0; i < scopes_array_size; i++)
     {
-        if (strcmp(symbol, variables_array[i].symbol) == 0 &&
-            strcmp(variables_array[i].scope, get_current_scope()) == 0)
+        for (uint32_t j = 0; j < scopes_array[i].variables_array_size; j++)
         {
-            return variables_array[i];
+            if (strcmp(symbol, scopes_array[i].variables_array[j].symbol) == 0 &&
+                strcmp(scopes_array[i].variables_array[j].scope, get_current_scope()) == 0)
+            {
+                return scopes_array[i].variables_array[j];
+            }
         }
     }
 

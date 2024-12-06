@@ -77,7 +77,7 @@ void cleanup()
         free(jump_array[i].var_name);
     }
     free(jump_array);
-    
+
     free_variables_array();
     free_current_scope();
     free_uint32s();
@@ -110,9 +110,7 @@ int main()
     create_label("start");
     call("name");
 
-    print("testS", 6);
-
-    mov_ebx(60);
+    mov_ebx(130);
     cmp_reg32(REG_EAX, REG_EBX);
     jump_if_not_equal("notequal");
     print("msg", 9);
@@ -170,8 +168,8 @@ int main()
     fix_before_uint32s(phdr.p_vaddr + custom_code_size + data_size);
 
     // All uint32 arrays
-    // uint32_t arr[] = {1, 2, 3, 4, 10};
-    // create_constant_uint32_arr("arr132", arr, phdr.p_vaddr + custom_code_size + data_size, 5);
+    uint32_t params_arr[4096] = {0};
+    create_constant_uint32_arr("params_arr", params_arr, phdr.p_vaddr + custom_code_size + data_size, 5);
     fix_before_uint32_arrs(phdr.p_vaddr + custom_code_size + data_size);
 
     fix_label_addresses(phdr.p_vaddr);

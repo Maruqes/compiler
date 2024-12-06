@@ -192,6 +192,50 @@ char *get_token(FILE *fp)
     return NULL;
 }
 
+void get_params(FILE *file)
+{
+    char *token = get_token(file);
+    free(token);
+
+    int params_count = 0;
+
+    token = get_token(file);
+    while (strcmp(token, ")") != 0)
+    {
+        if (strcmp(token, ",") == 0)
+        {
+            free(token);
+            token = get_token(file);
+        }
+
+        if (strcmp(token, "int") == 0)
+        {
+            char *name = get_token(file);
+
+            if (name[0] == '*')
+            {
+                free(name);
+                name = get_token(file);
+            }
+            printf("param %s\n", name);
+            create_var(name, 4);
+            mov_reg32_from_var(REG_EDX, "params_arr", params_count * 4);
+            set_var_with_reg(name, REG_EDX);
+            params_count++;
+
+            free(name);
+        }
+        else
+        {
+            printf("Error:  Unknown param get_params %s\n", token);
+            exit(1);
+        }
+        free(token);
+        token = get_token(file);
+    }
+    free(token);
+}
+
 void parse_create_function(FILE *file)
 {
     char *type = get_token(file);
@@ -208,8 +252,9 @@ void parse_create_function(FILE *file)
     create_new_stack();
 
     add_function(name, type);
-
     set_current_scope(name);
+
+    get_params(file);
 
     free(type);
     free(name);
@@ -236,10 +281,10 @@ void parse_ifs(FILE *file)
 
     printf("if %s %s %s\n", left_condition, condition, right_condition);
 
-    parse_data_types(file, left_condition, REG_EAX);
+    parse_data_types(file, left_condition, REG_EDX);
     parse_data_types(file, right_condition, REG_EBX);
 
-    cmp_reg32(REG_EAX, REG_EBX);
+    cmp_reg32(REG_EDX, REG_EBX);
     create_comparion_bytes(condition, temp_label_name);
 
     char *token = get_token(file);
@@ -281,10 +326,10 @@ void parse_fors(FILE *file)
 
     create_label(for2Label);
 
-    parse_data_types(file, left_condition, REG_EAX);
+    parse_data_types(file, left_condition, REG_EDX);
     parse_data_types(file, right_condition, REG_EBX);
 
-    cmp_reg32(REG_EAX, REG_EBX);
+    cmp_reg32(REG_EDX, REG_EBX);
     create_comparion_bytes(condition, endfor);
 
     token = get_token(file);
@@ -319,10 +364,10 @@ void parse_while(FILE *file)
 
     create_label(temp_label_name);
 
-    parse_data_types(file, left_condition, REG_EAX);
+    parse_data_types(file, left_condition, REG_EDX);
     parse_data_types(file, right_condition, REG_EBX);
 
-    cmp_reg32(REG_EAX, REG_EBX);
+    cmp_reg32(REG_EDX, REG_EBX);
     create_comparion_bytes(condition, temp_label_name_end);
 
     char *token = get_token(file);
@@ -437,7 +482,7 @@ int parse_it(char *token, FILE *file)
     if (is_a_function(token))
     {
         printf("Calling function %s\n", token);
-        call(token);
+        parse_functions(file, token);
         free(token);
         return 1;
     }

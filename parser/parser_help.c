@@ -31,6 +31,42 @@ int get_check_free_semicolon(FILE *f)
     return 1;
 }
 
+// functions
+
+void set_params(FILE *file)
+{
+    char *left_bracket = get_token(file);
+    if (left_bracket[0] != '(')
+    {
+        printf("Error: Expected '('\n");
+        exit(1);
+    }
+    uint32_t params_count = 0;
+    char *token = get_token(file);
+    while (token[0] != ')')
+    {
+        if (token[0] == ',')
+        {
+            free(token);
+            token = get_token(file);
+        }
+        parse_data_types(file, token, REG_EBX);
+        mov_var_from_reg32(REG_EBX, "params_arr", 4 * params_count);
+        params_count++;
+        printf("param\n");
+
+        free(token);
+        token = get_token(file);
+    }
+    free(token);
+}
+
+void parse_functions(FILE *file, char *token)
+{
+    set_params(file);
+    call(token);
+}
+
 int is_a_function(char *token)
 {
     for (int i = 0; i < functions_count; i++)
@@ -91,6 +127,7 @@ void set_current_scope(char *scope)
     free_current_scope();
     current_scope = malloc(strlen(scope) + 1);
     strcpy(current_scope, scope);
+    create_new_scope_var(scope);
 }
 
 char *get_current_scope()
@@ -148,6 +185,12 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
         exit(1);
     }
 
+    if (reg == REG_EAX)
+    {
+        printf("ECX can not be used here func: parse_data_types\n");
+        exit(1);
+    }
+
     if (does_var_exist(token))
     {
         get_var(reg, token);
@@ -183,7 +226,7 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
     else if (is_a_function(token))
     {
         push_eax();
-        call(token);
+        parse_functions(file, token);
         mov_reg32_reg32(reg, REG_EAX);
         pop_eax();
     }
@@ -259,7 +302,9 @@ void parse_after_equal(FILE *file)
         return;
     }
 
-    parse_data_types(file, next_token, REG_EAX);
+    parse_data_types(file, next_token, REG_EBX);
+    mov_reg32_reg32(REG_EAX, REG_EBX);
+
     free(next_token);
     next_token = get_token(file);
     while (next_token[0] != ';')
@@ -308,6 +353,7 @@ void parse_after_equal(FILE *file)
         }
         else
         {
+            printf("Next token: %s\n", next_token);
             printf("Error: Expected operator\n");
             exit(1);
         }
@@ -329,7 +375,8 @@ void parse_inside_bracets_for_arrays(FILE *file)
         exit(1);
     }
 
-    parse_data_types(file, next_token, REG_EAX);
+    parse_data_types(file, next_token, REG_EBX);
+    mov_reg32_reg32(REG_EAX, REG_EBX);
 
     free(next_token);
     next_token = get_token(file);

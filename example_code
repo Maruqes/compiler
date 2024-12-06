@@ -12,33 +12,14 @@ func int test_whiles(){
     return a;
 }
 
-func int test_fors(){
-    int a = 0;
-    for int i = 0; i < 10; i++;{
-        a = a + 1;
-    }
-    return a;
-}
-
-func int test_ifs(){
-    int a = 0;
-    if a = 0 {
-        a = 10;
-    }
-    return a + 1 - 1;
-}
 
 func int test_arrays_int(){
     int[5] arrHEHE = {5, 4, 3, 2, 10};
     for int i = 0; i < 5; i++;{
         arrHEHE[i] = 2 + 1 - 1;
     }
-    return arrHEHE[0] + arrHEHE[1] + arrHEHE[2] + arrHEHE[3] + arrHEHE[4];
-}
-
-func int test_arrays_arr_string(){
-    const string testS = "Hello\n";
-    return 0;
+    int res = arrHEHE[0] + arrHEHE[1] + arrHEHE[2] + arrHEHE[3] + arrHEHE[4];
+    return res;
 }
 
 func int test_deaddressing(){
@@ -49,22 +30,60 @@ func int test_deaddressing(){
     return ***d;
 }
 
+func int test_ifs(){
+    int a = 0;
+    if a = 0 {
+        a = 10;
+    }
+    return a + 1 - 1;
+}
+
+func int test_arrays_arr_string(){
+    const string testS = "Hello\n";
+    return 0;
+}
+
+func int test_fors(){
+    int a = 0;
+    for int i = 0; i < 10; i++;{
+        a = a + 1;
+    }
+    return a;
+}
+
+func int test_params(int a, int b, int c){
+    return a + b + c;
+}
+
+
+func int testRecursion(int a){
+    if a < 10 {
+        a++;
+        return testRecursion(a);
+    }
+    return a;
+}
 
 func int name()
 {
     int result = 0;
-
+    
     int mds = 60;
 
-    result = result + test;
-    result = result + test_whiles;
-    result = result + test_fors;
-    result = result + test_ifs;
-    result = result + test_arrays_int;
-    result = result + test_deaddressing;
+    int a = 10;
+
+
+    result = result + test();
+    result = result + test_whiles();
+    result = result + test_fors();
+    result = result + test_ifs();
+    result = result + test_arrays_int();
+    result = result + test_deaddressing();
+    result = result + test_params(a,20,30);
+    result = result + testRecursion(1);
         
     result++;    
     result--;    
 
-    return mds;
+    return result;
 }

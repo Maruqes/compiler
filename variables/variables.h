@@ -28,4 +28,6 @@ void get_var(uint8_t reg, char *symbol);
 int does_var_exist(char *symbol);
 Variable return_var_struct(char *symbol);
 
+void create_new_scope_var(char *scope);
+
 #endif // VARIABLES_H

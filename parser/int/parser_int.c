@@ -20,7 +20,7 @@ void parse_after_equal(FILE *file);
 void parse_int_array_creation(FILE *file, char *token, uint32_t arr_size);
 
 // pointers int
-void parse_create_int_pointer(FILE *file, char *token)
+void parse_create_int_pointer(FILE *file, char *token, int after_equal)
 {
     char *name = get_token(file);
     char *to_free = get_token(file); // skip '='
@@ -34,8 +34,11 @@ void parse_create_int_pointer(FILE *file, char *token)
 
     create_var(name, 4);
 
-    parse_after_equal(file);
-    set_var_with_reg(name, REG_EAX);
+    if (after_equal)
+    {
+        parse_after_equal(file);
+        set_var_with_reg(name, REG_EAX);
+    }
 
     printf("int*%s\n", name);
 
@@ -76,7 +79,7 @@ void parse_create_int(FILE *file)
     char *name = get_token(file);
     if (name[0] == '*')
     {
-        parse_create_int_pointer(file, name);
+        parse_create_int_pointer(file, name, 1);
         return;
     }
     else if (name[0] == '[')
