@@ -108,9 +108,9 @@ int main()
     start_parsing("example_code");
 
     create_label("start");
-    call("name");
+    call("main");
 
-    mov_ebx(130);
+    mov_ebx(250);
     cmp_reg32(REG_EAX, REG_EBX);
     jump_if_not_equal("notequal");
     print("msg", 9);

@@ -16,8 +16,6 @@
 #include "parser_help.h"
 #include "int/parser_int.h"
 /*
-todo crl
-
 extra dar acesso a umas funcs ai do assembly mm
 function params
 ands ors not etc
@@ -27,8 +25,6 @@ pensar em varios ifs nested
 
 functions -> feito ja tem returns de ints
 arrays
-negative numbers
-incrementation/decrementation
 contantes para string e int
 */
 

@@ -99,6 +99,11 @@ void fixup_addresses()
 
         if (symbol_address == 0)
         {
+            if (strcmp(fixup.symbol_name, "main") == 0)
+            {
+                fprintf(stderr, "Function main not found\n");
+                exit(EXIT_FAILURE);
+            }
             fprintf(stderr, "Undefined symbol: %s\n", fixup.symbol_name);
             exit(EXIT_FAILURE);
         }
