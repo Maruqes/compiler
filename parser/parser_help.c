@@ -293,21 +293,36 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
     }
 }
 
-// returns in EAX the value of the expression
-void parse_after_equal(FILE *file)
+int cmp_char_charset(char c, char *charset)
+{
+    for (int i = 0; i < strlen(charset); i++)
+    {
+        if (c == charset[i])
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+char *parse_until_charset(FILE *file, char *charset)
 {
     char *next_token = get_token(file);
     if (next_token[0] == ';')
     {
-        return;
+        return next_token;
     }
 
+    if (cmp_char_charset(next_token[0], charset) == 1)
+    {
+        return next_token;
+    }
     parse_data_types(file, next_token, REG_EBX);
     mov_reg32_reg32(REG_EAX, REG_EBX);
 
     free(next_token);
     next_token = get_token(file);
-    while (next_token[0] != ';')
+    while (cmp_char_charset(next_token[0], charset) == 0)
     {
         push_reg(REG_EBX);
         if (next_token[0] == '+')
@@ -362,7 +377,14 @@ void parse_after_equal(FILE *file)
         next_token = get_token(file);
     }
 
-    free(next_token);
+    return next_token;
+}
+
+// returns in EAX the value of the expression
+void parse_after_equal(FILE *file)
+{
+    char *to = parse_until_charset(file, ";\n");
+    free(to);
 }
 
 // returns in EAX whats inside [ ]
