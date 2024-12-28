@@ -22,6 +22,8 @@
 BIG TODO:
     - Fazer documentacao BOUA para isto, exemplo:
         explicar como as variaves funcionam, com o base pointer etc, links para outros docs;
+
+params arithms
 */
 
 // ELF header structure for 32-bit executable
