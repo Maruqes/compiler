@@ -19,6 +19,8 @@
 Function_struct *functions;
 uint32_t functions_count = 0;
 
+char *parse_until_charset(FILE *file, char *charset);
+
 int get_check_free_semicolon(FILE *f)
 {
     char *token = get_token(f);
@@ -31,8 +33,14 @@ int get_check_free_semicolon(FILE *f)
     return 1;
 }
 
-// functions
+void set_param_manually(int *params_count)
+{
+    mov_var_from_reg32(REG_EBX, "params_arr", 4 * (*params_count));
+    (*params_count)++;
+    printf("param\n");
+}
 
+// functions
 void set_params(FILE *file)
 {
     char *left_bracket = get_token(file);
@@ -42,27 +50,28 @@ void set_params(FILE *file)
         exit(1);
     }
     uint32_t params_count = 0;
-    char *token = get_token(file);
-    while (token[0] != ')')
-    {
-        if (token[0] == ',')
-        {
-            free(token);
-            token = get_token(file);
-        }
-        parse_data_types(file, token, REG_EBX);
-        mov_var_from_reg32(REG_EBX, "params_arr", 4 * params_count);
-        params_count++;
-        printf("param\n");
 
-        free(token);
-        token = get_token(file);
+    char *ret_from_func = parse_until_charset(file, "),");
+    if (strcmp(ret_from_func, ")") == 0)
+    {
+        free(ret_from_func);
+        return;
     }
-    free(token);
+    mov_reg32_reg32(REG_EBX, REG_EAX);
+    set_param_manually(&params_count);
+    while (strcmp(ret_from_func, ")") != 0)
+    {
+        ret_from_func = parse_until_charset(file, "),");
+        mov_reg32_reg32(REG_EBX, REG_EAX);
+        set_param_manually(&params_count);
+    }
+
+    free(ret_from_func);
 }
 
 void parse_functions(FILE *file, char *token)
 {
+    printf("Parsing params for func %s\n", token);
     set_params(file);
     call(token);
 }
@@ -307,14 +316,11 @@ int cmp_char_charset(char c, char *charset)
 
 char *parse_until_charset(FILE *file, char *charset)
 {
+    printf("Parsing until charset: %s\n", charset);
     char *next_token = get_token(file);
-    if (next_token[0] == ';')
-    {
-        return next_token;
-    }
-
     if (cmp_char_charset(next_token[0], charset) == 1)
     {
+        printf("End of parsing\n");
         return next_token;
     }
     parse_data_types(file, next_token, REG_EBX);
@@ -376,7 +382,7 @@ char *parse_until_charset(FILE *file, char *charset)
         free(next_token);
         next_token = get_token(file);
     }
-
+    printf("End of parsing\n");
     return next_token;
 }
 
@@ -384,6 +390,7 @@ char *parse_until_charset(FILE *file, char *charset)
 void parse_after_equal(FILE *file)
 {
     char *to = parse_until_charset(file, ";\n");
+    printf("to: %s\n", to);
     free(to);
 }
 

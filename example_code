@@ -51,18 +51,17 @@ func int test_fors(){
     return a;
 }
 
+func int testRecursion(int a){
+    if a < 10 {
+        return testRecursion(a + 1);
+    }
+    return a;
+}
+
 func int test_params(int a, int b, int c){
     return a + b + c;
 }
 
-
-func int testRecursion(int a){
-    if a < 10 {
-        a++;
-        return testRecursion(a);
-    }
-    return a;
-}
 
 func int nestedForLoops(){
     int a = 0;
@@ -106,14 +105,16 @@ func int main()
     int c = 20;
     int *d = &c;
 
+    int mdsquelindo = 100;
 
-    result = result + test();
+
     result = result + test_whiles();
+    result = result + test();
     result = result + test_fors();
     result = result + test_ifs();
     result = result + test_arrays_int();
     result = result + test_deaddressing();
-    result = result + test_params(*b,*d,30);
+    result = result + test_params(*b+1-2+1, *d+60+30-90 + mdsquelindo - mdsquelindo, 30+10-10);
     result = result + testRecursion(1);
     result = result + nestedForLoops();
     result = result + nestedIfs();
