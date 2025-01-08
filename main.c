@@ -23,7 +23,11 @@ BIG TODO:
     - Fazer documentacao BOUA para isto, exemplo:
         explicar como as variaves funcionam, com o base pointer etc, links para outros docs;
 
-params arithms
+
+different data types
+strutcs
+incluir outros ficheiros
+sycalls/assembly
 */
 
 // ELF header structure for 32-bit executable
