@@ -108,6 +108,7 @@ func int main()
     int mdsquelindo = 100;
 
 
+
     result = result + test_whiles();
     result = result + test();
     result = result + test_fors();
@@ -122,7 +123,10 @@ func int main()
 
         
     result++;    
-    result--;    
+    result--;
+    result--;
 
-    return result;
+    asm(mov ebx 250);
+    asm(mov eax ebx);
+    return;
 }

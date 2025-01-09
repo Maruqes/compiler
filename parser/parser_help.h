@@ -38,4 +38,6 @@ void parse_inside_bracets_for_arrays(FILE *file);
 
 // string functions
 void parse_string_array_value_setter(FILE *file, char *arr_var_name);
+
+void parse_asm_function(FILE *file);
 #endif

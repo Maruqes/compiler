@@ -15,6 +15,7 @@
 #include "../variables/variables.h"
 #include "parser_help.h"
 #include "int/parser_int.h"
+#include "../asm_parser/asm_parser.h"
 /*
 extra dar acesso a umas funcs ai do assembly mm
 function params
@@ -465,6 +466,12 @@ int parse_it(char *token, FILE *file)
         printf("\n\n\nWHILE LOOP\n");
         parse_while(file);
         free(token);
+        return 1;
+    }
+
+    if (strcmp(token, "asm") == 0)
+    {
+        parse_asm_function(file);
         return 1;
     }
 
