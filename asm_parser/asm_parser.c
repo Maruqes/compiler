@@ -14,8 +14,17 @@
 #include "../logic/logic.h"
 #include "../variables/variables.h"
 #include "../parser/parser.h"
+
 int convert_string_to_reg(char *reg)
 {
+    if (strcmp(reg, "ebp") == 0)
+    {
+        return REG_EBP;
+    }
+    if (strcmp(reg, "esp") == 0)
+    {
+        return REG_ESP;
+    }
     if (strcmp(reg, "eax") == 0)
     {
         return REG_EAX;
@@ -40,6 +49,63 @@ int convert_string_to_reg(char *reg)
     {
         return REG_EDI;
     }
+    if (strcmp(reg, "ah") == 0)
+    {
+        return REG_AH;
+    }
+    if (strcmp(reg, "bh") == 0)
+    {
+        return REG_BH;
+    }
+    if (strcmp(reg, "ch") == 0)
+    {
+        return REG_CH;
+    }
+    if (strcmp(reg, "dh") == 0)
+    {
+        return REG_DH;
+    }
+    if (strcmp(reg, "al") == 0)
+    {
+        return REG_AL;
+    }
+    if (strcmp(reg, "bl") == 0)
+    {
+        return REG_BL;
+    }
+    if (strcmp(reg, "cl") == 0)
+    {
+        return REG_CL;
+    }
+    if (strcmp(reg, "dl") == 0)
+    {
+        return REG_DL;
+    }
+    if (strcmp(reg, "ax") == 0)
+    {
+        return REG_AX;
+    }
+    if (strcmp(reg, "bx") == 0)
+    {
+        return REG_BX;
+    }
+    if (strcmp(reg, "cx") == 0)
+    {
+        return REG_CX;
+    }
+    if (strcmp(reg, "dx") == 0)
+    {
+        return REG_DX;
+    }
+    if (strcmp(reg, "si") == 0)
+    {
+        return REG_SI;
+    }
+    if (strcmp(reg, "di") == 0)
+    {
+        return REG_DI;
+    }
+
     return -1;
 }
 
@@ -98,7 +164,7 @@ void parse_asm_function(FILE *file)
     }
     tokens_count--;
 
-    if (strcmp(tokens[0], "mov") == 0)
+    if (strcmp(tokens[0], "mov32") == 0)
     {
         if (is_valid_number(tokens[2]))
         {
@@ -111,6 +177,9 @@ void parse_asm_function(FILE *file)
                 printf("Error: Register %s not found\n", tokens[1]);
                 exit(1);
             }
+
+            if (value == 69)
+                value = -1;
 
             mov_reg32(reg, value);
             printf("mov %s, %d\n", tokens[1], value);
@@ -129,6 +198,20 @@ void parse_asm_function(FILE *file)
             mov_reg32_reg32(reg1, reg2);
             printf("mov %s, %s\n", tokens[1], tokens[2]);
         }
+    }
+    else if (strcmp(tokens[0], "syscall") == 0)
+    {
+        our_syscall();
+
+        mov_reg_offset_value(REG_EAX, 0, 65);
+        mov_reg_offset_value(REG_EAX, 1, 66);
+        mov_reg_offset_value(REG_EAX, 2, 67);
+        mov_reg_offset_value(REG_EAX, 3, 10);
+        mov_reg32_reg32(REG_ECX, REG_EAX);
+        mov_eax(4);
+        mov_ebx(1);
+        mov_edx(4);
+        our_syscall();
     }
 
     // Free the tokens array

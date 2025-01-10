@@ -126,7 +126,12 @@ func int main()
     result--;
     result--;
 
-    asm(mov ebx 250);
-    asm(mov eax ebx);
+    asm(mov32 eax 192);
+    asm(mov32 ebx 0);
+    asm(mov32 ecx 1);
+    asm(mov32 edx 3);
+    asm(mov32 esi 34);
+    asm(mov32 edi 69);
+    asm(syscall);
     return;
 }

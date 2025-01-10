@@ -24,6 +24,8 @@ BIG TODO:
         explicar como as variaves funcionam, com o base pointer etc, links para outros docs;
 
 
+por algum fucking motivo tu nao fizeste algo do genero a  -> int c = -1;
+
 different data types
 strutcs
 incluir outros ficheiros
