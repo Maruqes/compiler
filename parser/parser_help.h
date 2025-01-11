@@ -40,4 +40,5 @@ void parse_inside_bracets_for_arrays(FILE *file);
 void parse_string_array_value_setter(FILE *file, char *arr_var_name);
 
 void parse_asm_function(FILE *file);
+int is_valid_number(const char *str);
 #endif

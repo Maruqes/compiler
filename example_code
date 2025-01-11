@@ -94,7 +94,7 @@ func int ret10if10(int a){
 
 func int main()
 {
-    int result = 0;
+    int result = -1;
     
     int mds = 60;
 
@@ -126,12 +126,30 @@ func int main()
     result--;
     result--;
 
+    int testeasm = 4;
+    int testeasm2 = 1;
+
     asm(mov32 eax 192);
     asm(mov32 ebx 0);
     asm(mov32 ecx 1);
     asm(mov32 edx 3);
     asm(mov32 esi 34);
-    asm(mov32 edi 69);
+    asm(mov32 edi -1);
     asm(syscall);
+
+    asm(mov32 ebx eax);
+
+    asm(mov_reg_offset_value ebx 0 65);
+    asm(mov_reg_offset_value ebx 1 66);
+    asm(mov_reg_offset_value ebx 2 67);
+    asm(mov_reg_offset_value ebx 3 10);
+
+    asm(mov32 ecx ebx);
+    asm(mov32 ebx testeasm2);
+    asm(mov32 eax testeasm);
+    asm(mov32 edx 4);
+    asm(syscall);
+
+
     return;
 }

@@ -16,6 +16,32 @@
 #include "parser.h"
 #include "int/parser_int.h"
 
+// Função para validar se a string é um número
+int is_valid_number(const char *str)
+{
+    // Ignorar espaços iniciais
+    while (isspace((unsigned char)*str))
+        str++;
+
+    // Verificar se começa com '+' ou '-'
+    if (*str == '+' || *str == '-')
+        str++;
+
+    // Garantir que pelo menos um dígito está presente
+    if (!isdigit((unsigned char)*str))
+        return 0;
+
+    // Percorrer os restantes caracteres
+    while (*str)
+    {
+        if (!isdigit((unsigned char)*str))
+            return 0;
+        str++;
+    }
+
+    return 1;
+}
+
 Function_struct *functions;
 uint32_t functions_count = 0;
 
@@ -281,18 +307,18 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
     }
     else
     {
-        if (isdigit(token[0]) || (token[0] == '-' && isdigit(token[1])))
+
+        if (is_valid_number(token))
         {
-            if (token[0] == '-')
-            {
-                uint32_t val = atoi(token);
-                mov_reg32(reg, -val);
-            }
-            else
-            {
-                uint32_t val = atoi(token);
-                mov_reg32(reg, val);
-            }
+            uint32_t val = atoi(token);
+            mov_reg32(reg, val);
+        }
+        else if (token[0] == '-')
+        {
+            char *val = get_token(file);
+            uint32_t val_int = atoi(val);
+            mov_reg32(reg, -val_int);
+            free(val);
         }
         else
         {
