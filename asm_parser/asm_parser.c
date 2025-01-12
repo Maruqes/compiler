@@ -213,6 +213,48 @@ void asm_mov_reg_offset_value(FILE *file, char **tokens)
     }
 }
 
+void asm_mov_reg_with_regOffset_reg(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int reg2 = convert_string_to_reg(tokens[2]);
+    int reg3 = convert_string_to_reg(tokens[3]);
+
+    if (reg1 == -1 || reg2 == -1 || reg3 == -1)
+    {
+        printf("Error: Register %s or %s or %s not found\n", tokens[1], tokens[2], tokens[3]);
+        exit(1);
+    }
+
+    mov_reg_with_regOffset_reg(reg1, reg2, reg3);
+    printf("mov [%s + %s], %s\n", tokens[1], tokens[2], tokens[3]);
+}
+
+void asm_inc(FILE *file, char **tokens)
+{
+    int reg = convert_string_to_reg(tokens[1]);
+    if (reg == -1)
+    {
+        printf("Error: Register %s not found\n", tokens[1]);
+        exit(1);
+    }
+
+    inc_reg32(reg);
+    printf("inc %s\n", tokens[1]);
+}
+
+void asm_dec(FILE *file, char **tokens)
+{
+    int reg = convert_string_to_reg(tokens[1]);
+    if (reg == -1)
+    {
+        printf("Error: Register %s not found\n", tokens[1]);
+        exit(1);
+    }
+
+    dec_reg32(reg);
+    printf("dec %s\n", tokens[1]);
+}
+
 void parse_asm_function(FILE *file)
 {
     char *token = get_token(file);
@@ -253,6 +295,18 @@ void parse_asm_function(FILE *file)
     else if (strcmp(tokens[0], "mov_reg_offset_value") == 0)
     {
         asm_mov_reg_offset_value(file, tokens);
+    }
+    else if (strcmp(tokens[0], "mov_reg_with_regOffset_reg") == 0)
+    {
+        asm_mov_reg_with_regOffset_reg(file, tokens);
+    }
+    else if (strcmp(tokens[0], "inc") == 0)
+    {
+        asm_inc(file, tokens);
+    }
+    else if (strcmp(tokens[0], "dec") == 0)
+    {
+        asm_dec(file, tokens);
     }
     else
     {
