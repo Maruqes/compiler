@@ -229,6 +229,22 @@ void asm_mov_reg_with_regOffset_reg(FILE *file, char **tokens)
     printf("mov [%s + %s], %s\n", tokens[1], tokens[2], tokens[3]);
 }
 
+void asm_mov_reg_reg_with_offset(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int reg2 = convert_string_to_reg(tokens[2]);
+    int reg3 = convert_string_to_reg(tokens[3]);
+
+    if (reg1 == -1 || reg2 == -1 || reg3 == -1)
+    {
+        printf("Error: Register %s or %s or %s not found\n", tokens[1], tokens[2], tokens[3]);
+        exit(1);
+    }
+
+    mov_reg_reg_with_offset(reg1, reg2, reg3);
+    printf("mov %s, [%s + %s]\n", tokens[1], tokens[2], tokens[3]);
+}
+
 void asm_inc(FILE *file, char **tokens)
 {
     int reg = convert_string_to_reg(tokens[1]);
@@ -255,6 +271,176 @@ void asm_dec(FILE *file, char **tokens)
     printf("dec %s\n", tokens[1]);
 }
 
+void asm_cmp32(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int reg2 = convert_string_to_reg(tokens[2]);
+    if (reg1 == -1 || reg2 == -1)
+    {
+        printf("Error: Register %s or %s not found\n", tokens[1], tokens[2]);
+        exit(1);
+    }
+
+    cmp_reg32(reg1, reg2);
+    printf("cmp %s, %s\n", tokens[1], tokens[2]);
+}
+
+void asm_push(FILE *file, char **tokens)
+{
+    int reg = convert_string_to_reg(tokens[1]);
+    if (reg == -1)
+    {
+        printf("Error: Register %s not found\n", tokens[1]);
+        exit(1);
+    }
+    push_reg(reg);
+    printf("push %s\n", tokens[1]);
+}
+
+void asm_pop(FILE *file, char **tokens)
+{
+    int reg = convert_string_to_reg(tokens[1]);
+    if (reg == -1)
+    {
+        printf("Error: Register %s not found\n", tokens[1]);
+        exit(1);
+    }
+    pop_reg(reg);
+    printf("pop %s\n", tokens[1]);
+}
+
+int parse_movs(FILE *file, char **tokens)
+{
+    if (strcmp(tokens[0], "mov32") == 0)
+    {
+        asm_mov32(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "syscall") == 0)
+    {
+        our_syscall();
+        return 1;
+    }
+    else if (strcmp(tokens[0], "mov_reg_offset_value") == 0)
+    {
+        asm_mov_reg_offset_value(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "mov_reg_with_regOffset_reg") == 0)
+    {
+        asm_mov_reg_with_regOffset_reg(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "mov_reg_reg_with_offset") == 0)
+    {
+        asm_mov_reg_reg_with_offset(file, tokens);
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+int parse_extras(FILE *file, char **tokens)
+{
+    if (strcmp(tokens[0], "inc") == 0)
+    {
+        asm_inc(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "dec") == 0)
+    {
+        asm_dec(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "push") == 0)
+    {
+        asm_push(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "pop") == 0)
+    {
+        asm_pop(file, tokens);
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+int parse_jumps(FILE *file, char **tokens)
+{
+
+    if (strcmp(tokens[0], "create_label") == 0)
+    {
+        create_label(tokens[1]);
+        printf("create_label %s\n", tokens[1]);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "cmp32") == 0)
+    {
+        asm_cmp32(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "je") == 0)
+    {
+        jump_if_equal(tokens[1]);
+        printf("je %s\n", tokens[1]);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "jne") == 0)
+    {
+        jump_if_not_equal(tokens[1]);
+        printf("jne %s\n", tokens[1]);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "jg") == 0)
+    {
+        jump_if_greater(tokens[1]);
+        printf("jg %s\n", tokens[1]);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "jge") == 0)
+    {
+        jump_if_greater_or_equal(tokens[1]);
+        printf("jge %s\n", tokens[1]);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "jl") == 0)
+    {
+        jump_if_less(tokens[1]);
+        printf("jl %s\n", tokens[1]);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "jle") == 0)
+    {
+        jump_if_less_or_equal(tokens[1]);
+        printf("jle %s\n", tokens[1]);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "jmp") == 0)
+    {
+        jmp(tokens[1]);
+        printf("jmp %s\n", tokens[1]);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "push") == 0)
+    {
+        asm_push(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "pop") == 0)
+    {
+        asm_pop(file, tokens);
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 void parse_asm_function(FILE *file)
 {
     char *token = get_token(file);
@@ -277,6 +463,7 @@ void parse_asm_function(FILE *file)
 
     // remove the (
     free(tokens[0]);
+
     for (size_t i = 0; i < tokens_count - 1; i++)
     {
         tokens[i] = tokens[i + 1];
@@ -284,33 +471,14 @@ void parse_asm_function(FILE *file)
     }
     tokens_count--;
 
-    if (strcmp(tokens[0], "mov32") == 0)
+    int parsed = 0;
+    parsed = parsed || parse_movs(file, tokens);
+    parsed = parsed || parse_extras(file, tokens);
+    parsed = parsed || parse_jumps(file, tokens);
+
+    if (!parsed)
     {
-        asm_mov32(file, tokens);
-    }
-    else if (strcmp(tokens[0], "syscall") == 0)
-    {
-        our_syscall();
-    }
-    else if (strcmp(tokens[0], "mov_reg_offset_value") == 0)
-    {
-        asm_mov_reg_offset_value(file, tokens);
-    }
-    else if (strcmp(tokens[0], "mov_reg_with_regOffset_reg") == 0)
-    {
-        asm_mov_reg_with_regOffset_reg(file, tokens);
-    }
-    else if (strcmp(tokens[0], "inc") == 0)
-    {
-        asm_inc(file, tokens);
-    }
-    else if (strcmp(tokens[0], "dec") == 0)
-    {
-        asm_dec(file, tokens);
-    }
-    else
-    {
-        printf("Error: Function %s not found\n", tokens[0]);
+        printf("Error: Unknown token %s\n", tokens[0]);
         exit(1);
     }
 

@@ -128,6 +128,12 @@ func int main()
     int testeasm = 4;
     int testeasm2 = 1;
 
+    asm(mov32 eax 0);
+
+    asm(create_label testLabel);
+    asm(push eax);
+
+
     asm(mov32 eax 192);
     asm(mov32 ebx 0);
     asm(mov32 ecx 1);
@@ -141,8 +147,13 @@ func int main()
     asm(mov32 ecx 0);
 
 
+
     
     asm(mov_reg_with_regOffset_reg ebx ecx eax);
+
+    asm(mov32 eax 0);
+    asm(mov_reg_reg_with_offset eax ebx ecx);
+
     asm(inc ecx);
     asm(inc eax);
     asm(mov_reg_with_regOffset_reg ebx ecx eax);
@@ -162,6 +173,12 @@ func int main()
     asm(mov32 eax testeasm);
     asm(mov32 edx 5);
     asm(syscall);
+
+    asm(pop eax);
+    asm(inc eax);
+    asm(mov32 ebx 5);
+    asm(cmp32 eax ebx);
+    asm(jne testLabel);
 
 
     return result;
