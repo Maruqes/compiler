@@ -92,6 +92,19 @@ func int ret10if10(int a){
     return 0;
 }
 
+
+func int allocMem1Page(){
+    int pge = 1;
+    asm(mov32 ecx pge);
+    asm(mov32 eax 192);
+    asm(mov32 ebx 0);
+    asm(mov32 edx 3);
+    asm(mov32 esi 34);
+    asm(mov32 edi -1);
+    asm(syscall);
+    return;
+}
+
 func int main()
 {
     int result = -1 + 1;
@@ -125,6 +138,7 @@ func int main()
     result++;    
     result--;
 
+    
     int testeasm = 4;
     int testeasm2 = 1;
 
@@ -133,20 +147,12 @@ func int main()
     asm(create_label testLabel);
     asm(push eax);
 
+    int page1 = allocMem1Page();
 
-    asm(mov32 eax 192);
-    asm(mov32 ebx 0);
-    asm(mov32 ecx 1);
-    asm(mov32 edx 3);
-    asm(mov32 esi 34);
-    asm(mov32 edi -1);
-    asm(syscall);
 
-    asm(mov32 ebx eax);
+    asm(mov32 ebx page1);
     asm(mov32 eax 65);
     asm(mov32 ecx 0);
-
-
 
     
     asm(mov_reg_with_regOffset_reg ebx ecx eax);
@@ -165,6 +171,7 @@ func int main()
     asm(mov_reg_with_regOffset_reg ebx ecx eax);
     
     asm(mov_reg_offset_value ebx 4 10);
+
 
 
 

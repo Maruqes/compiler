@@ -245,6 +245,81 @@ void asm_mov_reg_reg_with_offset(FILE *file, char **tokens)
     printf("mov %s, [%s + %s]\n", tokens[1], tokens[2], tokens[3]);
 }
 
+void asm_mov_reg_with_regOffset_value(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int reg2 = convert_string_to_reg(tokens[2]);
+    int *values = asm_get_number(tokens, 3);
+    int value = values[0];
+    if (values[1] == 0)
+    {
+        if (reg1 == -1 || reg2 == -1)
+        {
+            printf("Error: Register %s or %s not found\n", tokens[1], tokens[2]);
+            exit(1);
+        }
+
+        mov_reg_with_regOffset_value(reg1, reg2, value);
+        printf("mov %s, [%s + %d]\n", tokens[1], tokens[2], value);
+    }
+    else
+    {
+        printf("Error: Invalid number\n");
+        exit(1);
+    }
+    free(values);
+}
+
+void asm_mov_reg_offset_reg2(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int reg2 = convert_string_to_reg(tokens[3]);
+    int *values = asm_get_number(tokens, 2);
+    int offset = values[0];
+    if (values[1] == 0)
+    {
+        if (reg1 == -1 || reg2 == -1)
+        {
+            printf("Error: Register %s or %s not found\n", tokens[1], tokens[3]);
+            exit(1);
+        }
+
+        mov_reg_offset_reg2(reg1, offset, reg2);
+        printf("mov %s, [%d + %s]\n", tokens[1], offset, tokens[3]);
+    }
+    else
+    {
+        printf("Error: Invalid number\n");
+        exit(1);
+    }
+    free(values);
+}
+
+void asm_mov_reg_reg_offset(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int reg2 = convert_string_to_reg(tokens[2]);
+    int *values = asm_get_number(tokens, 3);
+    int offset = values[0];
+    if (values[1] == 0)
+    {
+        if (reg1 == -1 || reg2 == -1)
+        {
+            printf("Error: Register %s or %s not found\n", tokens[1], tokens[2]);
+            exit(1);
+        }
+
+        mov_reg_reg_offset(reg1, reg2, offset);
+        printf("mov %s, %s + %d\n", tokens[1], tokens[2], offset);
+    }
+    else
+    {
+        printf("Error: Invalid number\n");
+        exit(1);
+    }
+    free(values);
+}
+
 void asm_inc(FILE *file, char **tokens)
 {
     int reg = convert_string_to_reg(tokens[1]);
@@ -334,6 +409,21 @@ int parse_movs(FILE *file, char **tokens)
     else if (strcmp(tokens[0], "mov_reg_reg_with_offset") == 0)
     {
         asm_mov_reg_reg_with_offset(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "mov_reg_with_regOffset_value") == 0)
+    {
+        asm_mov_reg_with_regOffset_value(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "mov_reg_offset_reg2") == 0)
+    {
+        asm_mov_reg_offset_reg2(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "mov_reg_reg_offset") == 0)
+    {
+        asm_mov_reg_reg_offset(file, tokens);
         return 1;
     }
     else
