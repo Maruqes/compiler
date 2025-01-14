@@ -384,6 +384,28 @@ void asm_pop(FILE *file, char **tokens)
     printf("pop %s\n", tokens[1]);
 }
 
+void asm_pusha(FILE *file, char **tokens)
+{
+    push_reg(REG_EAX);
+    push_reg(REG_EBX);
+    push_reg(REG_ECX);
+    push_reg(REG_EDX);
+    push_reg(REG_ESI);
+    push_reg(REG_EDI);
+    printf("pusha\n");
+}
+
+void asm_popa(FILE *file, char **tokens)
+{
+    pop_reg(REG_EDI);
+    pop_reg(REG_ESI);
+    pop_reg(REG_EDX);
+    pop_reg(REG_ECX);
+    pop_reg(REG_EBX);
+    pop_reg(REG_EAX);
+    printf("popa\n");
+}
+
 int parse_movs(FILE *file, char **tokens)
 {
     if (strcmp(tokens[0], "mov32") == 0)
@@ -452,6 +474,16 @@ int parse_extras(FILE *file, char **tokens)
     else if (strcmp(tokens[0], "pop") == 0)
     {
         asm_pop(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "pusha") == 0)
+    {
+        asm_pusha(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "popa") == 0)
+    {
+        asm_popa(file, tokens);
         return 1;
     }
     else

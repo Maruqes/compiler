@@ -1,9 +1,96 @@
 
-func int teste(){
-    return 1;
+func int test(){
+    return 10;
 }
 
-func int allocMem1Page(){
+func int test_whiles(){
+    int a = 0;
+    while a < 10 {
+        a = a + 1;
+    }
+    return a;
+}
+
+func int test_arrays_int(){
+    int[5] arrHEHE = {5, 4, 3, 2, 10};
+    for int i = 0; i < 5; i++;{
+        arrHEHE[i] = 2 + 1 - 1;
+    }
+    int res = arrHEHE[0] + arrHEHE[1] + arrHEHE[2] + arrHEHE[3] + arrHEHE[4];
+    return res;
+}
+
+func int test_deaddressing(){
+    int a = 10;
+    int*b = &a;
+    int*c = &b;
+    int*d = &c;
+    return ***d;
+}
+
+func int test_ifs(){
+    int a = 0;
+    if a = 0 {
+        a = 10;
+    }
+    return a + 1 - 1;
+}
+
+func int test_arrays_arr_string(){
+    const string testS = "Hello\n";
+    return 0;
+}
+
+func int test_fors(){
+    int a = 0;
+    for int i = 0; i < 10; i++;{
+        a = a + 1;
+    }
+    return a;
+}
+
+func int testRecursion(int a){
+    if a < 10 {
+        return testRecursion(a + 1);
+    }
+    return a;
+}
+
+func int test_params(int a, int b, int c){
+    return a + b + c;
+}
+
+func int nestedForLoops(){
+    int a = 0;
+    for int i = 0; i < 10; i++;{
+        for int j = 0; j < 10; j++;{
+            a = a + 1;
+        }
+    }
+    return a;
+}
+
+func int nestedIfs(){
+    int a = 0;
+    int b = 20;
+    
+    if a < 10 {
+        if b > 10 {
+            a = 10;
+        }
+    }
+    return 10;
+}
+
+func int ret10if10(int a){
+    if a = 10 {
+        return 10;
+    }
+    return 0;
+}
+
+
+func int allocMem1Page(int a, int b){
     int pge = 1;
     asm(mov32 ecx pge);
     asm(mov32 eax 192);
@@ -18,21 +105,43 @@ func int allocMem1Page(){
 func int main()
 {
     int result = -1 + 1;
-    
+
+    int mds = 60;
+    int a = 10;
+    int *b = &a;
 
 
-    
+    int c = 20;
+    int *d = &c;
+    int mdsquelindo = 100;
+
+    result = result + test_whiles();
+    result = result + test();
+    result = result + test_fors();
+    result = result + test_ifs();
+    result = result + test_arrays_int();
+    result = result + test_deaddressing();  
+    result = result + test_params(*b+1-2+1, *d+60+30-90 + mdsquelindo - mdsquelindo, 30+10-10);
+    result = result + testRecursion(1);
+    result = result + nestedForLoops();
+    result = result + nestedIfs();
+    result = result + ret10if10(10);
+        
+    result++;    
+    result--;
+
     int testeasm = 4;
     int testeasm2 = 1;
-
-
+    
+  
     asm(mov32 eax 0);
 
     asm(create_label testLabel);
     asm(push eax);
 
+    asm(pusha);
     int page1 = allocMem1Page();
-    teste();
+    asm(popa);
 
     asm(mov32 ebx page1);
     asm(mov32 eax 65);
@@ -67,7 +176,7 @@ func int main()
 
     asm(pop eax);
     asm(inc eax);
-    asm(mov32 ebx 10);
+    asm(mov32 ebx 2);
     asm(cmp32 eax ebx);
     asm(jne testLabel);
 

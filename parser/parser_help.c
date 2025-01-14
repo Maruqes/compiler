@@ -95,10 +95,6 @@ void set_params(FILE *file)
     push_eax();
 
     char *ret_from_func = parse_until_charset(file, "),");
-    if(strcmp(ret_from_func, ")") == 0){
-        free(ret_from_func);
-        return;
-    }
     mov_reg32_reg32(REG_EBX, REG_EAX);
     set_param_manually(&params_count);
     while (strcmp(ret_from_func, ")") != 0)

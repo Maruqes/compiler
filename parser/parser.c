@@ -252,7 +252,7 @@ void parse_create_function(FILE *file)
     set_current_scope(name);
 
     get_params(file);
-    push_eax();
+    push_eax(); // pusha params addr
 
     free(type);
     free(name);
@@ -263,12 +263,10 @@ void parse_create_return(FILE *file)
 {
     pop_ebx();
     push_eax();
-    push_ecx();
     mov_eax(91);
     mov_ecx(4096);
     our_syscall();
 
-    pop_ecx();
     pop_eax();
 
     parse_after_equal(file);
@@ -277,6 +275,7 @@ void parse_create_return(FILE *file)
 
     restore_stack();
     ret();
+    
 }
 
 void parse_ifs(FILE *file)
