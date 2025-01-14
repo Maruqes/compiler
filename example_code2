@@ -1,0 +1,7 @@
+
+func int main()
+{
+    asm(mov32 eax 65);
+    asm(int 26);
+    return 0;
+}

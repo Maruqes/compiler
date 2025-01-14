@@ -110,7 +110,7 @@ int main()
 
     jmp("start");
 
-    start_parsing("example_code");
+    start_parsing("example_code2");
 
     create_label("start");
     call("main");
