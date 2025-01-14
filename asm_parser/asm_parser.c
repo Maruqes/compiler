@@ -18,6 +18,7 @@
 /*
 ao passar valor de variaveis para registers sobreescreve o valor da EAX
 */
+// falta fazer passar um reg pra variavel :D
 int convert_string_to_reg(char *reg)
 {
     if (strcmp(reg, "ebp") == 0)
