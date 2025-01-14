@@ -123,4 +123,6 @@ void fix_label_addresses(uint32_t fix_size);
 void ret();
 void nop();
 
+void interrupt_call(int interrupt);
+
 #endif // FUNCTIONS_H

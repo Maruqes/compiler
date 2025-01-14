@@ -1,7 +1,6 @@
 #include "parser.h"
 #include <ctype.h>
 #include <math.h>
-#include "../types/uint32.h"
 #include "../functions/functions.h"
 #include "../types/strings.h"
 #include "../mov_reg_reg/mov_reg_reg.h"
@@ -189,6 +188,7 @@ char *get_token(FILE *fp)
     return NULL;
 }
 
+// system with a memory allocation with address pushed to stack
 void get_params(FILE *file)
 {
     char *token = get_token(file);
@@ -252,7 +252,7 @@ void parse_create_function(FILE *file)
     set_current_scope(name);
 
     get_params(file);
-    push_eax(); // pusha params addr
+    push_eax(); // pusha params addr, this value ios the addr of alloc memory where params are, this needs to be freed
 
     free(type);
     free(name);
@@ -275,7 +275,6 @@ void parse_create_return(FILE *file)
 
     restore_stack();
     ret();
-    
 }
 
 void parse_ifs(FILE *file)
@@ -404,13 +403,7 @@ void parse_create_constant(FILE *file)
     free(to_free);
     char *value = get_token(file);
 
-    if (strcmp(type, "int32") == 0)
-    {
-        printf("Creating uint32 %s with value %s\n", name, value);
-        create_constant_uint32_before(name, atoi(value));
-        free(value);
-    }
-    else if (strcmp(type, "string") == 0)
+    if (strcmp(type, "string") == 0)
     {
         printf("Creating string %s with value %s\n", name, value);
         create_constant_string_before(name, value);
@@ -497,13 +490,6 @@ int parse_it(char *token, FILE *file)
         printf("Calling function %s\n", token);
         parse_functions(file, token);
         free(token);
-        return 1;
-    }
-
-    if (is_a_uint32_arr_beforeconstant(token))
-    {
-        printf("setting uint32 array value %s\n", token);
-        parse_int_array_value_setter(file, token);
         return 1;
     }
 

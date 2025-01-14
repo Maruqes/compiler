@@ -1,7 +1,6 @@
 #include "parser_help.h"
 #include <ctype.h>
 #include <math.h>
-#include "../types/uint32.h"
 #include "../functions/functions.h"
 #include "../types/strings.h"
 #include "../mov_reg_reg/mov_reg_reg.h"
@@ -277,46 +276,6 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
         parse_functions(file, token);
         mov_reg32_reg32(reg, REG_EAX);
         pop_eax();
-    }
-    else if (is_a_uint32_beforeconstant(token))
-    {
-        mov_reg32_from_var(reg, token, 0);
-    }
-    else if (is_a_uint32_arr_beforeconstant(token)) // int a = arr[0];
-    {
-        if (reg == REG_ECX)
-        {
-            printf("ECX can not be used here func: parse_data_types\n");
-            exit(1);
-        }
-
-        char *token2 = get_token(file); // skip [
-        if (token2[0] != '[')
-        {
-            printf("Error: Expected '['\n");
-            exit(1);
-        }
-
-        push_reg(REG_ECX);
-        push_reg(REG_EDX);
-        push_reg(REG_EAX);
-
-        parse_inside_bracets_for_arrays(file); // get the index []
-        mov_reg32_reg32(REG_ECX, REG_EAX);
-
-        pop_reg(REG_EAX);
-
-        mov_edx(4);
-        mul_reg32(REG_ECX, REG_EDX); // ecx = ecx * 4  precisa porque o offset é em INT (4 bytes)
-        // melhor explicado em func: "parse_string_array_value_setter" parset_help.c
-
-        pop_reg(REG_EDX);
-
-        mov_reg32_from_var_offREG(reg, token, REG_ECX);
-
-        pop_reg(REG_ECX);
-
-        free(token2);
     }
     else
     {

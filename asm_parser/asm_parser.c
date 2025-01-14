@@ -1,7 +1,6 @@
 #include "asm_parser.h"
 #include <ctype.h>
 #include <math.h>
-#include "../types/uint32.h"
 #include "../functions/functions.h"
 #include "../types/strings.h"
 #include "../mov_reg_reg/mov_reg_reg.h"
@@ -486,6 +485,20 @@ int parse_extras(FILE *file, char **tokens)
     {
         asm_popa(file, tokens);
         return 1;
+    }
+    else if (strcmp(tokens[0], "int") == 0)
+    {
+        int *values = asm_get_number(tokens, 1);
+        if (values[1] == 0)
+        {
+            interrupt_call(values[0]);
+            return 1;
+        }
+        else
+        {
+            printf("Error: Invalid number\n");
+            exit(1);
+        }
     }
     else
     {

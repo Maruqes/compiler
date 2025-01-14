@@ -3,7 +3,6 @@
 #include <stdint.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include "types/uint32.h"
 #include "functions/functions.h"
 #include "types/strings.h"
 #include "mov_reg_reg/mov_reg_reg.h"
@@ -88,8 +87,6 @@ void cleanup()
 
     free_variables_array();
     free_current_scope();
-    free_uint32s();
-    free_uint32_arrs();
     free_strings();
     free_functions();
 }
@@ -118,12 +115,6 @@ int main()
     create_label("start");
     call("main");
 
-    mov_ebx(340);
-    cmp_reg32(REG_EAX, REG_EBX);
-    jump_if_not_equal("notequal");
-    print("msg", 9);
-
-    create_label("notequal");
 
     restore_stack();
     mov_eax(0x01); // sys_exit
@@ -171,15 +162,6 @@ int main()
     create_constant_string("msg3", "diff\n", phdr.p_vaddr + custom_code_size + data_size);
     fix_before_strings(phdr.p_vaddr + custom_code_size + data_size);
 
-    // All uint32
-    create_constant_uint32("uint0", 48, phdr.p_vaddr + custom_code_size + data_size);
-    fix_before_uint32s(phdr.p_vaddr + custom_code_size + data_size);
-
-    // All uint32 arrays
-    uint32_t params_arr[4096] = {0};
-    create_constant_uint32_arr("params_arr", params_arr, phdr.p_vaddr + custom_code_size + data_size, 5);
-    fix_before_uint32_arrs(phdr.p_vaddr + custom_code_size + data_size);
-
     fix_label_addresses(phdr.p_vaddr);
 
     fixup_addresses();
@@ -207,11 +189,9 @@ int main()
         close(fd);
         return 1;
     }
-
+    
     write_all_custom_code(fd);
     write_all_string_constants(fd);
-    write_all_uint32_constants(fd);
-    write_all_uint32_arr_constants(fd);
 
     close(fd);
 

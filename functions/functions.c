@@ -1,6 +1,5 @@
 #include "functions.h"
 #include "../types/strings.h"
-#include "../types/uint32.h"
 #include "../arithmetic/arithmetic.h"
 #include "../variables/variables.h"
 
@@ -64,15 +63,6 @@ void fixup_addresses()
         //     symbol_address = constant_strings[j].var_address;
         // }
 
-        for (uint32_t j = 0; j < constant_uint32_count; j++)
-        {
-            if (strcmp(fixup.symbol_name, constant_uint32s[j].var_name) == 0)
-            {
-                symbol_address = constant_uint32s[j].var_address;
-                break;
-            }
-        }
-
         for (uint32_t j = 0; j < jump_array_size; j++)
         {
             if (strcmp(fixup.symbol_name, jump_array[j].var_name) == 0)
@@ -84,15 +74,6 @@ void fixup_addresses()
                 printf("displacement: %d\n\n", displacement);
 
                 symbol_address = displacement;
-                break;
-            }
-        }
-
-        for (uint32_t j = 0; j < constant_uint32_arr_count; j++)
-        {
-            if (strcmp(fixup.symbol_name, constant_uint32_arrs[j].var_name) == 0)
-            {
-                symbol_address = constant_uint32_arrs[j].var_address;
                 break;
             }
         }
@@ -800,4 +781,31 @@ void mov_reg32_from_var_offREG(uint8_t reg_code, char *symbol, uint8_t reg2_off)
         exit(EXIT_FAILURE);
     }
     op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void interrupt_call(int interrupt)
+{
+    char *opcode_bytes = malloc(2);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xCD;
+    opcode_bytes[1] = interrupt;
+
+    OpCode new_opcode;
+    new_opcode.size = 2; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
 }
