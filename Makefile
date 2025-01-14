@@ -8,7 +8,8 @@ SOURCES = main.c functions/functions.c types/strings.c types/uint32.c \
 
 run:
 	gcc $(SOURCES) -lm -Og -g -o a.out
-	./a.out
+	./a.out	
+	./hello_elf_32
 
 
 check:

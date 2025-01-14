@@ -118,7 +118,7 @@ int main()
     create_label("start");
     call("main");
 
-    mov_ebx(250);
+    mov_ebx(220);
     cmp_reg32(REG_EAX, REG_EBX);
     jump_if_not_equal("notequal");
     print("msg", 9);

@@ -2,3 +2,4 @@ main.plist
 valgrind-out.txt
 a.out
 .vscode/
+.gdb_history

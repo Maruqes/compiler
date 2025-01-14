@@ -59,9 +59,23 @@ int get_check_free_semicolon(FILE *f)
     return 1;
 }
 
+// retorna no eax o address da mem
+void allocMem(int numberOfPages)
+{
+    mov_reg32(REG_EAX, 192);
+    mov_reg32(REG_EBX, 0);
+    mov_reg32(REG_ECX, numberOfPages * 4096);
+    mov_reg32(REG_EDX, 3);
+    mov_reg32(REG_ESI, 34);
+    mov_reg32(REG_EDI, -1);
+    our_syscall();
+}
+
 void set_param_manually(int *params_count)
 {
-    mov_var_from_reg32(REG_EBX, "params_arr", 4 * (*params_count));
+    pop_eax();
+    mov_reg_offset_reg2(REG_EAX, 4 * (*params_count), REG_EBX);
+    push_eax();
     (*params_count)++;
     printf("param\n");
 }
@@ -77,9 +91,11 @@ void set_params(FILE *file)
     }
     uint32_t params_count = 0;
 
+    allocMem(1);
+    push_eax();
+
     char *ret_from_func = parse_until_charset(file, "),");
-    if (strcmp(ret_from_func, ")") == 0)
-    {
+    if(strcmp(ret_from_func, ")") == 0){
         free(ret_from_func);
         return;
     }
@@ -93,6 +109,7 @@ void set_params(FILE *file)
     }
 
     free(ret_from_func);
+    pop_eax();
 }
 
 void parse_functions(FILE *file, char *token)

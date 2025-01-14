@@ -216,7 +216,7 @@ void get_params(FILE *file)
             }
             printf("param %s\n", name);
             create_var(name, 4);
-            mov_reg32_from_var(REG_EDX, "params_arr", params_count * 4);
+            mov_reg_reg_offset(REG_EDX, REG_EAX, params_count * 4);
             set_var_with_reg(name, REG_EDX);
             params_count++;
 
@@ -252,6 +252,7 @@ void parse_create_function(FILE *file)
     set_current_scope(name);
 
     get_params(file);
+    push_eax();
 
     free(type);
     free(name);
@@ -260,6 +261,16 @@ void parse_create_function(FILE *file)
 // return in EAX
 void parse_create_return(FILE *file)
 {
+    pop_ebx();
+    push_eax();
+    push_ecx();
+    mov_eax(91);
+    mov_ecx(4096);
+    our_syscall();
+
+    pop_ecx();
+    pop_eax();
+
     parse_after_equal(file);
 
     printf("return \n");
