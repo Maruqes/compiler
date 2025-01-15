@@ -23,7 +23,7 @@ BIG TODO:
         explicar como as variaves funcionam, com o base pointer etc, links para outros docs;
 
 
-por algum fucking motivo tu nao fizeste algo do genero a  -> int c = -1;
+criar sistema de criacao de tipos de dados :D
 
 different data types
 strutcs
