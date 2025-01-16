@@ -112,6 +112,7 @@ int convert_string_to_reg(char *reg)
     return -1;
 }
 
+// returns the in [0] the value  is [1] = 0 if number, == 2 if variable (pushed to stack, will be poped later) and -1 if invalid
 int *asm_get_number(char **str, int pos)
 {
     int *res = malloc(2 * sizeof(int));
@@ -147,24 +148,21 @@ int *asm_get_number(char **str, int pos)
     }
     return res;
 }
+
 void asm_mov32(FILE *file, char **tokens)
 {
     int reg = convert_string_to_reg(tokens[1]);
-    if (reg == -1)
-    {
-        printf("Error: Register %s not found\n", tokens[1]);
-        exit(1);
-    }
+    // checking if reg is valid inside the && ifs
 
     int *values = asm_get_number(tokens, 2);
     int value = values[0];
-    if (values[1] == 0)
+    if (values[1] == 0 && reg != -1)
     {
 
         mov_reg32(reg, value);
         printf("mov %s, %d\n", tokens[1], value);
     }
-    else if (values[1] == 2)
+    else if (values[1] == 2 && reg != -1)
     {
         // var
         pop_reg(reg);
@@ -177,6 +175,17 @@ void asm_mov32(FILE *file, char **tokens)
         {
             printf("Error: Register %s or %s not found\n", tokens[1], tokens[2]);
             exit(1);
+        }
+
+        if (reg == -1)
+        {
+            // check if a variable
+            if (does_var_exist(tokens[1]))
+            {
+                printf("mov %s, %s\n", tokens[1], tokens[2]);
+                set_var_with_reg(tokens[1], reg2);
+                return;
+            }
         }
 
         mov_reg32_reg32(reg, reg2);

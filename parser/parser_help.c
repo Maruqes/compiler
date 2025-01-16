@@ -58,6 +58,7 @@ int get_check_free_semicolon(FILE *f)
     return 1;
 }
 
+//LINUX
 // so funciona no linux este maneira de passar parametros :D
 //  retorna no eax o address da mem
 void allocMem(int numberOfPages)

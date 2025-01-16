@@ -174,5 +174,9 @@ func int main()
     asm(jne testLabel);
 
 
-    return 0;
+    asm(mov32 eax 350);
+    asm(mov32 result eax);
+
+
+    return result;
 }

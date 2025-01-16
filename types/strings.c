@@ -1,6 +1,8 @@
 #include "strings.h"
 #include "../functions/functions.h"
 
+// they are strings wrote directlly on the executable binaries, thats not he ideia os this programming lagunage
+
 Constant_string *constant_strings = 0;
 uint32_t constant_string_count = 0;
 

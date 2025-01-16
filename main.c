@@ -110,11 +110,16 @@ int main()
 
     jmp("start");
 
-    start_parsing("example_code2");
+    start_parsing("example_code");
 
     create_label("start");
     call("main");
 
+    mov_ebx(350);
+    cmp_reg32(REG_EAX, REG_EBX);
+    jump_if_not_equal("notequal");
+    print("msg", 9);
+    create_label("notequal");
 
     restore_stack();
     mov_eax(0x01); // sys_exit
@@ -189,7 +194,7 @@ int main()
         close(fd);
         return 1;
     }
-    
+
     write_all_custom_code(fd);
     write_all_string_constants(fd);
 
