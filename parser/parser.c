@@ -15,6 +15,7 @@
 #include "parser_help.h"
 #include "int/parser_int.h"
 #include "../asm_parser/asm_parser.h"
+#include "../functions/bFunctions32/bFunctions32.h"
 /*
 extra dar acesso a umas funcs ai do assembly mm
 function params
@@ -216,7 +217,7 @@ void get_params(FILE *file)
             }
             printf("param %s\n", name);
             create_var(name, 4);
-            mov_reg_reg_offset(REG_EDX, REG_EAX, params_count * 4);
+            mov32_r_mi(REG_EDX, REG_EAX, params_count * 4);
             set_var_with_reg(name, REG_EDX);
             params_count++;
 

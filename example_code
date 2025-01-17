@@ -141,27 +141,25 @@ func int main()
     asm(mov32 ecx 0);
 
     
-    asm(mov_reg_with_regOffset_reg ebx ecx eax);
+    asm(mov32_mr_r ebx ecx eax);
 
     asm(mov32 eax 0);
-    asm(mov_reg_reg_with_offset eax ebx ecx);
+    asm(mov32_r_mr eax ebx ecx);
 
     asm(inc ecx);
     asm(inc eax);
-    asm(mov_reg_with_regOffset_reg ebx ecx eax);
+    asm(mov32_mr_r ebx ecx eax);
     asm(inc ecx);
     asm(inc eax);
-    asm(mov_reg_with_regOffset_reg ebx ecx eax);
+    asm(mov32_mr_r ebx ecx eax);
     asm(inc ecx);
     asm(inc eax);
-    asm(mov_reg_with_regOffset_reg ebx ecx eax);
+    asm(mov32_mr_r ebx ecx eax);
     
-    asm(mov_reg_offset_value ebx 4 10);
+    asm(mov32_mi_i ebx 4 10);
 
 
-    asm(mov32 eax 48);
-    asm(mov_reg_offset_reg2 ebx 0 al);
-
+   
 
 
     asm(mov32 ecx ebx);

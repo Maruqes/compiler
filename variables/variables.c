@@ -149,7 +149,7 @@ void set_var(char *symbol, uint32_t value)
         {
             if (strcmp(symbol, scopes_array[i].variables_array[j].symbol) == 0 && strcmp(scopes_array[i].variables_array[j].scope, get_current_scope()) == 0)
             {
-                mov_reg_offset_value(REG_EBP, -scopes_array[i].variables_array[j].offset, value);
+                mov32_mi_i(REG_EBP, -scopes_array[i].variables_array[j].offset, value);
                 return;
             }
         }
@@ -167,7 +167,7 @@ void set_var_with_reg(char *symbol, uint8_t reg)
         {
             if (strcmp(symbol, scopes_array[i].variables_array[j].symbol) == 0 && strcmp(scopes_array[i].variables_array[j].scope, get_current_scope()) == 0)
             {
-                mov_reg_offset_reg2(REG_EBP, -scopes_array[i].variables_array[j].offset, reg);
+                mov32_mi_r(REG_EBP, -scopes_array[i].variables_array[j].offset, reg);
                 return;
             }
         }
@@ -186,7 +186,7 @@ void get_var(uint8_t reg, char *symbol)
         {
             if (strcmp(symbol, scopes_array[i].variables_array[j].symbol) == 0 && strcmp(scopes_array[i].variables_array[j].scope, get_current_scope()) == 0)
             {
-                mov_reg_reg_offset(reg, REG_EBP, -scopes_array[i].variables_array[j].offset);
+                mov32_r_mi(reg, REG_EBP, -scopes_array[i].variables_array[j].offset);
                 return;
             }
         }

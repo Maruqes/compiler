@@ -14,6 +14,7 @@
 #include "../variables/variables.h"
 #include "../parser/parser.h"
 #include "../parser/parser_help.h"
+#include "../functions/bFunctions32/bFunctions32.h"
 /*
 ao passar valor de variaveis para registers sobreescreve o valor da EAX
 */
@@ -194,7 +195,7 @@ void asm_mov32(FILE *file, char **tokens)
     free(values);
 }
 
-void asm_mov_reg_offset_value(FILE *file, char **tokens)
+void asm_mov32_mi_i(FILE *file, char **tokens)
 {
 
     int *values = asm_get_number(tokens, 2);
@@ -212,7 +213,7 @@ void asm_mov_reg_offset_value(FILE *file, char **tokens)
             exit(1);
         }
 
-        mov_reg_offset_value(reg, offset, value);
+        mov32_mi_i(reg, offset, value);
         printf("mov %s, off:%d, val:%d\n", tokens[1], offset, value);
     }
     else
@@ -222,7 +223,7 @@ void asm_mov_reg_offset_value(FILE *file, char **tokens)
     }
 }
 
-void asm_mov_reg_with_regOffset_reg(FILE *file, char **tokens)
+void asm_mov32_mr_r(FILE *file, char **tokens)
 {
     int reg1 = convert_string_to_reg(tokens[1]);
     int reg2 = convert_string_to_reg(tokens[2]);
@@ -234,11 +235,11 @@ void asm_mov_reg_with_regOffset_reg(FILE *file, char **tokens)
         exit(1);
     }
 
-    mov_reg_with_regOffset_reg(reg1, reg2, reg3);
+    mov32_mr_r(reg1, reg2, reg3);
     printf("mov [%s + %s], %s\n", tokens[1], tokens[2], tokens[3]);
 }
 
-void asm_mov_reg_reg_with_offset(FILE *file, char **tokens)
+void asm_mov32_r_mr(FILE *file, char **tokens)
 {
     int reg1 = convert_string_to_reg(tokens[1]);
     int reg2 = convert_string_to_reg(tokens[2]);
@@ -250,11 +251,11 @@ void asm_mov_reg_reg_with_offset(FILE *file, char **tokens)
         exit(1);
     }
 
-    mov_reg_reg_with_offset(reg1, reg2, reg3);
+    mov32_r_mr(reg1, reg2, reg3);
     printf("mov %s, [%s + %s]\n", tokens[1], tokens[2], tokens[3]);
 }
 
-void asm_mov_reg_with_regOffset_value(FILE *file, char **tokens)
+void asm_mov32_mr_i(FILE *file, char **tokens)
 {
     int reg1 = convert_string_to_reg(tokens[1]);
     int reg2 = convert_string_to_reg(tokens[2]);
@@ -268,7 +269,7 @@ void asm_mov_reg_with_regOffset_value(FILE *file, char **tokens)
             exit(1);
         }
 
-        mov_reg_with_regOffset_value(reg1, reg2, value);
+        mov32_mr_i(reg1, reg2, value);
         printf("mov %s, [%s + %d]\n", tokens[1], tokens[2], value);
     }
     else
@@ -279,7 +280,7 @@ void asm_mov_reg_with_regOffset_value(FILE *file, char **tokens)
     free(values);
 }
 
-void asm_mov_reg_offset_reg2(FILE *file, char **tokens)
+void asm_mov32_mi_r(FILE *file, char **tokens)
 {
     int reg1 = convert_string_to_reg(tokens[1]);
     int reg2 = convert_string_to_reg(tokens[3]);
@@ -293,7 +294,7 @@ void asm_mov_reg_offset_reg2(FILE *file, char **tokens)
             exit(1);
         }
 
-        mov_reg_offset_reg2(reg1, offset, reg2);
+        mov32_mi_r(reg1, offset, reg2);
         printf("mov %s, [%d + %s]\n", tokens[1], offset, tokens[3]);
     }
     else
@@ -304,7 +305,7 @@ void asm_mov_reg_offset_reg2(FILE *file, char **tokens)
     free(values);
 }
 
-void asm_mov_reg_reg_offset(FILE *file, char **tokens)
+void asm_mov32_r_mi(FILE *file, char **tokens)
 {
     int reg1 = convert_string_to_reg(tokens[1]);
     int reg2 = convert_string_to_reg(tokens[2]);
@@ -318,7 +319,7 @@ void asm_mov_reg_reg_offset(FILE *file, char **tokens)
             exit(1);
         }
 
-        mov_reg_reg_offset(reg1, reg2, offset);
+        mov32_r_mi(reg1, reg2, offset);
         printf("mov %s, %s + %d\n", tokens[1], tokens[2], offset);
     }
     else
@@ -427,34 +428,34 @@ int parse_movs(FILE *file, char **tokens)
         our_syscall();
         return 1;
     }
-    else if (strcmp(tokens[0], "mov_reg_offset_value") == 0)
+    else if (strcmp(tokens[0], "mov32_mi_i") == 0)
     {
-        asm_mov_reg_offset_value(file, tokens);
+        asm_mov32_mi_i(file, tokens);
         return 1;
     }
-    else if (strcmp(tokens[0], "mov_reg_with_regOffset_reg") == 0)
+    else if (strcmp(tokens[0], "mov32_mr_r") == 0)
     {
-        asm_mov_reg_with_regOffset_reg(file, tokens);
+        asm_mov32_mr_r(file, tokens);
         return 1;
     }
-    else if (strcmp(tokens[0], "mov_reg_reg_with_offset") == 0)
+    else if (strcmp(tokens[0], "mov32_r_mr") == 0)
     {
-        asm_mov_reg_reg_with_offset(file, tokens);
+        asm_mov32_r_mr(file, tokens);
         return 1;
     }
-    else if (strcmp(tokens[0], "mov_reg_with_regOffset_value") == 0)
+    else if (strcmp(tokens[0], "mov32_mr_i") == 0)
     {
-        asm_mov_reg_with_regOffset_value(file, tokens);
+        asm_mov32_mr_i(file, tokens);
         return 1;
     }
-    else if (strcmp(tokens[0], "mov_reg_offset_reg2") == 0)
+    else if (strcmp(tokens[0], "mov32_mi_r") == 0)
     {
-        asm_mov_reg_offset_reg2(file, tokens);
+        asm_mov32_mi_r(file, tokens);
         return 1;
     }
-    else if (strcmp(tokens[0], "mov_reg_reg_offset") == 0)
+    else if (strcmp(tokens[0], "mov32_r_mi") == 0)
     {
-        asm_mov_reg_reg_offset(file, tokens);
+        asm_mov32_r_mi(file, tokens);
         return 1;
     }
     else

@@ -14,6 +14,7 @@
 #include "../../variables/variables.h"
 #include "../parser.h"
 #include "../parser_help.h"
+#include "../../functions/bFunctions32/bFunctions32.h"
 
 void parse_after_equal(FILE *file);
 void parse_int_array_creation(FILE *file, char *token, uint32_t arr_size);
@@ -58,15 +59,15 @@ void parse_set_value_in_the_pointer_address(FILE *file)
     get_var(REG_ECX, var);
     for (int i = 0; i < numbe_of_deferences; i++)
     {
-        mov_reg_reg_with_offset(REG_EDX, REG_EBP, REG_ECX); // ebp + ecx = value da var, entao edx = value da var
-                                                            // valor esse que tambem é um address, repetir o processo
+        mov32_r_mr(REG_EDX, REG_EBP, REG_ECX); // ebp + ecx = value da var, entao edx = value da var
+                                               // valor esse que tambem é um address, repetir o processo
         mov_reg32_reg32(REG_ECX, REG_EDX);
     }
 
     char *p = get_token(file); // skip '='
 
     parse_after_equal(file);
-    mov_reg_with_regOffset_reg(REG_EBP, REG_ECX, REG_EAX);
+    mov32_mr_r(REG_EBP, REG_ECX, REG_EAX);
 
     free(var);
     free(p);
@@ -81,7 +82,7 @@ void parse_create_int(FILE *file)
         parse_create_int_pointer(file, name, 1);
         return;
     }
-    
+
     char *to_free = get_token(file); // skip '='
     free(to_free);
 
@@ -144,4 +145,3 @@ void parse_int_setter(FILE *file, char *token)
 
     free(token);
 }
-

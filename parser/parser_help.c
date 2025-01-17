@@ -14,6 +14,7 @@
 #include "../variables/variables.h"
 #include "parser.h"
 #include "int/parser_int.h"
+#include "../functions/bFunctions32/bFunctions32.h"
 
 // Função para validar se a string é um número
 int is_valid_number(const char *str)
@@ -58,9 +59,9 @@ int get_check_free_semicolon(FILE *f)
     return 1;
 }
 
-//LINUX
-// so funciona no linux este maneira de passar parametros :D
-//  retorna no eax o address da mem
+// LINUX
+//  so funciona no linux este maneira de passar parametros :D
+//   retorna no eax o address da mem
 void allocMem(int numberOfPages)
 {
     mov_reg32(REG_EAX, 192);
@@ -75,7 +76,7 @@ void allocMem(int numberOfPages)
 void set_param_manually(int *params_count)
 {
     pop_eax();
-    mov_reg_offset_reg2(REG_EAX, 4 * (*params_count), REG_EBX);
+    mov32_mi_r(REG_EAX, 4 * (*params_count), REG_EBX);
     push_eax();
     (*params_count)++;
     printf("param\n");
@@ -206,12 +207,12 @@ void multiple_dereference(FILE *file, char *var, uint8_t reg)
     get_var(REG_ECX, var);
     for (int i = 0; i < number_of_dereferences; i++)
     {
-        mov_reg_reg_with_offset(REG_EDX, REG_EBP, REG_ECX); // ebp + ecx = value da var, entao edx = value da var
-                                                            // valor esse que tambem é um address, repetir o processo
+        mov32_r_mr(REG_EDX, REG_EBP, REG_ECX); // ebp + ecx = value da var, entao edx = value da var
+                                               // valor esse que tambem é um address, repetir o processo
         mov_reg32_reg32(REG_ECX, REG_EDX);
     }
 
-    mov_reg_reg_with_offset(reg, REG_EBP, REG_ECX);
+    mov32_r_mr(reg, REG_EBP, REG_ECX);
     free(var);
 }
 
