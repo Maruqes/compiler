@@ -31,6 +31,10 @@ incluir outros ficheiros
 sycalls/assembly
 */
 
+/*
+big ideias-> conseguir compilar assembly nativo nesta merad tipo nasm mm :D ns fodase
+*/
+
 // ELF header structure for 32-bit executable
 struct Elf32_Ehdr
 {
@@ -194,6 +198,17 @@ int main()
         close(fd);
         return 1;
     }
+
+    off_t current_pos = lseek(fd, 0, SEEK_CUR);
+    if (current_pos == (off_t)-1)
+    {
+        perror("lseek");
+        close(fd);
+        return 1;
+    }
+    printf("Current seek position: %ld\n", (long)current_pos);
+
+
 
     write_all_custom_code(fd);
     write_all_string_constants(fd);

@@ -620,6 +620,7 @@ void parse_asm_function(FILE *file)
     parsed = parsed || parse_movs(file, tokens);
     parsed = parsed || parse_extras(file, tokens);
     parsed = parsed || parse_jumps(file, tokens);
+    parsed = parsed || parse_movs16(file, tokens);
 
     if (!parsed)
     {

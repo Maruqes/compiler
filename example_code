@@ -159,6 +159,9 @@ func int main()
     asm(mov_reg_offset_value ebx 4 10);
 
 
+    asm(mov32 eax 48);
+    asm(mov_reg_offset_reg2 ebx 0 al);
+
 
 
     asm(mov32 ecx ebx);
@@ -174,8 +177,10 @@ func int main()
     asm(jne testLabel);
 
 
-    asm(mov32 eax 350);
+    asm(mov16 ax 350);
     asm(mov32 result eax);
+
+
 
 
     return result;

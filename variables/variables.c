@@ -4,6 +4,7 @@
 #include "../mov_reg_reg/mov_reg_reg.h"
 #include "../arithmetic/arithmetic.h"
 #include "../parser/parser_help.h"
+#include "../functions/bFunctions32/bFunctions32.h"
 
 typedef struct Scope_var
 {
