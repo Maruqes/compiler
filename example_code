@@ -159,6 +159,7 @@ func int main()
     asm(mov32_mi_i ebx 4 10);
 
 
+
    
 
 
@@ -175,7 +176,8 @@ func int main()
     asm(jne testLabel);
 
 
-    asm(mov16 ax 350);
+    asm(mov32 ecx 350);
+    asm(mov32 eax ecx);
     asm(mov32 result eax);
 
 

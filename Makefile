@@ -5,6 +5,7 @@ SOURCES = main.c functions/functions.c types/strings.c \
 		  parser/parser.c parser/parser_help.c parser/int/parser_int.c \
 		  asm_parser/asm_parser.c asm_parser/asm_parser16.c \
 		  functions/bFunctions32/bFunctions32.c \
+		  functions/bFunctions16/bFunctions16.c \
 
 
 run:

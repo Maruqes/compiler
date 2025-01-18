@@ -14,6 +14,7 @@
 #include "../variables/variables.h"
 #include "../parser/parser.h"
 #include "../parser/parser_help.h"
+#include "../functions/bFunctions16/bFunctions16.h"
 
 void asm_mov16(FILE *file, char **tokens)
 {
@@ -25,7 +26,7 @@ void asm_mov16(FILE *file, char **tokens)
     if (values[1] == 0 && reg != -1)
     {
 
-        mov_reg16(reg, value);
+        // mov16_r_i(reg, value);
         printf("mov %s, %d\n", tokens[1], value);
     }
     else if (values[1] == 2 && reg != -1)
@@ -54,7 +55,7 @@ void asm_mov16(FILE *file, char **tokens)
             }
         }
 
-        mov_reg16_reg16(reg, reg2);
+        // mov16_r_r(reg, reg2);
         printf("mov16 %s, %s\n", tokens[1], tokens[2]);
     }
     free(values);
@@ -63,6 +64,11 @@ void asm_mov16(FILE *file, char **tokens)
 int parse_movs16(FILE *file, char **tokens)
 {
     if (strcmp(tokens[0], "mov16") == 0)
+    {
+        asm_mov16(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "mov16") == 0)
     {
         asm_mov16(file, tokens);
         return 1;

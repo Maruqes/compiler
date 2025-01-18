@@ -14,6 +14,7 @@
 #include "../variables/variables.h"
 #include "../parser/parser.h"
 #include "../parser/parser_help.h"
+#include "../functions/bFunctions16/bFunctions16.h"
 #include "../functions/bFunctions32/bFunctions32.h"
 /*
 ao passar valor de variaveis para registers sobreescreve o valor da EAX

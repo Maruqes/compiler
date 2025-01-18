@@ -19,5 +19,4 @@ void mov32_mi_i(uint8_t reg, int32_t offset, uint32_t value);
 void mov32_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2);
 void mov32_mr_i(uint8_t reg, uint8_t reg2, uint32_t value);
 void mov32_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3);
-
 #endif // BFUNCTIONS32_H
