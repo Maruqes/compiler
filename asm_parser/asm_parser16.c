@@ -26,7 +26,7 @@ void asm_mov16(FILE *file, char **tokens)
     if (values[1] == 0 && reg != -1)
     {
 
-        // mov16_r_i(reg, value);
+        mov16_r_i(reg, value);
         printf("mov %s, %d\n", tokens[1], value);
     }
     else if (values[1] == 2 && reg != -1)
@@ -55,11 +55,201 @@ void asm_mov16(FILE *file, char **tokens)
             }
         }
 
-        // mov16_r_r(reg, reg2);
-        printf("mov16 %s, %s\n", tokens[1], tokens[2]);
+        mov16_r_r(reg, reg2);
+        printf("mov %s, %s\n", tokens[1], tokens[2]);
     }
     free(values);
 }
+
+void asm_mov16_mi_i(FILE *file, char **tokens)
+{
+
+    int *values = asm_get_number(tokens, 2);
+    int *values2 = asm_get_number(tokens, 3);
+    int value = values2[0];
+    int offset = values[0];
+    printf("value: %d, offset: %d\n", value, offset);
+    if (values[1] == 0 && values2[1] == 0)
+    {
+        // mov reg offset value
+        int reg = convert_string_to_reg(tokens[1]);
+        if (reg == -1)
+        {
+            printf("Error: Register %s not found\n", tokens[1]);
+            exit(1);
+        }
+
+        mov16_mi_i(reg, offset, value);
+        printf("mov %s, off:%d, val:%d\n", tokens[1], offset, value);
+    }
+    else
+    {
+        printf("Error: Invalid number\n");
+        exit(1);
+    }
+}
+
+void asm_mov16_r_m(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int reg2 = convert_string_to_reg(tokens[2]);
+
+    if (reg1 == -1 || reg2 == -1)
+    {
+        printf("Error: Register %s or %s not found\n", tokens[1], tokens[2]);
+        exit(1);
+    }
+
+    mov16_r_m(reg1, reg2);
+    printf("mov %s, %s\n", tokens[1], tokens[2]);
+}
+
+void asm_mov16_m_i(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int *values = asm_get_number(tokens, 2);
+    int value = values[0];
+    if (values[1] == 0)
+    {
+        if (reg1 == -1)
+        {
+            printf("Error: Register %s not found\n", tokens[1]);
+            exit(1);
+        }
+
+        mov16_m_i(reg1, value);
+        printf("mov %s, %d\n", tokens[1], value);
+    }
+    else
+    {
+        printf("Error: Invalid number\n");
+        exit(1);
+    }
+    free(values);
+}
+
+void asm_mov16_m_r(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int reg2 = convert_string_to_reg(tokens[2]);
+
+    if (reg1 == -1 || reg2 == -1)
+    {
+        printf("Error: Register %s or %s not found\n", tokens[1], tokens[2]);
+        exit(1);
+    }
+
+    mov16_m_r(reg1, reg2);
+    printf("mov %s, %s\n", tokens[1], tokens[2]);
+}
+
+void asm_mov16_mr_r(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int reg2 = convert_string_to_reg(tokens[2]);
+    int reg3 = convert_string_to_reg(tokens[3]);
+
+    if (reg1 == -1 || reg2 == -1 || reg3 == -1)
+    {
+        printf("Error: Register %s or %s or %s not found\n", tokens[1], tokens[2], tokens[3]);
+        exit(1);
+    }
+
+    mov16_mr_r(reg1, reg2, reg3);
+    printf("mov [%s + %s], %s\n", tokens[1], tokens[2], tokens[3]);
+}
+
+void asm_mov16_r_mr(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int reg2 = convert_string_to_reg(tokens[2]);
+    int reg3 = convert_string_to_reg(tokens[3]);
+
+    if (reg1 == -1 || reg2 == -1 || reg3 == -1)
+    {
+        printf("Error: Register %s or %s or %s not found\n", tokens[1], tokens[2], tokens[3]);
+        exit(1);
+    }
+
+    mov16_r_mr(reg1, reg2, reg3);
+    printf("mov %s, [%s + %s]\n", tokens[1], tokens[2], tokens[3]);
+}
+
+void asm_mov16_mr_i(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int reg2 = convert_string_to_reg(tokens[2]);
+    int *values = asm_get_number(tokens, 3);
+    int value = values[0];
+    if (values[1] == 0)
+    {
+        if (reg1 == -1 || reg2 == -1)
+        {
+            printf("Error: Register %s or %s not found\n", tokens[1], tokens[2]);
+            exit(1);
+        }
+
+        mov16_mr_i(reg1, reg2, value);
+        printf("mov %s, [%s + %d]\n", tokens[1], tokens[2], value);
+    }
+    else
+    {
+        printf("Error: Invalid number\n");
+        exit(1);
+    }
+    free(values);
+}
+
+void asm_mov16_mi_r(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int reg2 = convert_string_to_reg(tokens[3]);
+    int *values = asm_get_number(tokens, 2);
+    int offset = values[0];
+    if (values[1] == 0)
+    {
+        if (reg1 == -1 || reg2 == -1)
+        {
+            printf("Error: Register %s or %s not found\n", tokens[1], tokens[3]);
+            exit(1);
+        }
+
+        mov16_mi_r(reg1, offset, reg2);
+        printf("mov %s, [%d + %s]\n", tokens[1], offset, tokens[3]);
+    }
+    else
+    {
+        printf("Error: Invalid number\n");
+        exit(1);
+    }
+    free(values);
+}
+
+void asm_mov16_r_mi(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int reg2 = convert_string_to_reg(tokens[2]);
+    int *values = asm_get_number(tokens, 3);
+    int offset = values[0];
+    if (values[1] == 0)
+    {
+        if (reg1 == -1 || reg2 == -1)
+        {
+            printf("Error: Register %s or %s not found\n", tokens[1], tokens[2]);
+            exit(1);
+        }
+
+        mov16_r_mi(reg1, reg2, offset);
+        printf("mov %s, %s + %d\n", tokens[1], tokens[2], offset);
+    }
+    else
+    {
+        printf("Error: Invalid number\n");
+        exit(1);
+    }
+    free(values);
+}
+
 
 int parse_movs16(FILE *file, char **tokens)
 {
@@ -68,9 +258,49 @@ int parse_movs16(FILE *file, char **tokens)
         asm_mov16(file, tokens);
         return 1;
     }
-    else if (strcmp(tokens[0], "mov16") == 0)
+    else if (strcmp(tokens[0], "mov16_mi_i") == 0)
     {
-        asm_mov16(file, tokens);
+        asm_mov16_mi_i(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "mov16_r_m") == 0)
+    {
+        asm_mov16_r_m(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "mov16_m_i") == 0)
+    {
+        asm_mov16_m_i(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "mov16_m_r") == 0)
+    {
+        asm_mov16_m_r(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "mov16_mr_r") == 0)
+    {
+        asm_mov16_mr_r(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "mov16_r_mr") == 0)
+    {
+        asm_mov16_r_mr(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "mov16_mr_i") == 0)
+    {
+        asm_mov16_mr_i(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "mov16_mi_r") == 0)
+    {
+        asm_mov16_mi_r(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "mov16_r_mi") == 0)
+    {
+        asm_mov16_r_mi(file, tokens);
         return 1;
     }
     else

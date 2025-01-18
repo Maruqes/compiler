@@ -161,7 +161,7 @@ void asm_mov32(FILE *file, char **tokens)
     if (values[1] == 0 && reg != -1)
     {
 
-        mov_reg32(reg, value);
+        mov32_r_i(reg, value);
         printf("mov %s, %d\n", tokens[1], value);
     }
     else if (values[1] == 2 && reg != -1)
@@ -190,7 +190,7 @@ void asm_mov32(FILE *file, char **tokens)
             }
         }
 
-        mov_reg32_reg32(reg, reg2);
+        mov32_r_r(reg, reg2);
         printf("mov %s, %s\n", tokens[1], tokens[2]);
     }
     free(values);
@@ -222,6 +222,60 @@ void asm_mov32_mi_i(FILE *file, char **tokens)
         printf("Error: Invalid number\n");
         exit(1);
     }
+}
+
+void asm_mov32_r_m(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int reg2 = convert_string_to_reg(tokens[2]);
+
+    if (reg1 == -1 || reg2 == -1)
+    {
+        printf("Error: Register %s or %s not found\n", tokens[1], tokens[2]);
+        exit(1);
+    }
+
+    mov32_r_m(reg1, reg2);
+    printf("mov %s, %s\n", tokens[1], tokens[2]);
+}
+
+void asm_mov32_m_i(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int *values = asm_get_number(tokens, 2);
+    int value = values[0];
+    if (values[1] == 0)
+    {
+        if (reg1 == -1)
+        {
+            printf("Error: Register %s not found\n", tokens[1]);
+            exit(1);
+        }
+
+        mov32_m_i(reg1, value);
+        printf("mov %s, %d\n", tokens[1], value);
+    }
+    else
+    {
+        printf("Error: Invalid number\n");
+        exit(1);
+    }
+    free(values);
+}
+
+void asm_mov32_m_r(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int reg2 = convert_string_to_reg(tokens[2]);
+
+    if (reg1 == -1 || reg2 == -1)
+    {
+        printf("Error: Register %s or %s not found\n", tokens[1], tokens[2]);
+        exit(1);
+    }
+
+    mov32_m_r(reg1, reg2);
+    printf("mov %s, %s\n", tokens[1], tokens[2]);
 }
 
 void asm_mov32_mr_r(FILE *file, char **tokens)
@@ -424,14 +478,24 @@ int parse_movs(FILE *file, char **tokens)
         asm_mov32(file, tokens);
         return 1;
     }
-    else if (strcmp(tokens[0], "syscall") == 0)
-    {
-        our_syscall();
-        return 1;
-    }
     else if (strcmp(tokens[0], "mov32_mi_i") == 0)
     {
         asm_mov32_mi_i(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "mov32_r_m") == 0)
+    {
+        asm_mov32_r_m(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "mov32_m_i") == 0)
+    {
+        asm_mov32_m_i(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "mov32_m_r") == 0)
+    {
+        asm_mov32_m_r(file, tokens);
         return 1;
     }
     else if (strcmp(tokens[0], "mov32_mr_r") == 0)
@@ -510,6 +574,11 @@ int parse_extras(FILE *file, char **tokens)
             printf("Error: Invalid number\n");
             exit(1);
         }
+    }
+    else if (strcmp(tokens[0], "syscall") == 0)
+    {
+        our_syscall();
+        return 1;
     }
     else
     {

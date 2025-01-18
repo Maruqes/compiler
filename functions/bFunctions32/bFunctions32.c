@@ -143,7 +143,7 @@ void mov32_r_r(uint8_t reg1, uint8_t reg2)
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
-    opcode_bytes[0] = 0x8B; // talvez 0x89
+    opcode_bytes[0] = 0x89;
     opcode_bytes[1] = 0xC0 + reg1 + (reg2 * 8);
 
     OpCode new_opcode;
