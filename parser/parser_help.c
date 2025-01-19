@@ -59,20 +59,6 @@ int get_check_free_semicolon(FILE *f)
     return 1;
 }
 
-// LINUX
-//  so funciona no linux este maneira de passar parametros :D
-//   retorna no eax o address da mem
-void allocMem(int numberOfPages)
-{
-    mov_reg32(REG_EAX, 192);
-    mov_reg32(REG_EBX, 0);
-    mov_reg32(REG_ECX, numberOfPages * 4096);
-    mov_reg32(REG_EDX, 3);
-    mov_reg32(REG_ESI, 34);
-    mov_reg32(REG_EDI, -1);
-    our_syscall();
-}
-
 void set_param_manually(int *params_count)
 {
     pop_eax();
@@ -93,7 +79,7 @@ void set_params(FILE *file)
     }
     uint32_t params_count = 0;
 
-    allocMem(1);
+    allocMemoryASM(NUMBER_OF_PAGES);
     push_eax();
 
     char *ret_from_func = parse_until_charset(file, "),");

@@ -208,8 +208,6 @@ int main()
     }
     printf("Current seek position: %ld\n", (long)current_pos);
 
-
-
     write_all_custom_code(fd);
     write_all_string_constants(fd);
 

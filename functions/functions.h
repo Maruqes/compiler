@@ -97,7 +97,6 @@ void mov_edi_from_var(char *symbol, int var_offset);
 
 // extra
 
-
 void inc_eax();
 void inc_ebx();
 void inc_ecx();
@@ -117,5 +116,6 @@ void ret();
 void nop();
 
 void interrupt_call(int interrupt);
-
+void freeMemoryASM(int pageNumber, uint8_t reg_with_address);
+void allocMemoryASM(int numberOfPages);
 #endif // FUNCTIONS_H

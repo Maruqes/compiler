@@ -259,16 +259,25 @@ void parse_create_function(FILE *file)
     free(name);
 }
 
+
 // return in EAX
 void parse_create_return(FILE *file)
 {
-    pop_ebx();
-    push_eax();
-    mov_eax(91);
-    mov_ecx(4096);
-    our_syscall();
 
-    pop_eax();
+    pop_ebx(); // popa params addr
+
+    push_eax(); // pusha return value   ha casos em que o return value esta apenas no eax->
+    /*
+        ...
+        mov eax, 10
+        return;
+
+        o valor retornado esta em eax e nao é sobreescrito pelo parse_after_equal
+    */
+
+    freeMemoryASM(NUMBER_OF_PAGES, REG_EBX);
+
+    pop_eax(); // popa return value
 
     parse_after_equal(file);
 

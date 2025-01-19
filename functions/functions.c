@@ -2,6 +2,8 @@
 #include "../types/strings.h"
 #include "../arithmetic/arithmetic.h"
 #include "../variables/variables.h"
+#include "../push_pop/push_pop.h"
+#include "bFunctions32/bFunctions32.h"
 
 size_t custom_code_size = 0;
 
@@ -636,4 +638,26 @@ void interrupt_call(int interrupt)
     }
     op_codes_array[op_codes_array_size] = new_opcode;
     op_codes_array_size++;
+}
+
+// LINUX
+//  so funciona no linux este maneira de passar parametros :D
+//   retorna no eax o address da mem
+void allocMemoryASM(int numberOfPages)
+{
+    mov_reg32(REG_EAX, 192);
+    mov_reg32(REG_EBX, 0);
+    mov_reg32(REG_ECX, numberOfPages * 4096);
+    mov_reg32(REG_EDX, 3);
+    mov_reg32(REG_ESI, 34);
+    mov_reg32(REG_EDI, -1);
+    our_syscall();
+}
+
+void freeMemoryASM(int pageNumber, uint8_t reg_with_address)
+{
+    mov32_r_r(REG_EBX, reg_with_address);
+    mov_eax(91);
+    mov_ecx(4096 * pageNumber);
+    our_syscall();
 }

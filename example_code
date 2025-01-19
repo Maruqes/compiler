@@ -108,7 +108,7 @@ func int setLetter(int addr, int offset, int letter){
     asm(mov32 eax offset);
     asm(mov8_mr_r ecx eax bl);
 
-    return;
+    return 0;
 }
 
 func int main()
