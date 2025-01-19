@@ -158,9 +158,10 @@ func int main()
     
     asm(mov32_mi_i ebx 4 10);
 
-    asm(mov32 eax 1);
-    asm(mov32 ecx 65);
-    asm(mov16_mr_r ebx eax ecx);
+    asm(mov32 eax 0);
+    asm(mov8 cl 66);
+    asm(mov8_mr_r ebx eax cl);
+  
 
     asm(mov32 ecx ebx);
     asm(mov32 ebx testeasm2);
