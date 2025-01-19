@@ -250,7 +250,6 @@ void asm_mov8_r_mi(FILE *file, char **tokens)
     free(values);
 }
 
-
 int parse_movs8(FILE *file, char **tokens)
 {
     if (strcmp(tokens[0], "mov8") == 0)

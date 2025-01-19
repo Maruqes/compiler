@@ -82,9 +82,9 @@ func int ret10if10(int a){
 }
 
 
-func int allocMem1Page(int a, int b){
-    int pge = 1;
-    asm(mov32 ecx pge);
+func int allocMem1Page(int pge){
+    int page = pge * 4096;
+    asm(mov32 ecx page);
     asm(mov32 eax 192);
     asm(mov32 ebx 0);
     asm(mov32 edx 3);
@@ -94,95 +94,42 @@ func int allocMem1Page(int a, int b){
     return;
 }
 
+func int createString(){
+    asm(pusha);
+    int page1 = allocMem1Page(2);
+    asm(popa);
+    return page1;
+}
+
+func int setLetter(int addr, int offset, int letter){
+
+    asm(mov32 ecx addr);
+    asm(mov8 bl letter);
+    asm(mov32 eax offset);
+    asm(mov8_mr_r ecx eax bl);
+
+    return;
+}
+
 func int main()
 {
-    int result = -1 + 1;
+   
+    int addr = createString();
+    setLetter(addr, 0, 'H');
+    setLetter(addr, 1, 'E');
+    setLetter(addr, 2, 'L');
+    setLetter(addr, 3, 'L');
+    setLetter(addr, 4, 'O');
+    setLetter(addr, 5, 10);
 
-    int mds = 60;
-    int a = 10;
-    int *b = &a;
 
-
-    int c = 20;
-    int *d = &c;
-    int mdsquelindo = 100;
-
-    result = result + test_whiles();
-    result = result + test();
-    result = result + test_fors();
-    result = result + test_ifs();
-    result = result + test_deaddressing();  
-    result = result + test_params(*b+1-2+1, *d+60+30-90 + mdsquelindo - mdsquelindo, 30+10-10);
-    result = result + testRecursion(1);
-    result = result + nestedForLoops();
-    result = result + nestedIfs();
-    for int i = 0; i < 10; i++;{
-       result = result + ret10if10(10);
-    }
-        
-    result++;    
-    result--;
-
-    int testeasm = 4;
-    int testeasm2 = 1;
-    
-  
-    asm(mov32 eax 0);
-
-    asm(create_label testLabel);
-    asm(push eax);
-
-    asm(pusha);
-    int page1 = allocMem1Page();
-    asm(popa);
-
-    asm(mov32 ebx page1);
-    asm(mov32 eax 65);
-    asm(mov32 ecx 0);
-
-    
-    asm(mov32_mr_r ebx ecx eax);
-
-    asm(mov32 eax 0);
-    asm(mov32_r_mr eax ebx ecx);
-
-    asm(inc ecx);
-    asm(inc eax);
-    asm(mov32_mr_r ebx ecx eax);
-    asm(inc ecx);
-    asm(inc eax);
-    asm(mov32_mr_r ebx ecx eax);
-    asm(inc ecx);
-    asm(inc eax);
-    asm(mov32_mr_r ebx ecx eax);
-    
-    asm(mov32_mi_i ebx 4 10);
-
-    asm(mov32 eax 0);
-    asm(mov8 cl 66);
-    asm(mov8_mr_r ebx eax cl);
-  
-
-    asm(mov32 ecx ebx);
-    asm(mov32 ebx testeasm2);
-    asm(mov32 eax testeasm);
-    asm(mov32 edx 5);
+    asm(mov32 ecx addr);
+    asm(mov32 ebx 1);
+    asm(mov32 eax 4);
+    asm(mov32 edx 6);
     asm(syscall);
 
-    asm(pop eax);
-    asm(inc eax);
-    asm(mov32 ebx 2);
-    asm(cmp32 eax ebx);
-    asm(jne testLabel);
 
 
-    asm(mov32 ecx 0);
-    asm(mov16 ecx 350);
-    asm(mov32 eax ecx);
-    asm(mov32 result eax);
-
-
-
-
-    return result;
+    return 350;
 }

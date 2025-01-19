@@ -144,6 +144,16 @@ int *asm_get_number(char **str, int pos)
         push_eax();
         res[1] = 2;
     }
+    else if (str[pos][0] == '\'')
+    {
+        res[0] = str[pos + 1][0];
+        res[1] = 0;
+
+        if(str[pos + 2][0] != '\''){
+            printf("Error: Invalid character\n");
+            exit(1);
+        }
+    }
     else
     {
         res[1] = -1;
