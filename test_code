@@ -117,7 +117,7 @@ func dd main()
     dd addr = createString();
 
     db H = 'H';
-    db E = 'E';
+    db E = 'M';
 
     H = 65346;
 

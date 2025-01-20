@@ -5,6 +5,9 @@
 #include "../arithmetic/arithmetic.h"
 #include "../parser/parser_help.h"
 #include "../functions/bFunctions32/bFunctions32.h"
+#include "../functions/bFunctions8/bFunctions8.h"
+#include "../functions/bFunctions16/bFunctions16.h"
+#include "../parser/int/parser_int.h"
 
 typedef struct Scope_var
 {
@@ -149,7 +152,23 @@ void set_var(char *symbol, uint32_t value)
         {
             if (strcmp(symbol, scopes_array[i].variables_array[j].symbol) == 0 && strcmp(scopes_array[i].variables_array[j].scope, get_current_scope()) == 0)
             {
-                mov32_mi_i(REG_EBP, -scopes_array[i].variables_array[j].offset, value);
+                if (scopes_array[i].variables_array[j].size == DD)
+                {
+                    mov32_mi_i(REG_EBP, -scopes_array[i].variables_array[j].offset, value);
+                }
+                else if (scopes_array[i].variables_array[j].size == DW)
+                {
+                    mov16_mi_i(REG_EBP, -scopes_array[i].variables_array[j].offset, value);
+                }
+                else if (scopes_array[i].variables_array[j].size == DB)
+                {
+                    mov8_mi_i(REG_EBP, -scopes_array[i].variables_array[j].offset, value);
+                }
+                else
+                {
+                    fprintf(stderr, "Error: Invalid size for symbol %s\n", symbol);
+                    exit(EXIT_FAILURE);
+                }
                 return;
             }
         }
@@ -167,7 +186,23 @@ void set_var_with_reg(char *symbol, uint8_t reg)
         {
             if (strcmp(symbol, scopes_array[i].variables_array[j].symbol) == 0 && strcmp(scopes_array[i].variables_array[j].scope, get_current_scope()) == 0)
             {
-                mov32_mi_r(REG_EBP, -scopes_array[i].variables_array[j].offset, reg);
+                if (scopes_array[i].variables_array[j].size == DD)
+                {
+                    mov32_mi_r(REG_EBP, -scopes_array[i].variables_array[j].offset, reg);
+                }
+                else if (scopes_array[i].variables_array[j].size == DW)
+                {
+                    mov16_mi_r(REG_EBP, -scopes_array[i].variables_array[j].offset, reg);
+                }
+                else if (scopes_array[i].variables_array[j].size == DB)
+                {
+                    mov8_mi_r(REG_EBP, -scopes_array[i].variables_array[j].offset, reg);
+                }
+                else
+                {
+                    fprintf(stderr, "Error: Invalid size for symbol %s\n", symbol);
+                    exit(EXIT_FAILURE);
+                }
                 return;
             }
         }
@@ -186,7 +221,23 @@ void get_var(uint8_t reg, char *symbol)
         {
             if (strcmp(symbol, scopes_array[i].variables_array[j].symbol) == 0 && strcmp(scopes_array[i].variables_array[j].scope, get_current_scope()) == 0)
             {
-                mov32_r_mi(reg, REG_EBP, -scopes_array[i].variables_array[j].offset);
+                if (scopes_array[i].variables_array[j].size == DD)
+                {
+                    mov32_r_mi(reg, REG_EBP, -scopes_array[i].variables_array[j].offset);
+                }
+                else if (scopes_array[i].variables_array[j].size == DW)
+                {
+                    mov16_r_mi(reg, REG_EBP, -scopes_array[i].variables_array[j].offset);
+                }
+                else if (scopes_array[i].variables_array[j].size == DB)
+                {
+                    mov8_r_mi(reg, REG_EBP, -scopes_array[i].variables_array[j].offset);
+                }
+                else
+                {
+                    fprintf(stderr, "Error: Invalid size for symbol %s\n", symbol);
+                    exit(EXIT_FAILURE);
+                }
                 return;
             }
         }

@@ -32,7 +32,7 @@ void parse_create_int_pointer(FILE *file, char *token, int after_equal)
         exit(1);
     }
 
-    create_var(name, 4);
+    create_var(name, DD);
 
     if (after_equal)
     {
@@ -74,11 +74,16 @@ void parse_set_value_in_the_pointer_address(FILE *file)
 }
 
 // normal ints
-void parse_create_int(FILE *file)
+void parse_create_int(FILE *file, int data_length)
 {
     char *name = get_token(file);
     if (name[0] == '*')
     {
+        if (data_length != 4)
+        {
+            printf("Error: Pointer can only be int/dd\n");
+            exit(1);
+        }
         parse_create_int_pointer(file, name, 1);
         return;
     }
@@ -93,7 +98,7 @@ void parse_create_int(FILE *file)
     }
 
     printf("int %s\n", name);
-    create_var(name, 4);
+    create_var(name, data_length);
     parse_after_equal(file);
     set_var_with_reg(name, REG_EAX);
 

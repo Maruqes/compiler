@@ -8,10 +8,14 @@ SOURCES = main.c functions/functions.c types/strings.c \
 		  functions/bFunctions16/bFunctions16.c \
 		  functions/bFunctions8/bFunctions8.c \
 
+runtest:
+	gcc $(SOURCES) -lm -Og -g -o a.out
+	./a.out test_code testRun
+	go run test/main.go
 
 run:
 	gcc $(SOURCES) -lm -Og -g -o a.out
-	./a.out	
+	./a.out example_code hello_elf_32
 	./hello_elf_32
 
 

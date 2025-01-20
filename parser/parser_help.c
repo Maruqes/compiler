@@ -141,7 +141,7 @@ void free_functions()
 
 int checkFuncType(char *type)
 {
-    if (strcmp(type, "int") != 0)
+    if (strcmp(type, "dd") != 0)
     {
         return 1;
     }

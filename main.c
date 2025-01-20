@@ -108,13 +108,22 @@ void print(char *symbol_name, uint32_t size)
     popa();
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+    if (argc != 3)
+    {
+        printf("Usage: %s <file>\n", argv[0]);
+        return 1;
+    }
+
+    char *filename = argv[1];
+    char *filenameOutput = argv[2];
+
     create_new_stack();
 
     jmp("start");
 
-    start_parsing("example_code");
+    start_parsing(filename);
 
     create_label("start");
     call("main");
@@ -179,7 +188,7 @@ int main()
     phdr.p_memsz = custom_code_size + data_size;
 
     // Write the ELF file
-    int fd = open("hello_elf_32", O_CREAT | O_WRONLY | O_TRUNC, 0755);
+    int fd = open(filenameOutput, O_CREAT | O_WRONLY | O_TRUNC, 0755);
     if (fd < 0)
     {
         perror("open");

@@ -206,7 +206,7 @@ void get_params(FILE *file)
             token = get_token(file);
         }
 
-        if (strcmp(token, "int") == 0)
+        if (strcmp(token, "dd") == 0)
         {
             char *name = get_token(file);
 
@@ -258,7 +258,6 @@ void parse_create_function(FILE *file)
     free(type);
     free(name);
 }
-
 
 // return in EAX
 void parse_create_return(FILE *file)
@@ -444,9 +443,23 @@ int parse_it(char *token, FILE *file)
         return 1;
     }
 
-    if (strcmp(token, "int") == 0)
+    if (strcmp(token, "dd") == 0)
     {
-        parse_create_int(file);
+        parse_create_int(file, DD);
+        free(token);
+        return 1;
+    }
+
+    if (strcmp(token, "dw") == 0)
+    {
+        parse_create_int(file, DW);
+        free(token);
+        return 1;
+    }
+
+    if (strcmp(token, "db") == 0)
+    {
+        parse_create_int(file, DB);
         free(token);
         return 1;
     }
