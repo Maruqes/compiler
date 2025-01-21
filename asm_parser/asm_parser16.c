@@ -21,7 +21,7 @@ void asm_mov16(FILE *file, char **tokens)
     int reg = convert_string_to_reg(tokens[1]);
     // checking if reg is valid inside the && ifs
 
-    int *values = asm_get_number(tokens, 2);
+    int *values = asm_get_number(tokens, 2, reg);
     int value = values[0];
     if (values[1] == 0 && reg != -1)
     {
@@ -64,8 +64,8 @@ void asm_mov16(FILE *file, char **tokens)
 void asm_mov16_mi_i(FILE *file, char **tokens)
 {
 
-    int *values = asm_get_number(tokens, 2);
-    int *values2 = asm_get_number(tokens, 3);
+    int *values = asm_get_number(tokens, 2, -1);
+    int *values2 = asm_get_number(tokens, 3, -1);
     int value = values2[0];
     int offset = values[0];
     printf("value: %d, offset: %d\n", value, offset);
@@ -107,7 +107,7 @@ void asm_mov16_r_m(FILE *file, char **tokens)
 void asm_mov16_m_i(FILE *file, char **tokens)
 {
     int reg1 = convert_string_to_reg(tokens[1]);
-    int *values = asm_get_number(tokens, 2);
+    int *values = asm_get_number(tokens, 2, -1);
     int value = values[0];
     if (values[1] == 0)
     {
@@ -179,7 +179,7 @@ void asm_mov16_mr_i(FILE *file, char **tokens)
 {
     int reg1 = convert_string_to_reg(tokens[1]);
     int reg2 = convert_string_to_reg(tokens[2]);
-    int *values = asm_get_number(tokens, 3);
+    int *values = asm_get_number(tokens, 3, -1);
     int value = values[0];
     if (values[1] == 0)
     {
@@ -204,7 +204,7 @@ void asm_mov16_mi_r(FILE *file, char **tokens)
 {
     int reg1 = convert_string_to_reg(tokens[1]);
     int reg2 = convert_string_to_reg(tokens[3]);
-    int *values = asm_get_number(tokens, 2);
+    int *values = asm_get_number(tokens, 2, -1);
     int offset = values[0];
     if (values[1] == 0)
     {
@@ -229,7 +229,7 @@ void asm_mov16_r_mi(FILE *file, char **tokens)
 {
     int reg1 = convert_string_to_reg(tokens[1]);
     int reg2 = convert_string_to_reg(tokens[2]);
-    int *values = asm_get_number(tokens, 3);
+    int *values = asm_get_number(tokens, 3, -1);
     int offset = values[0];
     if (values[1] == 0)
     {
@@ -249,7 +249,6 @@ void asm_mov16_r_mi(FILE *file, char **tokens)
     }
     free(values);
 }
-
 
 int parse_movs16(FILE *file, char **tokens)
 {

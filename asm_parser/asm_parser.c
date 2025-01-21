@@ -115,7 +115,7 @@ int convert_string_to_reg(char *reg)
 }
 
 // returns the in [0] the value  is [1] = 0 if number, == 2 if variable (pushed to stack, will be poped later) and -1 if invalid
-int *asm_get_number(char **str, int pos)
+int *asm_get_number(char **str, int pos, uint8_t reg)
 {
     int *res = malloc(2 * sizeof(int));
     if (res == NULL)
@@ -139,9 +139,14 @@ int *asm_get_number(char **str, int pos)
     }
     else if (does_var_exist(str[pos]))
     {
-        // var
-        get_var(REG_EAX, str[pos]);
-        push_eax();
+        if (reg == -1)
+        {
+            printf("Error: Cannot pass a variable this way\n");
+            exit(1);
+        }
+        // mov32 r, var
+        get_var(reg, str[pos]);
+        push_reg(reg);
         res[1] = 2;
     }
     else if (str[pos][0] == '\'')
@@ -149,7 +154,8 @@ int *asm_get_number(char **str, int pos)
         res[0] = str[pos + 1][0];
         res[1] = 0;
 
-        if(str[pos + 2][0] != '\''){
+        if (str[pos + 2][0] != '\'')
+        {
             printf("Error: Invalid character\n");
             exit(1);
         }
@@ -166,7 +172,7 @@ void asm_mov32(FILE *file, char **tokens)
     int reg = convert_string_to_reg(tokens[1]);
     // checking if reg is valid inside the && ifs
 
-    int *values = asm_get_number(tokens, 2);
+    int *values = asm_get_number(tokens, 2, reg);
     int value = values[0];
     if (values[1] == 0 && reg != -1)
     {
@@ -209,8 +215,8 @@ void asm_mov32(FILE *file, char **tokens)
 void asm_mov32_mi_i(FILE *file, char **tokens)
 {
 
-    int *values = asm_get_number(tokens, 2);
-    int *values2 = asm_get_number(tokens, 3);
+    int *values = asm_get_number(tokens, 2, -1);
+    int *values2 = asm_get_number(tokens, 3, -1);
     int value = values2[0];
     int offset = values[0];
     printf("value: %d, offset: %d\n", value, offset);
@@ -252,7 +258,7 @@ void asm_mov32_r_m(FILE *file, char **tokens)
 void asm_mov32_m_i(FILE *file, char **tokens)
 {
     int reg1 = convert_string_to_reg(tokens[1]);
-    int *values = asm_get_number(tokens, 2);
+    int *values = asm_get_number(tokens, 2, -1);
     int value = values[0];
     if (values[1] == 0)
     {
@@ -324,7 +330,7 @@ void asm_mov32_mr_i(FILE *file, char **tokens)
 {
     int reg1 = convert_string_to_reg(tokens[1]);
     int reg2 = convert_string_to_reg(tokens[2]);
-    int *values = asm_get_number(tokens, 3);
+    int *values = asm_get_number(tokens, 3, -1);
     int value = values[0];
     if (values[1] == 0)
     {
@@ -349,7 +355,7 @@ void asm_mov32_mi_r(FILE *file, char **tokens)
 {
     int reg1 = convert_string_to_reg(tokens[1]);
     int reg2 = convert_string_to_reg(tokens[3]);
-    int *values = asm_get_number(tokens, 2);
+    int *values = asm_get_number(tokens, 2, -1);
     int offset = values[0];
     if (values[1] == 0)
     {
@@ -374,7 +380,7 @@ void asm_mov32_r_mi(FILE *file, char **tokens)
 {
     int reg1 = convert_string_to_reg(tokens[1]);
     int reg2 = convert_string_to_reg(tokens[2]);
-    int *values = asm_get_number(tokens, 3);
+    int *values = asm_get_number(tokens, 3, -1);
     int offset = values[0];
     if (values[1] == 0)
     {
@@ -573,7 +579,7 @@ int parse_extras(FILE *file, char **tokens)
     }
     else if (strcmp(tokens[0], "int") == 0)
     {
-        int *values = asm_get_number(tokens, 1);
+        int *values = asm_get_number(tokens, 1, -1);
         if (values[1] == 0)
         {
             interrupt_call(values[0]);
