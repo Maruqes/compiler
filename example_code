@@ -28,11 +28,6 @@ func dd test_ifs(){
     return a + 1 - 1;
 }
 
-func dd test_arrays_arr_string(){
-    const string testS = "Hello\n";
-    return 0;
-}
-
 func dd test_fors(){
     dd a = 0;
     for dd i = 0; i < 10; i++;{
@@ -48,8 +43,8 @@ func dd testRecursion(dd a){
     return a;
 }
 
-func dd test_params(dd a, dd b, dd c){
-    return a + b + c;
+func dd test_params(dd a, dd b, dd c, dw d, db e){
+    return a + b + c + d + e;
 }
 
 func dd nestedForLoops(){
@@ -101,7 +96,11 @@ func dd createString(){
     return page1;
 }
 
-func dd setLetter(dd addr, dd offset, dd letter){
+func dd setLetter(dd addr, dd offset, db letter, dw letter2){
+
+    if letter2 = 65535{
+        return 0;
+    }
 
     asm(mov32 ecx addr);
     asm(mov8 bl letter);
@@ -111,30 +110,34 @@ func dd setLetter(dd addr, dd offset, dd letter){
     return 0;
 }
 
+func dd printString(dd addr, dd length){
+    asm(mov32 ecx addr);
+    asm(mov32 ebx 1);
+    asm(mov32 edx length);
+    asm(mov32 eax 4);
+    asm(syscall);
+    return 0;
+}
+
 func dd main()
 {
    
     dd addr = createString();
 
-    db H = 'H';
+    db H = 'P';
     db E = 'E';
 
-    H = 65346;
+    H = 65352;
 
-    setLetter(addr, 0, H);
-    setLetter(addr, 1, E);
-    setLetter(addr, 2, 'L');
-    setLetter(addr, 3, 'L');
-    setLetter(addr, 4, 'O');
-    setLetter(addr, 5, 10);
+    setLetter(addr, 0, H, 4294967294);
+    setLetter(addr, 1, E, 0);
+    setLetter(addr, 2, 'L', 0);
+    setLetter(addr, 3, 'L', 0);
+    setLetter(addr, 4, 'O', 0);
+    setLetter(addr, 5, 10, 0);
 
 
-    asm(mov32 ecx addr);
-    asm(mov32 ebx 1);
-    asm(mov32 eax 4);
-    asm(mov32 edx 6);
-    asm(syscall);
-
+    printString(addr, 6);
 
 
     return 350;

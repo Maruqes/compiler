@@ -59,6 +59,23 @@ int get_check_free_semicolon(FILE *f)
     return 1;
 }
 
+int checkFuncType(char *type)
+{
+    if (strcmp(type, "db") == 0)
+    {
+        return DB;
+    }
+    else if (strcmp(type, "dw") == 0)
+    {
+        return DW;
+    }
+    else if (strcmp(type, "dd") == 0)
+    {
+        return DD;
+    }
+    return 0;
+}
+
 void set_param_manually(int *params_count)
 {
     pop_eax();
@@ -137,15 +154,6 @@ void free_functions()
         free(functions[i].name);
     }
     free(functions);
-}
-
-int checkFuncType(char *type)
-{
-    if (strcmp(type, "dd") != 0)
-    {
-        return 1;
-    }
-    return 0;
 }
 
 char *current_scope = NULL;
@@ -444,29 +452,4 @@ void parse_inside_bracets_for_arrays(FILE *file)
     }
 
     free(next_token);
-}
-
-// string functions
-void parse_string_array_value_setter(FILE *file, char *arr_var_name)
-{
-    char *token = get_token(file); // get [
-    if (token[0] != '[')
-    {
-        printf("Error: Expected '['\n");
-        exit(1);
-    }
-
-    parse_inside_bracets_for_arrays(file); // get the index []
-    mov_reg32_reg32(REG_ECX, REG_EAX);
-    // seria multiplicado por 1 porque o offset de cada byte é 1
-    // em caso de int é necessario multiplicar ecx por 4
-    // porque ecx é o offset arr[1] em inteiro é (arr_addr + 4)
-
-    get_token(file); // skip '='
-    parse_after_equal(file);
-
-    mov_var_from_reg8_offREG(REG_AL, arr_var_name, REG_ECX);
-
-    free(token);
-    free(arr_var_name);
 }

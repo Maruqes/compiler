@@ -16,6 +16,8 @@
 #include "int/parser_int.h"
 #include "../asm_parser/asm_parser.h"
 #include "../functions/bFunctions32/bFunctions32.h"
+#include "../functions/bFunctions16/bFunctions16.h"
+#include "../functions/bFunctions8/bFunctions8.h"
 /*
 extra dar acesso a umas funcs ai do assembly mm
 function params
@@ -205,29 +207,45 @@ void get_params(FILE *file)
             free(token);
             token = get_token(file);
         }
-
-        if (strcmp(token, "dd") == 0)
-        {
-            char *name = get_token(file);
-
-            if (name[0] == '*')
-            {
-                free(name);
-                name = get_token(file);
-            }
-            printf("param %s\n", name);
-            create_var(name, 4);
-            mov32_r_mi(REG_EDX, REG_EAX, params_count * 4);
-            set_var_with_reg(name, REG_EDX);
-            params_count++;
-
-            free(name);
-        }
-        else
+        int paramType = checkFuncType(token);
+        if (paramType != DD && paramType != DW && paramType != DB)
         {
             printf("Error:  Unknown param get_params %s\n", token);
             exit(1);
         }
+        char *name = get_token(file);
+
+        if (name[0] == '*')
+        {
+            free(name);
+            name = get_token(file);
+        }
+        printf("param %s\n", name);
+        printf("TYPE %d\n", paramType);
+        mov_reg32(REG_DX, 0);
+        if (paramType == DD)
+        {
+            create_var(name, 4);
+            mov32_r_mi(REG_EDX, REG_EAX, params_count);
+            set_var_with_reg(name, REG_EDX);
+            params_count += 4;
+        }
+        else if (paramType == DW)
+        {
+            create_var(name, 2);
+            mov16_r_mi(REG_DX, REG_EAX, params_count);
+            set_var_with_reg(name, REG_DX);
+            params_count += 4;
+        }
+        else if (paramType == DB)
+        {
+            create_var(name, 1);
+            mov8_r_mi(REG_DL, REG_EAX, params_count);
+            set_var_with_reg(name, REG_DL);
+            params_count += 4;
+        }
+
+        free(name);
         free(token);
         token = get_token(file);
     }
@@ -237,7 +255,8 @@ void get_params(FILE *file)
 void parse_create_function(FILE *file)
 {
     char *type = get_token(file);
-    if (checkFuncType(type) == 1)
+    int check = checkFuncType(type);
+    if (check != DB && check != DW && check != DD)
     {
         printf("Error: Function return type must be int\n");
         exit(1);
@@ -403,29 +422,6 @@ void parse_while(FILE *file)
     free(temp_label_name_end);
 }
 
-void parse_create_constant(FILE *file)
-{
-    // can be -> const int a = 10;  const string a = "hello";
-    char *type = get_token(file);
-    char *name = get_token(file);
-    char *to_free = get_token(file); // skip '='
-    free(to_free);
-    char *value = get_token(file);
-
-    if (strcmp(type, "string") == 0)
-    {
-        printf("Creating string %s with value %s\n", name, value);
-        create_constant_string_before(name, value);
-    }
-    else
-    {
-        printf("Error: Type %s not found\n", type);
-        exit(EXIT_FAILURE);
-    }
-    // dont free name and value because they are used in the constant
-    free(type);
-}
-
 // should free token;
 int parse_it(char *token, FILE *file)
 {
@@ -464,14 +460,7 @@ int parse_it(char *token, FILE *file)
         return 1;
     }
 
-    if (strcmp(token, "const") == 0)
-    {
-        parse_create_constant(file);
-        free(token);
-        return 1;
-    }
-
-    // conditionals
+       // conditionals
     if (strcmp(token, "if") == 0)
     {
         parse_ifs(file);
@@ -513,13 +502,6 @@ int parse_it(char *token, FILE *file)
         printf("Calling function %s\n", token);
         parse_functions(file, token);
         free(token);
-        return 1;
-    }
-
-    if (is_a_string_beforeconstant(token))
-    {
-        printf("setting string value %s\n", token);
-        parse_string_array_value_setter(file, token);
         return 1;
     }
 

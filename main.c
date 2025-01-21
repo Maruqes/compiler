@@ -23,9 +23,8 @@ BIG TODO:
         explicar como as variaves funcionam, com o base pointer etc, links para outros docs;
 
 
-criar sistema de criacao de tipos de dados :D
+testes/arrays
 
-different data types
 strutcs
 incluir outros ficheiros
 sycalls/assembly

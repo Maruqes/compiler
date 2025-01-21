@@ -143,10 +143,13 @@ void parse_int_setter(FILE *file, char *token)
         printf("Error: Expected '=' '++' '--'\n");
         exit(1);
     }
-    free(op_type);
+    else if (op_type[0] == '=')
+    {
+        free(op_type);
 
-    parse_after_equal(file);
-    set_var_with_reg(token, REG_EAX);
+        parse_after_equal(file);
+        set_var_with_reg(token, REG_EAX);
 
-    free(token);
+        free(token);
+    }
 }
