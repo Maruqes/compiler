@@ -20,7 +20,7 @@ void parse_after_equal(FILE *file);
 void parse_int_array_creation(FILE *file, char *token, uint32_t arr_size);
 
 // pointers int
-void parse_create_int_pointer(FILE *file, char *token, int after_equal)
+void parse_create_int_pointer(FILE *file, char *token, int after_equal, uint32_t original_size)
 {
     char *name = get_token(file);
     char *to_free = get_token(file); // skip '='
@@ -32,7 +32,7 @@ void parse_create_int_pointer(FILE *file, char *token, int after_equal)
         exit(1);
     }
 
-    create_var(name, DD);
+    create_var(name, DD, original_size);
 
     if (after_equal)
     {
@@ -79,12 +79,8 @@ void parse_create_int(FILE *file, int data_length)
     char *name = get_token(file);
     if (name[0] == '*')
     {
-        if (data_length != 4)
-        {
-            printf("Error: Pointer can only be int/dd\n");
-            exit(1);
-        }
-        parse_create_int_pointer(file, name, 1);
+        // 4 is the size of a pointer
+        parse_create_int_pointer(file, name, 4, data_length);
         return;
     }
 
@@ -98,7 +94,7 @@ void parse_create_int(FILE *file, int data_length)
     }
 
     printf("int %s\n", name);
-    create_var(name, data_length);
+    create_var(name, data_length, data_length);
     parse_after_equal(file);
     set_var_with_reg(name, REG_EAX);
 

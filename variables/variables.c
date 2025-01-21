@@ -70,7 +70,7 @@ Scope_var *get_scope_var(char *scope)
     exit(EXIT_FAILURE);
 }
 
-void add_var_to_array(char *symbol, uint32_t size, char *scope)
+void add_var_to_array(char *symbol, uint32_t size, char *scope, uint32_t original_size)
 {
     Scope_var *current_scope = get_scope_var(scope);
 
@@ -83,6 +83,7 @@ void add_var_to_array(char *symbol, uint32_t size, char *scope)
     }
     strcpy(new_var.symbol, symbol);
     new_var.size = size;
+    new_var.original_size = original_size;
     new_var.offset = current_scope->variables_size + size;
 
     if (scope)
@@ -129,7 +130,7 @@ void free_variables_array()
     }
 }
 
-void create_var(char *symbol, uint32_t size)
+void create_var(char *symbol, uint32_t size, uint32_t original_size)
 {
     // check if var already exists
     if (does_var_exist(symbol))
@@ -138,7 +139,7 @@ void create_var(char *symbol, uint32_t size)
         exit(EXIT_FAILURE);
     }
 
-    add_var_to_array(symbol, size, get_current_scope());
+    add_var_to_array(symbol, size, get_current_scope(), original_size);
 
     sub(REG_ESP, size);
 }
@@ -227,10 +228,12 @@ void get_var(uint8_t reg, char *symbol)
                 }
                 else if (scopes_array[i].variables_array[j].size == DW)
                 {
+                    mov32_r_i(reg, 0); // clear reg
                     mov16_r_mi(reg, REG_EBP, -scopes_array[i].variables_array[j].offset);
                 }
                 else if (scopes_array[i].variables_array[j].size == DB)
                 {
+                    mov32_r_i(reg, 0); // clear reg
                     mov8_r_mi(reg, REG_EBP, -scopes_array[i].variables_array[j].offset);
                 }
                 else

@@ -15,6 +15,8 @@
 #include "parser.h"
 #include "int/parser_int.h"
 #include "../functions/bFunctions32/bFunctions32.h"
+#include "../functions/bFunctions16/bFunctions16.h"
+#include "../functions/bFunctions8/bFunctions8.h"
 
 // Função para validar se a string é um número
 int is_valid_number(const char *str)
@@ -190,7 +192,7 @@ void multiple_dereference(FILE *file, char *var, uint8_t reg)
     }
 
     int number_of_dereferences = 0; // only the extra
-
+    // var = *
     while (var[0] == '*')
     {
         free(var);
@@ -198,15 +200,32 @@ void multiple_dereference(FILE *file, char *var, uint8_t reg)
         number_of_dereferences++;
     }
 
+    // var = 'var'
+    int type = return_var_struct(var).original_size; // see struct var comment
+
+    // deadressing ate a ultimo valor
     get_var(REG_ECX, var);
     for (int i = 0; i < number_of_dereferences; i++)
     {
-        mov32_r_mr(REG_EDX, REG_EBP, REG_ECX); // ebp + ecx = value da var, entao edx = value da var
-                                               // valor esse que tambem é um address, repetir o processo
+        // ebp + ecx = value da var, entao edx = value da var
+        // valor esse que tambem é um address, repetir o processo
+        mov32_r_mr(REG_EDX, REG_EBP, REG_ECX);
         mov_reg32_reg32(REG_ECX, REG_EDX);
     }
 
-    mov32_r_mr(reg, REG_EBP, REG_ECX);
+    // get the value of the last address
+    if (type == DD)
+    {
+        mov32_r_mr(reg, REG_EBP, REG_ECX);
+    }
+    else if (type == DW)
+    {
+        mov16_r_mr(reg, REG_EBP, REG_ECX);
+    }
+    else if (type == DB)
+    {
+        mov8_r_mr(reg, REG_EBP, REG_ECX);
+    }
     free(var);
 }
 
@@ -231,7 +250,7 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
 
     if (reg == REG_EAX)
     {
-        printf("ECX can not be used here func: parse_data_types\n");
+        printf("EAX can not be used here func: parse_data_types\n");
         exit(1);
     }
 
@@ -387,69 +406,4 @@ void parse_after_equal(FILE *file)
     char *to = parse_until_charset(file, ";\n");
     printf("to: %s\n", to);
     free(to);
-}
-
-// returns in EAX whats inside [ ]
-void parse_inside_bracets_for_arrays(FILE *file)
-{
-    char *next_token = get_token(file);
-    if (next_token[0] == ']')
-    {
-        printf("Error: Expected number inside []\n");
-        exit(1);
-    }
-
-    parse_data_types(file, next_token, REG_EBX);
-    mov_reg32_reg32(REG_EAX, REG_EBX);
-
-    free(next_token);
-    next_token = get_token(file);
-    while (next_token[0] != ']')
-    {
-        if (next_token[0] == '+')
-        {
-            char *var = get_token(file);
-            parse_data_types(file, var, REG_EBX);
-            add_reg32(REG_EAX, REG_EBX);
-            free(var);
-        }
-        else if (next_token[0] == '-')
-        {
-            char *var = get_token(file);
-            parse_data_types(file, var, REG_EBX);
-            sub_reg32(REG_EAX, REG_EBX);
-            free(var);
-        }
-        else if (next_token[0] == '/')
-        {
-            char *var = get_token(file);
-            parse_data_types(file, var, REG_EBX);
-
-            mov_reg32_reg32(REG_ECX, REG_EAX);
-            div_reg32(REG_ECX, REG_EBX);
-            mov_reg32_reg32(REG_EAX, REG_ECX);
-
-            free(var);
-        }
-        else if (next_token[0] == '*')
-        {
-            char *var = get_token(file);
-            parse_data_types(file, var, REG_EBX);
-
-            mov_reg32_reg32(REG_ECX, REG_EAX);
-            mul_reg32(REG_ECX, REG_EBX);
-            mov_reg32_reg32(REG_EAX, REG_ECX);
-
-            free(var);
-        }
-        else
-        {
-            printf("Error: Expected operator\n");
-            exit(1);
-        }
-        free(next_token);
-        next_token = get_token(file);
-    }
-
-    free(next_token);
 }

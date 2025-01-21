@@ -30,7 +30,6 @@ char *get_current_scope();
 void free_current_scope();
 
 // parser functions
-void multiple_dereference(FILE *file, char *var, uint8_t reg);
 void parse_data_types(FILE *file, char *token, uint8_t reg);
 // returns in EAX
 void parse_after_equal(FILE *file);

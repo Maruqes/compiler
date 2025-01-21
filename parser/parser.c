@@ -222,24 +222,25 @@ void get_params(FILE *file)
         }
         printf("param %s\n", name);
         printf("TYPE %d\n", paramType);
-        mov_reg32(REG_DX, 0);
+        mov_reg32(REG_EDX, 0); // limpar reg edx
+
         if (paramType == DD)
         {
-            create_var(name, 4);
+            create_var(name, 4, 4);
             mov32_r_mi(REG_EDX, REG_EAX, params_count);
-            set_var_with_reg(name, REG_EDX);
             params_count += 4;
+            set_var_with_reg(name, REG_EDX);
         }
         else if (paramType == DW)
         {
-            create_var(name, 2);
+            create_var(name, 2, 2);
             mov16_r_mi(REG_DX, REG_EAX, params_count);
             set_var_with_reg(name, REG_DX);
             params_count += 4;
         }
         else if (paramType == DB)
         {
-            create_var(name, 1);
+            create_var(name, 1, 1);
             mov8_r_mi(REG_DL, REG_EAX, params_count);
             set_var_with_reg(name, REG_DL);
             params_count += 4;
@@ -460,7 +461,7 @@ int parse_it(char *token, FILE *file)
         return 1;
     }
 
-       // conditionals
+    // conditionals
     if (strcmp(token, "if") == 0)
     {
         parse_ifs(file);

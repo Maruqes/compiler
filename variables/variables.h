@@ -12,11 +12,12 @@ typedef struct Variable
 {
     char *symbol;
     uint32_t size;
+    uint32_t original_size; // for pointers for example *db is 4 because it is a pointer but db is 1
     uint32_t offset;
     char *scope;
 } Variable;
 
-void create_var(char *symbol, uint32_t size);
+void create_var(char *symbol, uint32_t size, uint32_t original_size);
 void free_variables_array();
 void create_new_stack();
 void restore_stack();
