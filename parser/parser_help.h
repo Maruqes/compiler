@@ -16,7 +16,7 @@ typedef struct Function_struct
 
 void parse_functions(FILE *file, char *token);
 int is_a_function(char *token);
-void add_function(char *name, char *return_type);
+void add_function(char *name);
 void free_functions();
 int checkFuncType(char *type);
 

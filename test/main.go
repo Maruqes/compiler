@@ -24,4 +24,15 @@ func main() {
 	for i := 0; i < len(outputArr); i++ {
 		fmt.Println(outputArr[i])
 	}
+	if outputArr[0] != "HELLO" {
+		fmt.Println("Test failed: Output not as expected HELLO")
+		return
+	}
+	if outputArr[1] != "FUNCIONA" {
+		fmt.Println("Test failed: Output not as expected FUNCIONA")
+		return
+	}
+
+	//print as green
+	fmt.Println("\033[32mSmall Test passed\033[0m")
 }

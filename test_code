@@ -1,9 +1,9 @@
 
-func dd test(){
+func test(){
     return 10;
 }
 
-func dd test_whiles(){
+func test_whiles(){
     dd a = 0;
     while a < 10 {
         a = a + 1;
@@ -12,15 +12,15 @@ func dd test_whiles(){
 }
 
 
-func dd test_deaddressing(){
-    dd a = 10;
-    dd*b = &a;
-    dd*c = &b;
-    dd*d = &c;
+func test_deaddressing(){
+    db a = 10;
+    db*b = &a;
+    db*c = &b;
+    db*d = &c;
     return ***d;
 }
 
-func dd test_ifs(){
+func test_ifs(){
     dd a = 0;
     if a = 0 {
         a = 10;
@@ -28,12 +28,7 @@ func dd test_ifs(){
     return a + 1 - 1;
 }
 
-func dd test_arrays_arr_string(){
-    const string testS = "Hello\n";
-    return 0;
-}
-
-func dd test_fors(){
+func test_fors(){
     dd a = 0;
     for dd i = 0; i < 10; i++;{
         a = a + 1;
@@ -41,18 +36,19 @@ func dd test_fors(){
     return a;
 }
 
-func dd testRecursion(dd a){
+func testRecursion(db a){
     if a < 10 {
-        return testRecursion(a + 1);
+        a = a + 1;
+        return testRecursion(a);
     }
     return a;
 }
 
-func dd test_params(dd a, dd b, dd c){
-    return a + b + c;
+func test_params(db a, db b, db c, dw d, db e){
+    return a + b + c + d + e;
 }
 
-func dd nestedForLoops(){
+func nestedForLoops(){
     dd a = 0;
     for dd i = 0; i < 10; i++;{
         for dd j = 0; j < 10; j++;{
@@ -62,7 +58,7 @@ func dd nestedForLoops(){
     return a;
 }
 
-func dd nestedIfs(){
+func nestedIfs(){
     dd a = 0;
     dd b = 20;
     
@@ -74,7 +70,7 @@ func dd nestedIfs(){
     return 10;
 }
 
-func dd ret10if10(dd a){
+func ret10if10(db a){
     if a = 10 {
         return 10;
     }
@@ -82,11 +78,11 @@ func dd ret10if10(dd a){
 }
 
 
-func dd allocMem1Page(dd pge){
+func allocMem1Page(dd pge){
     dd page = pge * 4096;
-    asm(mov32 ecx page);
     asm(mov32 eax 192);
     asm(mov32 ebx 0);
+    asm(mov32 ecx page);
     asm(mov32 edx 3);
     asm(mov32 esi 34);
     asm(mov32 edi -1);
@@ -94,14 +90,18 @@ func dd allocMem1Page(dd pge){
     return;
 }
 
-func dd createString(){
+func createString(){
     asm(pusha);
     dd page1 = allocMem1Page(2);
     asm(popa);
     return page1;
 }
 
-func dd setLetter(dd addr, dd offset, dd letter){
+func setLetter(dd addr, dd offset, db letter, dw letter2){
+
+    if letter2 = 65535{
+        return 0;
+    }
 
     asm(mov32 ecx addr);
     asm(mov8 bl letter);
@@ -111,30 +111,76 @@ func dd setLetter(dd addr, dd offset, dd letter){
     return 0;
 }
 
-func dd main()
-{
-   
-    dd addr = createString();
+func getStringLen(dd addr){
+    dd len = 0;
 
-    db H = 'H';
-    db E = 'M';
+    while 1 = 1{
 
-    H = 65346;
+        db letter = 0;
+        
+        asm(mov32 ebx 0);
+        asm(mov32 ecx addr);
+        asm(mov32 eax len);
+        asm(mov8_r_mr bl ecx eax);
+        asm(mov8 letter bl);
 
-    setLetter(addr, 0, H);
-    setLetter(addr, 1, E);
-    setLetter(addr, 2, 'L');
-    setLetter(addr, 3, 'L');
-    setLetter(addr, 4, 'O');
-    setLetter(addr, 5, 10);
+        if letter = 0 {
+            return len;
+        }
+        len = len + 1;
+    }
 
+    return len;
+}
+
+func printString(dd addr){
+
+    dd len = getStringLen(addr);
 
     asm(mov32 ecx addr);
     asm(mov32 ebx 1);
+    asm(mov32 edx len);
     asm(mov32 eax 4);
-    asm(mov32 edx 6);
     asm(syscall);
+    return 0;
+}
 
+func main()
+{
+    dd resultado = 0;
+    resultado = resultado + test();
+    resultado = resultado + test_whiles();
+    resultado = resultado + test_deaddressing();
+    resultado = resultado + test_ifs();
+    resultado = resultado + test_fors();
+    resultado = resultado + testRecursion(0);
+    resultado = resultado + test_params(4,1,1,1,3);
+    resultado = resultado + nestedForLoops();
+    resultado = resultado + nestedIfs();
+    resultado = resultado + ret10if10(10);
+   
+    
+    if resultado ! 190 {
+        return 0;
+    }
+
+
+    dd addr = createString();
+
+    db H = 'P';
+    db E = 'E';
+
+    H = 65352;
+
+    setLetter(addr, 0, H, 4294967294);
+    setLetter(addr, 1, E, 0);
+    setLetter(addr, 2, 'L', 0);
+    setLetter(addr, 3, 'L', 0);
+    setLetter(addr, 4, 'O', 0);
+    setLetter(addr, 5, 10, 0);
+
+
+    printString(addr);
 
 
     return 350;

@@ -14,9 +14,25 @@
 #include "../variables/variables.h"
 #include "parser.h"
 #include "int/parser_int.h"
+#include "strings/strings.h"
 #include "../functions/bFunctions32/bFunctions32.h"
 #include "../functions/bFunctions16/bFunctions16.h"
 #include "../functions/bFunctions8/bFunctions8.h"
+
+uint32_t parse_float_as_string(char *strFloat)
+{
+    float valor = strtof(strFloat, NULL);
+
+    union
+    {
+        float f;
+        uint32_t u;
+    } conv;
+
+    conv.f = valor;
+
+    return conv.u;
+}
 
 // Função para validar se a string é um número
 int is_valid_number(const char *str)
@@ -134,7 +150,7 @@ int is_a_function(char *token)
     return 0;
 }
 
-void add_function(char *name, char *return_type)
+void add_function(char *name)
 {
     printf("Adding function %s\n", name);
     functions = realloc(functions, sizeof(Function_struct) * (functions_count + 1));
@@ -145,7 +161,7 @@ void add_function(char *name, char *return_type)
     }
     functions[functions_count].name = malloc(strlen(name) + 1);
     strcpy(functions[functions_count].name, name);
-    functions[functions_count].return_type = return_type;
+    functions[functions_count].return_type = "DD";
     functions_count++;
 }
 
@@ -229,6 +245,17 @@ void multiple_dereference(FILE *file, char *var, uint8_t reg)
     free(var);
 }
 
+
+int parse_inside_functions(FILE *file, char *token, uint8_t reg)
+{
+    if (strcmp(token, "CreateString") == 0)
+    {
+        parse_CreateString(file, reg);
+        return 1;
+    }
+    return 0;
+}
+
 // will parse normal ints/poinetrs functions and vars
 void parse_data_types(FILE *file, char *token, uint8_t reg)
 { // handle arithemetics
@@ -295,8 +322,10 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
     }
     else
     {
-
-        if (is_valid_number(token))
+        if(parse_inside_functions(file, token,reg) == 1){
+            return;
+        }
+        else if (is_valid_number(token))
         {
             uint32_t val = atoi(token);
             mov_reg32(reg, val);

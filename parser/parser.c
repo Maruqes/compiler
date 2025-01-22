@@ -48,6 +48,7 @@ char *symbol_tokens[] = {
     "[",
     "]",
     ",",
+    ".",
     "'"};
 char *arithmetic_symbols[] = {"+", "-", "*", "/", "^"};
 char **token_save;
@@ -255,27 +256,19 @@ void get_params(FILE *file)
 
 void parse_create_function(FILE *file)
 {
-    char *type = get_token(file);
-    int check = checkFuncType(type);
-    if (check != DB && check != DW && check != DD)
-    {
-        printf("Error: Function return type must be int\n");
-        exit(1);
-    }
     char *name = get_token(file);
 
-    printf("func %s %s\n", type, name);
+    printf("func %s\n", name);
 
     create_label(name);
     create_new_stack();
 
-    add_function(name, type);
+    add_function(name);
     set_current_scope(name);
 
     get_params(file);
     push_eax(); // pusha params addr, this value ios the addr of alloc memory where params are, this needs to be freed
 
-    free(type);
     free(name);
 }
 
