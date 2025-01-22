@@ -19,6 +19,7 @@ int is_a_function(char *token);
 void add_function(char *name);
 void free_functions();
 int checkFuncType(char *type);
+int parse_inside_functions(FILE *file, char *token, uint8_t reg);
 
 int get_check_free_semicolon(FILE *f);
 

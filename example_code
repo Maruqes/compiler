@@ -182,10 +182,14 @@ func main()
 
     printString(addr);
 
-    dd s = CreateString("Hello World\n");
+    dd s;
+    CreateString("Hello World\n");
+    asm(mov32 s eax);
+
+    dd s2 = CreateString("Hello World2\n");
 
     printString(s);
-
+    printString(s2);
 
     return 350;
 }

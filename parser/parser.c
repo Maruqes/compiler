@@ -499,6 +499,13 @@ int parse_it(char *token, FILE *file)
         return 1;
     }
 
+    // by default set return value of the function to EAX
+    if (parse_inside_functions(file, token, REG_EAX) == 1)
+    {
+        // does its thing inside the function
+        return 1;
+    }
+
     // assumed that the token is a variable
     // needs to be after all the initializers of variables
     int ident_question = does_var_exist(token);

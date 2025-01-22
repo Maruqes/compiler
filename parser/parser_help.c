@@ -245,7 +245,6 @@ void multiple_dereference(FILE *file, char *var, uint8_t reg)
     free(var);
 }
 
-
 int parse_inside_functions(FILE *file, char *token, uint8_t reg)
 {
     if (strcmp(token, "CreateString") == 0)
@@ -322,7 +321,8 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
     }
     else
     {
-        if(parse_inside_functions(file, token,reg) == 1){
+        if (parse_inside_functions(file, token, reg) == 1)
+        {
             return;
         }
         else if (is_valid_number(token))
