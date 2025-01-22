@@ -19,184 +19,6 @@
 #include "../functions/bFunctions16/bFunctions16.h"
 #include "../functions/bFunctions8/bFunctions8.h"
 
-uint32_t parse_float_as_string(char *strFloat)
-{
-    float valor = strtof(strFloat, NULL);
-
-    union
-    {
-        float f;
-        uint32_t u;
-    } conv;
-
-    conv.f = valor;
-
-    return conv.u;
-}
-
-// Função para validar se a string é um número
-int is_valid_number(const char *str)
-{
-    // Ignorar espaços iniciais
-    while (isspace((unsigned char)*str))
-        str++;
-
-    // Verificar se começa com '+' ou '-'
-    if (*str == '+' || *str == '-')
-        str++;
-
-    // Garantir que pelo menos um dígito está presente
-    if (!isdigit((unsigned char)*str))
-        return 0;
-
-    // Percorrer os restantes caracteres
-    while (*str)
-    {
-        if (!isdigit((unsigned char)*str))
-            return 0;
-        str++;
-    }
-
-    return 1;
-}
-
-Function_struct *functions;
-uint32_t functions_count = 0;
-
-char *parse_until_charset(FILE *file, char *charset);
-
-int get_check_free_semicolon(FILE *f)
-{
-    char *token = get_token(f);
-    if (token[0] != ';')
-    {
-        printf("Error: Expected ';'\n");
-        exit(1);
-    }
-    free(token);
-    return 1;
-}
-
-int checkFuncType(char *type)
-{
-    if (strcmp(type, "db") == 0)
-    {
-        return DB;
-    }
-    else if (strcmp(type, "dw") == 0)
-    {
-        return DW;
-    }
-    else if (strcmp(type, "dd") == 0)
-    {
-        return DD;
-    }
-    return 0;
-}
-
-void set_param_manually(int *params_count)
-{
-    pop_eax();
-    mov32_mi_r(REG_EAX, 4 * (*params_count), REG_EBX);
-    push_eax();
-    (*params_count)++;
-    printf("param\n");
-}
-
-// functions
-void set_params(FILE *file)
-{
-    char *left_bracket = get_token(file);
-    if (left_bracket[0] != '(')
-    {
-        printf("Error: Expected '('\n");
-        exit(1);
-    }
-    uint32_t params_count = 0;
-
-    allocMemoryASM(NUMBER_OF_PAGES);
-    push_eax();
-
-    char *ret_from_func = parse_until_charset(file, "),");
-    mov_reg32_reg32(REG_EBX, REG_EAX);
-    set_param_manually(&params_count);
-    while (strcmp(ret_from_func, ")") != 0)
-    {
-        ret_from_func = parse_until_charset(file, "),");
-        mov_reg32_reg32(REG_EBX, REG_EAX);
-        set_param_manually(&params_count);
-    }
-
-    free(ret_from_func);
-    pop_eax();
-}
-
-void parse_functions(FILE *file, char *token)
-{
-    printf("Parsing params for func %s\n", token);
-    set_params(file);
-    call(token);
-}
-
-int is_a_function(char *token)
-{
-    for (int i = 0; i < functions_count; i++)
-    {
-        if (strcmp(functions[i].name, token) == 0)
-        {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-void add_function(char *name)
-{
-    printf("Adding function %s\n", name);
-    functions = realloc(functions, sizeof(Function_struct) * (functions_count + 1));
-    if (functions == NULL)
-    {
-        printf("Error: Could not allocate memory for functions\n");
-        exit(1);
-    }
-    functions[functions_count].name = malloc(strlen(name) + 1);
-    strcpy(functions[functions_count].name, name);
-    functions[functions_count].return_type = "DD";
-    functions_count++;
-}
-
-void free_functions()
-{
-    for (uint32_t i = 0; i < functions_count; i++)
-    {
-        free(functions[i].name);
-    }
-    free(functions);
-}
-
-char *current_scope = NULL;
-
-void free_current_scope()
-{
-    if (current_scope != NULL)
-    {
-        free(current_scope);
-    }
-}
-
-void set_current_scope(char *scope)
-{
-    free_current_scope();
-    current_scope = malloc(strlen(scope) + 1);
-    strcpy(current_scope, scope);
-    create_new_scope_var(scope);
-}
-
-char *get_current_scope()
-{
-    return current_scope;
-}
-
 // will get something like int *****a = &b; and return the value of *****b, go to the root of the pointers
 // this should free var;
 void multiple_dereference(FILE *file, char *var, uint8_t reg)
@@ -243,16 +65,6 @@ void multiple_dereference(FILE *file, char *var, uint8_t reg)
         mov8_r_mr(reg, REG_EBP, REG_ECX);
     }
     free(var);
-}
-
-int parse_inside_functions(FILE *file, char *token, uint8_t reg)
-{
-    if (strcmp(token, "CreateString") == 0)
-    {
-        parse_CreateString(file, reg);
-        return 1;
-    }
-    return 0;
 }
 
 // will parse normal ints/poinetrs functions and vars
@@ -321,6 +133,7 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
     }
     else
     {
+        // inside functions
         if (parse_inside_functions(file, token, reg) == 1)
         {
             return;
