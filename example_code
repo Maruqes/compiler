@@ -164,7 +164,6 @@ func main()
         return 0;
     }
 
-    asm();
 
     dd addr = createString();
 
@@ -188,6 +187,7 @@ func main()
     asm(mov32 s eax);
 
     dd s2 = CreateString("Hello World2\n");
+    
 
     printString(s);
     printString(s2);

@@ -84,13 +84,7 @@ void parse_create_int(FILE *file, int data_length)
         return;
     }
 
-    char *to_free = get_token(file); // skip '='
-    if(to_free[0] != '=')
-    {
-        printf("Error: Expected '='\n");
-        exit(1);
-    }
-    free(to_free);
+    char *semi_or_equals = get_token(file); // skip '='
 
     if (does_var_exist(name))
     {
@@ -107,10 +101,23 @@ void parse_create_int(FILE *file, int data_length)
 
     printf("int %s\n", name);
     create_var(name, data_length, data_length);
-    parse_after_equal(file);
-    set_var_with_reg(name, REG_EAX);
+
+
+    if(semi_or_equals[0] == '=')
+    {
+        parse_after_equal(file);
+        set_var_with_reg(name, REG_EAX);
+    }else if(semi_or_equals[0] == ';')
+    {
+        set_var(name, 0);
+    }else 
+    {
+        printf("Error: Expected '=' or ';'\n");
+        exit(1);
+    }
 
     free(name);
+    free(semi_or_equals);
 }
 
 void parse_int_setter(FILE *file, char *token)

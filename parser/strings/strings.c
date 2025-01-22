@@ -31,7 +31,6 @@ void parse_CreateString(FILE *file, uint8_t reg)
 
     char *str = get_token(file); // T= "
 
-    push_reg(REG_EAX);
     allocMemoryASM(1);
     for (int j = 0; j < strlen(str); j++)
     {
@@ -39,8 +38,6 @@ void parse_CreateString(FILE *file, uint8_t reg)
     }
 
     mov_reg32_reg32(reg, REG_EAX);
-    pop_reg(REG_EAX);
-
 
     char *right_bracket = get_token(file);
     if (right_bracket[0] != ')')
