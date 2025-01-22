@@ -712,7 +712,7 @@ void parse_asm_function(FILE *file)
 
     if (!parsed)
     {
-        printf("Error: Unknown token %s\n", tokens[0]);
+        printf("Error: Unknown asm token %s\n", tokens[0]);
         exit(1);
     }
 

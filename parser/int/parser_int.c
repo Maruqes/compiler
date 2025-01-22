@@ -85,11 +85,23 @@ void parse_create_int(FILE *file, int data_length)
     }
 
     char *to_free = get_token(file); // skip '='
+    if(to_free[0] != '=')
+    {
+        printf("Error: Expected '='\n");
+        exit(1);
+    }
     free(to_free);
 
     if (does_var_exist(name))
     {
         printf("Error: Variable %s already exists\n", name);
+        exit(1);
+    }
+
+    //check for empty name
+    if (name[0] == '\n' || name[0] == '\0' || name[0] == ';' || name[0] == ' ') 
+    {
+        printf("Error: Expected variable name\n");
         exit(1);
     }
 

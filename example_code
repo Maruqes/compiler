@@ -164,6 +164,7 @@ func main()
         return 0;
     }
 
+    asm();
 
     dd addr = createString();
 
