@@ -1,7 +1,8 @@
 
-func int main()
+func main()
 {
-    asm(mov32 eax 65);
-    asm(int 26);
+    dd s2 = CreateString("OLA\n");
+    asm(mov32 eax s2);
+    asm(int 19);
     return 0;
 }

@@ -23,7 +23,7 @@ BIG TODO:
         explicar como as variaves funcionam, com o base pointer etc, links para outros docs;
 
 
-testes/arrays deadressing
+recreate for the fourth time param passing
 
 strutcs
 incluir outros ficheiros
