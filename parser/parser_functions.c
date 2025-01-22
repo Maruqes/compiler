@@ -81,15 +81,13 @@ int checkFuncType(char *type)
 
 void set_param_manually(int *params_count)
 {
-    pop_eax();
-    mov32_mi_r(REG_EAX, 4 * (*params_count), REG_EBX);
-    push_eax();
+    push_reg(REG_EBX);
     (*params_count)++;
     printf("param\n");
 }
 
 // functions
-void set_params(FILE *file)
+int set_params(FILE *file)
 {
     char *left_bracket = get_token(file);
     if (left_bracket[0] != '(')
@@ -98,9 +96,6 @@ void set_params(FILE *file)
         exit(1);
     }
     uint32_t params_count = 0;
-
-    allocMemoryASM(NUMBER_OF_PAGES);
-    push_eax();
 
     char *ret_from_func = parse_until_charset(file, "),");
     mov_reg32_reg32(REG_EBX, REG_EAX);
@@ -113,14 +108,18 @@ void set_params(FILE *file)
     }
 
     free(ret_from_func);
-    pop_eax();
+    return params_count;
 }
 
 void parse_functions(FILE *file, char *token)
 {
     printf("Parsing params for func %s\n", token);
-    set_params(file);
+    int param = set_params(file);
     call(token);
+    if (param != 0)
+    {
+        add(REG_ESP, param * 4);
+    }
 }
 
 int is_a_function(char *token)

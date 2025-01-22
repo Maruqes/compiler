@@ -487,6 +487,20 @@ void asm_popa(FILE *file, char **tokens)
     printf("popa\n");
 }
 
+void asm_add(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int reg2 = convert_string_to_reg(tokens[2]);
+    if (reg1 == -1 || reg2 == -1)
+    {
+        printf("Error: Register %s or %s not found\n", tokens[1], tokens[2]);
+        exit(1);
+    }
+
+    add_reg32(reg1, reg2);
+    printf("add %s, %s\n", tokens[1], tokens[2]);
+}
+
 int parse_movs(FILE *file, char **tokens)
 {
     if (strcmp(tokens[0], "mov32") == 0)
@@ -594,6 +608,11 @@ int parse_extras(FILE *file, char **tokens)
     else if (strcmp(tokens[0], "syscall") == 0)
     {
         our_syscall();
+        return 1;
+    }
+    else if (strcmp(tokens[0], "add") == 0)
+    {
+        asm_add(file, tokens);
         return 1;
     }
     else

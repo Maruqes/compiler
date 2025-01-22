@@ -30,5 +30,5 @@ int does_var_exist(char *symbol);
 Variable return_var_struct(char *symbol);
 
 void create_new_scope_var(char *scope);
-
+void add_var_to_array_with_offset(char *symbol, uint32_t size, char *scope, uint32_t original_size, uint32_t offset);
 #endif // VARIABLES_H

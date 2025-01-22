@@ -9,6 +9,32 @@
 #include "../functions/bFunctions16/bFunctions16.h"
 #include "../parser/int/parser_int.h"
 
+/*
+the stack goes down so
+
+0xFFFFFFF
+...
+0x0000000
+
+
+when we push we go down
+when we pop we go up
+
+when we create a new variable we substract from the stack pointer
+when we delete a variable we add to the stack pointer
+
+(we push old base to restore it later)
+when we create a new stack we set base pointer to stack pointer
+when we restore the stack we set stack pointer to base pointer
+
+so access old vars its just ebp - offset
+our funcs get/set already take the negative (-)
+
+so for us programming here we set the values in the other order see func call "add_var_to_array_with_offset" in "get_params"
+we set tha value negative in relation of ebp becouse we now our functions will negate it again making it positive
+becouse params are on the old stack we should do [ebp + offset] to access them     and whe are doing [ebp -- offset] to set them the same :D
+*/
+
 typedef struct Scope_var
 {
     Variable *variables_array;
@@ -70,8 +96,9 @@ Scope_var *get_scope_var(char *scope)
     exit(EXIT_FAILURE);
 }
 
-void add_var_to_array(char *symbol, uint32_t size, char *scope, uint32_t original_size)
+void add_var_to_array_with_offset(char *symbol, uint32_t size, char *scope, uint32_t original_size, uint32_t offset)
 {
+    printf("Adding var %s to array with offset %d\n", symbol, offset);
     Scope_var *current_scope = get_scope_var(scope);
 
     Variable new_var;
@@ -84,7 +111,7 @@ void add_var_to_array(char *symbol, uint32_t size, char *scope, uint32_t origina
     strcpy(new_var.symbol, symbol);
     new_var.size = size;
     new_var.original_size = original_size;
-    new_var.offset = current_scope->variables_size + size;
+    new_var.offset = offset;
 
     if (scope)
     {
@@ -109,12 +136,50 @@ void add_var_to_array(char *symbol, uint32_t size, char *scope, uint32_t origina
         exit(EXIT_FAILURE);
     }
     current_scope->variables_array[current_scope->variables_array_size++] = new_var;
+}
 
+void add_var_to_array(char *symbol, uint32_t size, char *scope, uint32_t original_size)
+{
+    Scope_var *current_scope = get_scope_var(scope);
+    add_var_to_array_with_offset(symbol, size, scope, original_size, current_scope->variables_size + size);
     current_scope->variables_size += size;
+}
+
+// ANSI Color Codes
+#define RESET "\033[0m"
+#define RED "\033[31m"
+#define GREEN "\033[32m"
+#define YELLOW "\033[33m"
+#define BLUE "\033[34m"
+#define CYAN "\033[36m"
+#define BOLD "\033[1m"
+
+void print_scopes_info()
+{
+    printf(BOLD CYAN "\n=== Scopes Information ===\n" RESET);
+
+    for (uint32_t i = 0; i < scopes_array_size; i++)
+    {
+        printf(BOLD BLUE "\nScope [%u]: %s\n" RESET, i + 1, scopes_array[i].scope);
+        printf(YELLOW "-------------------------------------------------------------\n" RESET);
+        printf(GREEN "  %-15s | %-6s | %-14s | %-6s\n" RESET, "Variable", "Size", "Original Size", "Offset");
+        printf(YELLOW "-------------------------------------------------------------\n" RESET);
+
+        for (uint32_t j = 0; j < scopes_array[i].variables_array_size; j++)
+        {
+            printf("  %-15s | %-6u | %-14u | %-6u\n",
+                   scopes_array[i].variables_array[j].symbol,
+                   scopes_array[i].variables_array[j].size,
+                   scopes_array[i].variables_array[j].original_size,
+                   scopes_array[i].variables_array[j].offset);
+        }
+        printf(YELLOW "-------------------------------------------------------------\n" RESET);
+    }
 }
 
 void free_variables_array()
 {
+    print_scopes_info();
     for (uint32_t i = 0; i < scopes_array_size; i++)
     {
         for (uint32_t j = 0; j < scopes_array[i].variables_array_size; j++)

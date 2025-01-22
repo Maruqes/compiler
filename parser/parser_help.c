@@ -52,6 +52,7 @@ void multiple_dereference(FILE *file, char *var, uint8_t reg)
     }
 
     // get the value of the last address
+    mov32_r_i(reg, 0);
     if (type == DD)
     {
         mov32_r_mr(reg, REG_EBP, REG_ECX);

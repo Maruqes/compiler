@@ -49,6 +49,7 @@ char *symbol_tokens[] = {
     "]",
     ",",
     ".",
+    "#",
     "'"};
 char *arithmetic_symbols[] = {"+", "-", "*", "/", "^"};
 char **token_save;
@@ -185,12 +186,31 @@ char *get_token(FILE *fp)
         int i = 0;
         token[i++] = c;
         token[i] = '\0';
+        if (token[0] == '/')
+        {
+            int next_char = fgetc(fp);
+            if (next_char == '/')
+            {
+            // read until \n
+            while ((c = fgetc(fp)) != '\n' && c != EOF)
+                ;
+            free(token);
+            return get_token(fp);
+            }
+            ungetc(next_char, fp);
+        }
         return token;
     }
 
     free(token);
     return NULL;
 }
+
+typedef struct Paramtemp
+{
+    char *name;
+    int type;
+} Paramtemp;
 
 // system with a memory allocation with address pushed to stack
 void get_params(FILE *file)
@@ -199,6 +219,7 @@ void get_params(FILE *file)
     free(token);
 
     int params_count = 0;
+    Paramtemp *params = NULL;
 
     token = get_token(file);
     while (strcmp(token, ")") != 0)
@@ -225,32 +246,32 @@ void get_params(FILE *file)
         printf("TYPE %d\n", paramType);
         mov_reg32(REG_EDX, 0); // limpar reg edx
 
-        if (paramType == DD)
-        {
-            create_var(name, 4, 4);
-            mov32_r_mi(REG_EDX, REG_EAX, params_count);
-            params_count += 4;
-            set_var_with_reg(name, REG_EDX);
-        }
-        else if (paramType == DW)
-        {
-            create_var(name, 2, 2);
-            mov16_r_mi(REG_DX, REG_EAX, params_count);
-            set_var_with_reg(name, REG_DX);
-            params_count += 4;
-        }
-        else if (paramType == DB)
-        {
-            create_var(name, 1, 1);
-            mov8_r_mi(REG_DL, REG_EAX, params_count);
-            set_var_with_reg(name, REG_DL);
-            params_count += 4;
-        }
+        Paramtemp temp;
+        temp.name = malloc(strlen(name) + 1);
+        strcpy(temp.name, name);
+        temp.type = paramType;
+
+        params = realloc(params, sizeof(Paramtemp) * (params_count + 1));
+        params[params_count] = temp;
+
+        params_count++;
 
         free(name);
         free(token);
         token = get_token(file);
     }
+
+    for (int i = 0; i < params_count; i++)
+    {
+        Paramtemp param = params[params_count - i - 1];
+        add_var_to_array_with_offset(param.name, param.type, get_current_scope(), param.type, -8 - (i * 4));
+    }
+
+    for (int i = 0; i < params_count; i++)
+    {
+        free(params[i].name);
+    }
+    free(params);
     free(token);
 }
 
@@ -267,7 +288,6 @@ void parse_create_function(FILE *file)
     set_current_scope(name);
 
     get_params(file);
-    push_eax(); // pusha params addr, this value ios the addr of alloc memory where params are, this needs to be freed
 
     free(name);
 }
@@ -275,21 +295,6 @@ void parse_create_function(FILE *file)
 // return in EAX
 void parse_create_return(FILE *file)
 {
-
-    pop_ebx(); // popa params addr
-
-    push_eax(); // pusha return value   ha casos em que o return value esta apenas no eax->
-    /*
-        ...
-        mov eax, 10
-        return;
-
-        o valor retornado esta em eax e nao é sobreescrito pelo parse_after_equal
-    */
-
-    freeMemoryASM(NUMBER_OF_PAGES, REG_EBX);
-
-    pop_eax(); // popa return value
 
     parse_after_equal(file);
 
