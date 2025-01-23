@@ -125,10 +125,6 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
         free(var);
         free(p);
     }
-    else if (token[0] == 'f')
-    {
-        parse_float(file, token, reg);
-    }
     else if (is_a_function(token))
     {
         push_eax();
@@ -136,8 +132,13 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
         mov_reg32_reg32(reg, REG_EAX);
         pop_eax();
     }
+    else if (token[0] == 'f')
+    {
+        parse_float(file, token, reg);
+    }
     else
     {
+
         // inside functions
         if (parse_inside_functions(file, token, reg) == 1)
         {

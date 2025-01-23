@@ -213,6 +213,10 @@ func main()
 
     ff testeFloat = f3.14;
 
+    asm(mov32 eax testeFloat);
+    asm(movss xmm0 eax 0);
+
+
     // if testeFloat = 1078523331 {
     //     return 0;
     // }

@@ -4,6 +4,7 @@ SOURCES = main.c functions/functions.c types/strings.c \
 		  arithmetic/arithmetic.c logic/logic.c variables/variables.c \
 		  parser/parser.c parser/parser_help.c parser/parse_float.c parser/parser_functions.c parser/int/parser_int.c parser/strings/strings.c \
 		  asm_parser/asm_parser.c asm_parser/asm_parser16.c  asm_parser/asm_parser8.c \
+		  functions/bFunctions32/bFunc32Floats.c \
 		  functions/bFunctions32/bFunctions32.c \
 		  functions/bFunctions16/bFunctions16.c \
 		  functions/bFunctions8/bFunctions8.c \
