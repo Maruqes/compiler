@@ -96,7 +96,7 @@ Scope_var *get_scope_var(char *scope)
     exit(EXIT_FAILURE);
 }
 
-void add_var_to_array_with_offset(char *symbol, uint32_t size, char *scope, uint32_t original_size, uint32_t offset)
+void add_var_to_array_with_offset(char *symbol, uint32_t size, char *scope, uint32_t original_size, uint32_t offset, uint32_t type)
 {
     printf("Adding var %s to array with offset %d\n", symbol, offset);
     Scope_var *current_scope = get_scope_var(scope);
@@ -112,6 +112,7 @@ void add_var_to_array_with_offset(char *symbol, uint32_t size, char *scope, uint
     new_var.size = size;
     new_var.original_size = original_size;
     new_var.offset = offset;
+    new_var.type = type;
 
     if (scope)
     {
@@ -138,10 +139,10 @@ void add_var_to_array_with_offset(char *symbol, uint32_t size, char *scope, uint
     current_scope->variables_array[current_scope->variables_array_size++] = new_var;
 }
 
-void add_var_to_array(char *symbol, uint32_t size, char *scope, uint32_t original_size)
+void add_var_to_array(char *symbol, uint32_t size, char *scope, uint32_t original_size, uint32_t type)
 {
     Scope_var *current_scope = get_scope_var(scope);
-    add_var_to_array_with_offset(symbol, size, scope, original_size, current_scope->variables_size + size);
+    add_var_to_array_with_offset(symbol, size, scope, original_size, current_scope->variables_size + size, type);
     current_scope->variables_size += size;
 }
 
@@ -195,7 +196,7 @@ void free_variables_array()
     }
 }
 
-void create_var(char *symbol, uint32_t size, uint32_t original_size)
+void create_var(char *symbol, uint32_t size, uint32_t original_size, uint32_t type)
 {
     // check if var already exists
     if (does_var_exist(symbol))
@@ -204,7 +205,7 @@ void create_var(char *symbol, uint32_t size, uint32_t original_size)
         exit(EXIT_FAILURE);
     }
 
-    add_var_to_array(symbol, size, get_current_scope(), original_size);
+    add_var_to_array(symbol, size, get_current_scope(), original_size, type);
 
     sub(REG_ESP, size);
 }
@@ -218,20 +219,21 @@ void set_var(char *symbol, uint32_t value)
         {
             if (strcmp(symbol, scopes_array[i].variables_array[j].symbol) == 0 && strcmp(scopes_array[i].variables_array[j].scope, get_current_scope()) == 0)
             {
-                if (scopes_array[i].variables_array[j].size == DD)
+                if (scopes_array[i].variables_array[j].size == get_type_length(DD))
                 {
                     mov32_mi_i(REG_EBP, -scopes_array[i].variables_array[j].offset, value);
                 }
-                else if (scopes_array[i].variables_array[j].size == DW)
+                else if (scopes_array[i].variables_array[j].size == get_type_length(DW))
                 {
                     mov16_mi_i(REG_EBP, -scopes_array[i].variables_array[j].offset, value);
                 }
-                else if (scopes_array[i].variables_array[j].size == DB)
+                else if (scopes_array[i].variables_array[j].size == get_type_length(DB))
                 {
                     mov8_mi_i(REG_EBP, -scopes_array[i].variables_array[j].offset, value);
                 }
                 else
                 {
+                    printf("size %d\n", scopes_array[i].variables_array[j].size);
                     fprintf(stderr, "Error: Invalid size for symbol %s\n", symbol);
                     exit(EXIT_FAILURE);
                 }
@@ -252,20 +254,21 @@ void set_var_with_reg(char *symbol, uint8_t reg)
         {
             if (strcmp(symbol, scopes_array[i].variables_array[j].symbol) == 0 && strcmp(scopes_array[i].variables_array[j].scope, get_current_scope()) == 0)
             {
-                if (scopes_array[i].variables_array[j].size == DD)
+                if (scopes_array[i].variables_array[j].size == get_type_length(DD))
                 {
                     mov32_mi_r(REG_EBP, -scopes_array[i].variables_array[j].offset, reg);
                 }
-                else if (scopes_array[i].variables_array[j].size == DW)
+                else if (scopes_array[i].variables_array[j].size == get_type_length(DW))
                 {
                     mov16_mi_r(REG_EBP, -scopes_array[i].variables_array[j].offset, reg);
                 }
-                else if (scopes_array[i].variables_array[j].size == DB)
+                else if (scopes_array[i].variables_array[j].size == get_type_length(DB))
                 {
                     mov8_mi_r(REG_EBP, -scopes_array[i].variables_array[j].offset, reg);
                 }
                 else
                 {
+                    printf("size %d\n", scopes_array[i].variables_array[j].size);
                     fprintf(stderr, "Error: Invalid size for symbol %s\n", symbol);
                     exit(EXIT_FAILURE);
                 }
@@ -287,22 +290,23 @@ void get_var(uint8_t reg, char *symbol)
         {
             if (strcmp(symbol, scopes_array[i].variables_array[j].symbol) == 0 && strcmp(scopes_array[i].variables_array[j].scope, get_current_scope()) == 0)
             {
-                if (scopes_array[i].variables_array[j].size == DD)
+                if (scopes_array[i].variables_array[j].size == get_type_length(DD))
                 {
                     mov32_r_mi(reg, REG_EBP, -scopes_array[i].variables_array[j].offset);
                 }
-                else if (scopes_array[i].variables_array[j].size == DW)
+                else if (scopes_array[i].variables_array[j].size == get_type_length(DW))
                 {
                     mov32_r_i(reg, 0); // clear reg
                     mov16_r_mi(reg, REG_EBP, -scopes_array[i].variables_array[j].offset);
                 }
-                else if (scopes_array[i].variables_array[j].size == DB)
+                else if (scopes_array[i].variables_array[j].size == get_type_length(DB))
                 {
                     mov32_r_i(reg, 0); // clear reg
                     mov8_r_mi(reg, REG_EBP, -scopes_array[i].variables_array[j].offset);
                 }
                 else
                 {
+                    printf("size %d\n", scopes_array[i].variables_array[j].size);
                     fprintf(stderr, "Error: Invalid size for symbol %s\n", symbol);
                     exit(EXIT_FAILURE);
                 }

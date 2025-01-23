@@ -229,12 +229,13 @@ void get_params(FILE *file)
             free(token);
             token = get_token(file);
         }
-        int paramType = checkFuncType(token);
-        if (paramType != DD && paramType != DW && paramType != DB)
+        int paramType = check_type(token);
+        if (paramType == 0)
         {
             printf("Error:  Unknown param get_params %s\n", token);
             exit(1);
         }
+
         char *name = get_token(file);
 
         if (name[0] == '*')
@@ -264,7 +265,7 @@ void get_params(FILE *file)
     for (int i = 0; i < params_count; i++)
     {
         Paramtemp param = params[params_count - i - 1];
-        add_var_to_array_with_offset(param.name, param.type, get_current_scope(), param.type, -8 - (i * 4));
+        add_var_to_array_with_offset(param.name, get_type_length(param.type), get_current_scope(),get_type_length(param.type), -8 - (i * 4), param.type);
     }
 
     for (int i = 0; i < params_count; i++)
@@ -437,6 +438,14 @@ int parse_it(char *token, FILE *file)
         free(token);
         return 1;
     }
+
+    if (strcmp(token, "ff") == 0)
+    {
+        parse_create_int(file, FF);
+        free(token);
+        return 1;
+    }
+
 
     if (strcmp(token, "dd") == 0)
     {

@@ -62,22 +62,6 @@ int get_check_free_semicolon(FILE *f)
     return 1;
 }
 
-int checkFuncType(char *type)
-{
-    if (strcmp(type, "db") == 0)
-    {
-        return DB;
-    }
-    else if (strcmp(type, "dw") == 0)
-    {
-        return DW;
-    }
-    else if (strcmp(type, "dd") == 0)
-    {
-        return DD;
-    }
-    return 0;
-}
 
 void set_param_manually(int *params_count)
 {
@@ -145,7 +129,7 @@ void add_function(char *name)
     }
     functions[functions_count].name = malloc(strlen(name) + 1);
     strcpy(functions[functions_count].name, name);
-    functions[functions_count].return_type = "DD";
+    functions[functions_count].return_type = "DD";   //becouse all function return 4 bytes
     functions_count++;
 }
 

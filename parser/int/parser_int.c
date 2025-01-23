@@ -20,7 +20,7 @@ void parse_after_equal(FILE *file);
 void parse_int_array_creation(FILE *file, char *token, uint32_t arr_size);
 
 // pointers int
-void parse_create_int_pointer(FILE *file, char *token, int after_equal, uint32_t original_size)
+void parse_create_int_pointer(FILE *file, char *token, uint32_t original_size, uint32_t type)
 {
     char *name = get_token(file);
     char *to_free = get_token(file); // skip '='
@@ -32,13 +32,11 @@ void parse_create_int_pointer(FILE *file, char *token, int after_equal, uint32_t
         exit(1);
     }
 
-    create_var(name, DD, original_size);
+    // dd becouse its lenght if 4
+    create_var(name, get_type_length(DD), original_size, type);
 
-    if (after_equal)
-    {
-        parse_after_equal(file);
-        set_var_with_reg(name, REG_EAX);
-    }
+    parse_after_equal(file);
+    set_var_with_reg(name, REG_EAX);
 
     printf("int*%s\n", name);
 
@@ -74,13 +72,13 @@ void parse_set_value_in_the_pointer_address(FILE *file)
 }
 
 // normal ints
-void parse_create_int(FILE *file, int data_length)
+void parse_create_int(FILE *file, int type)
 {
     char *name = get_token(file);
     if (name[0] == '*')
     {
         // 4 is the size of a pointer
-        parse_create_int_pointer(file, name, 4, data_length);
+        parse_create_int_pointer(file, name, get_type_length(type), type);
         return;
     }
 
@@ -92,25 +90,28 @@ void parse_create_int(FILE *file, int data_length)
         exit(1);
     }
 
-    //check for empty name
-    if (name[0] == '\n' || name[0] == '\0' || name[0] == ';' || name[0] == ' ') 
+    // check for empty name
+    if (name[0] == '\n' || name[0] == '\0' || name[0] == ';' || name[0] == ' ')
     {
         printf("Error: Expected variable name\n");
         exit(1);
     }
 
     printf("int %s\n", name);
-    create_var(name, data_length, data_length);
+    printf("type %d\n", type);
+    printf("size %d\n", get_type_length(type));
+    create_var(name, get_type_length(type), get_type_length(type), type);
 
-
-    if(semi_or_equals[0] == '=')
+    if (semi_or_equals[0] == '=')
     {
         parse_after_equal(file);
         set_var_with_reg(name, REG_EAX);
-    }else if(semi_or_equals[0] == ';')
+    }
+    else if (semi_or_equals[0] == ';')
     {
         set_var(name, 0);
-    }else 
+    }
+    else
     {
         printf("Error: Expected '=' or ';'\n");
         exit(1);
@@ -166,5 +167,51 @@ void parse_int_setter(FILE *file, char *token)
         set_var_with_reg(token, REG_EAX);
 
         free(token);
+    }
+}
+
+int check_type(char *type)
+{
+    if (strcmp(type, "db") == 0)
+    {
+        return DB;
+    }
+    else if (strcmp(type, "dw") == 0)
+    {
+        return DW;
+    }
+    else if (strcmp(type, "dd") == 0)
+    {
+        return DD;
+    }
+    else if (strcmp(type, "ff") == 0)
+    {
+        return FF;
+    }
+    return 0;
+}
+
+uint32_t get_type_length(int valueType)
+{
+    if (valueType == DB)
+    {
+        return DB;
+    }
+    else if (valueType == DW)
+    {
+        return DW;
+    }
+    else if (valueType == DD)
+    {
+        return DD;
+    }
+    else if (valueType == FF)
+    {
+        return DD;
+    }
+    else
+    {
+        printf("Error: Unknown type\n");
+        exit(1);
     }
 }

@@ -110,6 +110,7 @@ func setLetter(dd addr, dd offset, db letter, dw letter2){
     return 0;
 }
 
+
 func getStringLen(dd addr){
     dd len = 0;
 
@@ -135,6 +136,16 @@ func getStringLen(dd addr){
 func printString(dd addr){
 
     dd len = getStringLen(addr);
+
+    asm(mov32 ecx addr);
+    asm(mov32 ebx 1);
+    asm(mov32 edx len);
+    asm(mov32 eax 4);
+    asm(syscall);
+    return 0;
+}
+
+func printStringLen(dd addr, dd len){
 
     asm(mov32 ecx addr);
     asm(mov32 ebx 1);
@@ -178,10 +189,16 @@ func main()
     setLetter(addr, 2, 'L', 0);
     setLetter(addr, 3, 'L', 0);
     setLetter(addr, 4, 'O', 0);
-    setLetter(addr, 5, 10, 0);
+    setLetter(addr, 5, 'O', 0);
+    setLetter(addr, 6, '_', 0);
+    setLetter(addr, 7, 'M', 0);
+    setLetter(addr, 8, 'U', 0);
+    setLetter(addr, 9, 'N', 0);
+    setLetter(addr, 10, 'D', 0);
+    setLetter(addr, 11, 'O', 0);
+    setLetter(addr, 12, 10, 0);
 
-
-    printString(addr);
+    printStringLen(addr, 13);
 
     dd s;
     CreateString("Hello World\n");
@@ -193,5 +210,19 @@ func main()
     printString(s);     // ola
     printString(s2);
 
-    return 350;
+
+    ff testeFloat = f3.14;
+
+    // if testeFloat = 1078523331 {
+    //     return 0;
+    // }
+
+    ff testeFloat2 = 350;
+    ff* testeFloat3 = &testeFloat2;
+    ff* testeFloat4 = &testeFloat3;
+    ff* testeFloat5 = &testeFloat4;
+
+
+
+    return ***testeFloat5;
 }

@@ -15,9 +15,10 @@ typedef struct Variable
     uint32_t original_size; // for pointers for example *db is 4 because it is a pointer but db is 1
     uint32_t offset;
     char *scope;
+    uint32_t type;
 } Variable;
 
-void create_var(char *symbol, uint32_t size, uint32_t original_size);
+void create_var(char *symbol, uint32_t size, uint32_t original_size, uint32_t type);
 void free_variables_array();
 void create_new_stack();
 void restore_stack();
@@ -30,5 +31,5 @@ int does_var_exist(char *symbol);
 Variable return_var_struct(char *symbol);
 
 void create_new_scope_var(char *scope);
-void add_var_to_array_with_offset(char *symbol, uint32_t size, char *scope, uint32_t original_size, uint32_t offset);
+void add_var_to_array_with_offset(char *symbol, uint32_t size, char *scope, uint32_t original_size, uint32_t offset, uint32_t type);
 #endif // VARIABLES_H

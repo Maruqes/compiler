@@ -2,7 +2,7 @@ SOURCES = main.c functions/functions.c types/strings.c \
 		  mov_reg_reg/mov_reg_reg.c push_pop/push_pop.c 16_code/functions_16.c \
 		  8high_code/functions_8high.c 8low_code/functions_8low.c jumps/jumps.c \
 		  arithmetic/arithmetic.c logic/logic.c variables/variables.c \
-		  parser/parser.c parser/parser_help.c parser/parser_functions.c parser/int/parser_int.c parser/strings/strings.c \
+		  parser/parser.c parser/parser_help.c parser/parse_float.c parser/parser_functions.c parser/int/parser_int.c parser/strings/strings.c \
 		  asm_parser/asm_parser.c asm_parser/asm_parser16.c  asm_parser/asm_parser8.c \
 		  functions/bFunctions32/bFunctions32.c \
 		  functions/bFunctions16/bFunctions16.c \
