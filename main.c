@@ -23,6 +23,7 @@ BIG TODO:
         explicar como as variaves funcionam, com o base pointer etc, links para outros docs;
 
 next:
+    check function for esp memory fuckkkkk
     idea is create another type float like -> f3.14
     float myF = f3.14;
     dd myF_as_int = 0x4048f5c3;
