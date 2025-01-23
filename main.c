@@ -22,16 +22,18 @@ BIG TODO:
     - Fazer documentacao BOUA para isto, exemplo:
         explicar como as variaves funcionam, com o base pointer etc, links para outros docs;
 
+next:
+    idea is create another type float like -> f3.14
+    float myF = f3.14;
+    dd myF_as_int = 0x4048f5c3;
 
-recreate for the fourth time param passing
+    a function to convert them vice versa and simple :D
 
-strutcs
-incluir outros ficheiros
-sycalls/assembly
-*/
+medium:
+    global vars  the way this is done this cant be done :D
 
-/*
-big ideias-> conseguir compilar assembly nativo nesta merad tipo nasm mm :D ns fodase
+far:
+    strutcs
 */
 
 // ELF header structure for 32-bit executable
