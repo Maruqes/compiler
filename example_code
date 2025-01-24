@@ -198,6 +198,11 @@ func main()
     setLetter(addr, 11, 'O', 0);
     setLetter(addr, 12, 10, 0);
 
+    asm(mov32 eax addr);
+    asm(mov32 ebx 1);
+    asm(mov32 ecx 65);
+    asm(mov16_mr_r eax ebx ecx);
+    
     printStringLen(addr, 13);
 
     dd s;

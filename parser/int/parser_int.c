@@ -57,7 +57,7 @@ void parse_set_value_in_the_pointer_address(FILE *file)
     get_var(REG_ECX, var);
     for (int i = 0; i < numbe_of_deferences; i++)
     {
-        mov32_r_mr(REG_EDX, REG_EBP, REG_ECX); // ebp + ecx = value da var, entao edx = value da var
+        mov32_16_r_mr(REG_EDX, REG_EBP, REG_ECX,0); // ebp + ecx = value da var, entao edx = value da var
                                                // valor esse que tambem é um address, repetir o processo
         mov_reg32_reg32(REG_ECX, REG_EDX);
     }
@@ -65,7 +65,7 @@ void parse_set_value_in_the_pointer_address(FILE *file)
     char *p = get_token(file); // skip '='
 
     parse_after_equal(file);
-    mov32_mr_r(REG_EBP, REG_ECX, REG_EAX);
+    mov32_16_mr_r(REG_EBP, REG_ECX, REG_EAX,0);
 
     free(var);
     free(p);

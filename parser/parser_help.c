@@ -16,7 +16,6 @@
 #include "int/parser_int.h"
 #include "strings/strings.h"
 #include "../functions/bFunctions32/bFunctions32.h"
-#include "../functions/bFunctions16/bFunctions16.h"
 #include "../functions/bFunctions8/bFunctions8.h"
 
 // will get something like int *****a = &b; and return the value of *****b, go to the root of the pointers
@@ -47,19 +46,19 @@ void multiple_dereference(FILE *file, char *var, uint8_t reg)
     {
         // ebp + ecx = value da var, entao edx = value da var
         // valor esse que tambem é um address, repetir o processo
-        mov32_r_mr(REG_EDX, REG_EBP, REG_ECX);
+        mov32_16_r_mr(REG_EDX, REG_EBP, REG_ECX, 0);
         mov_reg32_reg32(REG_ECX, REG_EDX);
     }
 
     // get the value of the last address
-    mov32_r_i(reg, 0);
+    mov32_16_r_i(reg, 0, 0);
     if (get_type_length(type) == 4)
     {
-        mov32_r_mr(reg, REG_EBP, REG_ECX);
+        mov32_16_r_mr(reg, REG_EBP, REG_ECX, 0);
     }
     else if (get_type_length(type) == 2)
     {
-        mov16_r_mr(reg, REG_EBP, REG_ECX);
+        mov32_16_r_mr(reg, REG_EBP, REG_ECX, 1);
     }
     else if (get_type_length(type) == 1)
     {

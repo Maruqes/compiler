@@ -6,7 +6,6 @@
 #include "../parser/parser_help.h"
 #include "../functions/bFunctions32/bFunctions32.h"
 #include "../functions/bFunctions8/bFunctions8.h"
-#include "../functions/bFunctions16/bFunctions16.h"
 #include "../parser/int/parser_int.h"
 
 /*
@@ -221,11 +220,11 @@ void set_var(char *symbol, uint32_t value)
             {
                 if (scopes_array[i].variables_array[j].size == get_type_length(DD))
                 {
-                    mov32_mi_i(REG_EBP, -scopes_array[i].variables_array[j].offset, value);
+                    mov32_16_mi_i(REG_EBP, -scopes_array[i].variables_array[j].offset, value, 0);
                 }
                 else if (scopes_array[i].variables_array[j].size == get_type_length(DW))
                 {
-                    mov16_mi_i(REG_EBP, -scopes_array[i].variables_array[j].offset, value);
+                    mov32_16_mi_i(REG_EBP, -scopes_array[i].variables_array[j].offset, value, 1);
                 }
                 else if (scopes_array[i].variables_array[j].size == get_type_length(DB))
                 {
@@ -256,11 +255,11 @@ void set_var_with_reg(char *symbol, uint8_t reg)
             {
                 if (scopes_array[i].variables_array[j].size == get_type_length(DD))
                 {
-                    mov32_mi_r(REG_EBP, -scopes_array[i].variables_array[j].offset, reg);
+                    mov32_16_mi_r(REG_EBP, -scopes_array[i].variables_array[j].offset, reg, 0);
                 }
                 else if (scopes_array[i].variables_array[j].size == get_type_length(DW))
                 {
-                    mov16_mi_r(REG_EBP, -scopes_array[i].variables_array[j].offset, reg);
+                    mov32_16_mi_r(REG_EBP, -scopes_array[i].variables_array[j].offset, reg, 1);
                 }
                 else if (scopes_array[i].variables_array[j].size == get_type_length(DB))
                 {
@@ -292,16 +291,16 @@ void get_var(uint8_t reg, char *symbol)
             {
                 if (scopes_array[i].variables_array[j].size == get_type_length(DD))
                 {
-                    mov32_r_mi(reg, REG_EBP, -scopes_array[i].variables_array[j].offset);
+                    mov32_16_r_mi(reg, REG_EBP, -scopes_array[i].variables_array[j].offset, 0);
                 }
                 else if (scopes_array[i].variables_array[j].size == get_type_length(DW))
                 {
-                    mov32_r_i(reg, 0); // clear reg
-                    mov16_r_mi(reg, REG_EBP, -scopes_array[i].variables_array[j].offset);
+                    mov32_16_r_i(reg, 0, 0); // clear reg
+                    mov32_16_r_mi(reg, REG_EBP, -scopes_array[i].variables_array[j].offset, 1);
                 }
                 else if (scopes_array[i].variables_array[j].size == get_type_length(DB))
                 {
-                    mov32_r_i(reg, 0); // clear reg
+                    mov32_16_r_i(reg, 0, 0); // clear reg
                     mov8_r_mi(reg, REG_EBP, -scopes_array[i].variables_array[j].offset);
                 }
                 else

@@ -16,7 +16,6 @@
 #include "int/parser_int.h"
 #include "strings/strings.h"
 #include "../functions/bFunctions32/bFunctions32.h"
-#include "../functions/bFunctions16/bFunctions16.h"
 #include "../functions/bFunctions8/bFunctions8.h"
 
 // Função para validar se a string é um número

@@ -7,6 +7,8 @@
 #define REG_CX 0x1
 #define REG_DX 0x2
 #define REG_BX 0x3
+// #define REG_SP 0x4
+// #define REG_BP 0x5
 #define REG_SI 0x6
 #define REG_DI 0x7
 

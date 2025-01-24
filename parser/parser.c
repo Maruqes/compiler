@@ -16,7 +16,6 @@
 #include "int/parser_int.h"
 #include "../asm_parser/asm_parser.h"
 #include "../functions/bFunctions32/bFunctions32.h"
-#include "../functions/bFunctions16/bFunctions16.h"
 #include "../functions/bFunctions8/bFunctions8.h"
 /*
 extra dar acesso a umas funcs ai do assembly mm
@@ -191,11 +190,11 @@ char *get_token(FILE *fp)
             int next_char = fgetc(fp);
             if (next_char == '/')
             {
-            // read until \n
-            while ((c = fgetc(fp)) != '\n' && c != EOF)
-                ;
-            free(token);
-            return get_token(fp);
+                // read until \n
+                while ((c = fgetc(fp)) != '\n' && c != EOF)
+                    ;
+                free(token);
+                return get_token(fp);
             }
             ungetc(next_char, fp);
         }
@@ -265,7 +264,7 @@ void get_params(FILE *file)
     for (int i = 0; i < params_count; i++)
     {
         Paramtemp param = params[params_count - i - 1];
-        add_var_to_array_with_offset(param.name, get_type_length(param.type), get_current_scope(),get_type_length(param.type), -8 - (i * 4), param.type);
+        add_var_to_array_with_offset(param.name, get_type_length(param.type), get_current_scope(), get_type_length(param.type), -8 - (i * 4), param.type);
     }
 
     for (int i = 0; i < params_count; i++)
@@ -445,7 +444,6 @@ int parse_it(char *token, FILE *file)
         free(token);
         return 1;
     }
-
 
     if (strcmp(token, "dd") == 0)
     {

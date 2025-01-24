@@ -656,7 +656,7 @@ void allocMemoryASM(int numberOfPages)
 
 void freeMemoryASM(int pageNumber, uint8_t reg_with_address)
 {
-    mov32_r_r(REG_EBX, reg_with_address);
+    mov32_16_r_r(REG_EBX, reg_with_address, 0);
     mov_eax(91);
     mov_ecx(4096 * pageNumber);
     our_syscall();

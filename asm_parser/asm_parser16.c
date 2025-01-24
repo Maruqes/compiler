@@ -14,7 +14,7 @@
 #include "../variables/variables.h"
 #include "../parser/parser.h"
 #include "../parser/parser_help.h"
-#include "../functions/bFunctions16/bFunctions16.h"
+#include "../functions/bFunctions32/bFunctions32.h"
 
 void asm_mov16(FILE *file, char **tokens)
 {
@@ -26,7 +26,7 @@ void asm_mov16(FILE *file, char **tokens)
     if (values[1] == 0 && reg != -1)
     {
 
-        mov16_r_i(reg, value);
+        mov32_16_r_i(reg, value, 1);
         printf("mov %s, %d\n", tokens[1], value);
     }
     else if (values[1] == 2 && reg != -1)
@@ -55,7 +55,7 @@ void asm_mov16(FILE *file, char **tokens)
             }
         }
 
-        mov16_r_r(reg, reg2);
+        mov32_16_r_r(reg, reg2, 1);
         printf("mov %s, %s\n", tokens[1], tokens[2]);
     }
     free(values);
@@ -79,7 +79,7 @@ void asm_mov16_mi_i(FILE *file, char **tokens)
             exit(1);
         }
 
-        mov16_mi_i(reg, offset, value);
+        mov32_16_mi_i(reg, offset, value, 1);
         printf("mov %s, off:%d, val:%d\n", tokens[1], offset, value);
     }
     else
@@ -100,7 +100,7 @@ void asm_mov16_r_m(FILE *file, char **tokens)
         exit(1);
     }
 
-    mov16_r_m(reg1, reg2);
+   mov32_16_r_m(reg1, reg2, 1);
     printf("mov %s, %s\n", tokens[1], tokens[2]);
 }
 
@@ -117,7 +117,7 @@ void asm_mov16_m_i(FILE *file, char **tokens)
             exit(1);
         }
 
-        mov16_m_i(reg1, value);
+        mov32_16_m_i(reg1, value, 1);
         printf("mov %s, %d\n", tokens[1], value);
     }
     else
@@ -139,7 +139,7 @@ void asm_mov16_m_r(FILE *file, char **tokens)
         exit(1);
     }
 
-    mov16_m_r(reg1, reg2);
+    mov32_16_m_r(reg1, reg2, 1);
     printf("mov %s, %s\n", tokens[1], tokens[2]);
 }
 
@@ -155,7 +155,7 @@ void asm_mov16_mr_r(FILE *file, char **tokens)
         exit(1);
     }
 
-    mov16_mr_r(reg1, reg2, reg3);
+    mov32_16_mr_r(reg1, reg2, reg3, 1);
     printf("mov [%s + %s], %s\n", tokens[1], tokens[2], tokens[3]);
 }
 
@@ -171,7 +171,7 @@ void asm_mov16_r_mr(FILE *file, char **tokens)
         exit(1);
     }
 
-    mov16_r_mr(reg1, reg2, reg3);
+    mov32_16_r_mr(reg1, reg2, reg3, 1);
     printf("mov %s, [%s + %s]\n", tokens[1], tokens[2], tokens[3]);
 }
 
@@ -189,7 +189,7 @@ void asm_mov16_mr_i(FILE *file, char **tokens)
             exit(1);
         }
 
-        mov16_mr_i(reg1, reg2, value);
+        mov32_16_mr_i(reg1, reg2, value, 1);
         printf("mov %s, [%s + %d]\n", tokens[1], tokens[2], value);
     }
     else
@@ -214,7 +214,7 @@ void asm_mov16_mi_r(FILE *file, char **tokens)
             exit(1);
         }
 
-        mov16_mi_r(reg1, offset, reg2);
+        mov32_16_mi_r(reg1, offset, reg2, 1);
         printf("mov %s, [%d + %s]\n", tokens[1], offset, tokens[3]);
     }
     else
@@ -239,7 +239,7 @@ void asm_mov16_r_mi(FILE *file, char **tokens)
             exit(1);
         }
 
-        mov16_r_mi(reg1, reg2, offset);
+        mov32_16_r_mi(reg1, reg2, offset, 1);
         printf("mov %s, %s + %d\n", tokens[1], tokens[2], offset);
     }
     else

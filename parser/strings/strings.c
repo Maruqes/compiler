@@ -16,7 +16,6 @@
 #include "../parser_help.h"
 #include "../../functions/bFunctions32/bFunctions32.h"
 #include "../../functions/bFunctions8/bFunctions8.h"
-#include "../../functions/bFunctions16/bFunctions16.h"
 
 // returns in  reg address
 void parse_CreateString(FILE *file, uint8_t reg)

@@ -8,38 +8,59 @@ m-memory
 
 functions:
 
-mov32 r, i  :D
-mov32 r, m  :D
-mov32 r, mi :D
-mov32 r, mr :D
-mov32 r, r  :D
+mov32_16 r, i  :D
+mov32_16 r, m  :D
+mov32_16 r, mi :D
+mov32_16 r, mr :D
+mov32_16 r, r  :D
 
-mov32 m, i  :D
-mov32 m, r  :D
+mov32_16 m, i  :D
+mov32_16 m, r  :D
 
-mov32 mi, i :D
-mov32 mi, r :D
+mov32_16 mi, i :D
+mov32_16 mi, r :D
 
-mov32 mr, i
-mov32 mr, r
+mov32_16 mr, i
+mov32_16 mr, r
 */
 
-// Function to move immediate value into a 32-bit register
-void mov32_r_i(uint8_t reg_code, uint32_t value)
+void check_sixteen(uint8_t sixteen)
 {
-    char *opcode_bytes = malloc(5); // 1-byte opcode + 4-byte immediate
+    if (sixteen != 0 && sixteen != 1)
+    {
+        perror("Sixteen must be 0 or 1");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void set_sixteenByte(char *opcode_bytes, uint8_t sixteen)
+{
+    if (sixteen == 1)
+    {
+        opcode_bytes[0] = 0x66; // Prefix for 16-bit operand size
+    }
+}
+
+// Function to move immediate value into a 32-bit register
+void mov32_16_r_i(uint8_t reg_code, uint32_t value, uint8_t sixteen)
+{
+    check_sixteen(sixteen);
+
+    char *opcode_bytes = malloc(5 + sixteen); // 1-byte opcode + 4-byte immediate
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0xB8 + reg_code; // Opcode for 'mov reg32, imm32'
+    set_sixteenByte(opcode_bytes, sixteen);
 
-    memcpy(&opcode_bytes[1], &value, sizeof(value)); // Copy the 4-byte immediate value
+    opcode_bytes[0 + sixteen] = 0xB8 + reg_code; // Opcode for 'mov reg32, imm32'
+
+    memcpy(&opcode_bytes[1 + sixteen], &value, sizeof(value)); // Copy the 4-byte immediate value
 
     OpCode new_opcode;
-    new_opcode.size = 5; // Total instruction size
+    new_opcode.size = 5 + sixteen; // Total instruction size
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the opcode array
@@ -53,14 +74,15 @@ void mov32_r_i(uint8_t reg_code, uint32_t value)
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
-void mov32_r_m(uint8_t reg, uint8_t mem_reg)
+void mov32_16_r_m(uint8_t reg, uint8_t mem_reg, uint8_t sixteen)
 {
+    check_sixteen(sixteen);
     uint8_t *opcode_bytes;
     size_t size;
 
-    if (mem_reg == 4)
+    if (mem_reg == REG_ESP)
     {
-        size = 3;
+        size = 3 + sixteen;
         opcode_bytes = malloc(size);
         if (opcode_bytes == NULL)
         {
@@ -68,13 +90,13 @@ void mov32_r_m(uint8_t reg, uint8_t mem_reg)
             exit(EXIT_FAILURE);
         }
 
-        opcode_bytes[0] = 0x8B;
-        opcode_bytes[1] = 0x04 + (reg * 8);
-        opcode_bytes[2] = 0x24;
+        opcode_bytes[0 + sixteen] = 0x8B;
+        opcode_bytes[1 + sixteen] = 0x04 + (reg * 8);
+        opcode_bytes[2 + sixteen] = 0x24;
     }
-    else if (mem_reg == 5)
+    else if (mem_reg == REG_EBP)
     {
-        size = 3;
+        size = 3 + sixteen;
         opcode_bytes = malloc(size);
         if (opcode_bytes == NULL)
         {
@@ -82,13 +104,13 @@ void mov32_r_m(uint8_t reg, uint8_t mem_reg)
             exit(EXIT_FAILURE);
         }
 
-        opcode_bytes[0] = 0x8B;
-        opcode_bytes[1] = 0x45 + (reg * 8);
-        opcode_bytes[2] = 0x00;
+        opcode_bytes[0 + sixteen] = 0x8B;
+        opcode_bytes[1 + sixteen] = 0x45 + (reg * 8);
+        opcode_bytes[2 + sixteen] = 0x00;
     }
     else // Caso normal, sem ESP/EBP
     {
-        size = 2; // opcode + ModR/M
+        size = 2 + sixteen; // opcode + ModR/M
         opcode_bytes = malloc(size);
         if (opcode_bytes == NULL)
         {
@@ -96,9 +118,10 @@ void mov32_r_m(uint8_t reg, uint8_t mem_reg)
             exit(EXIT_FAILURE);
         }
 
-        opcode_bytes[0] = 0x8B;                            // MOV r32, r/m32
-        opcode_bytes[1] = (0 << 6) | (reg << 3) | mem_reg; // mod=00, reg, r/m=mem_reg
+        opcode_bytes[0 + sixteen] = 0x8B;                            // MOV r32, r/m32
+        opcode_bytes[1 + sixteen] = (0 << 6) | (reg << 3) | mem_reg; // mod=00, reg, r/m=mem_reg
     }
+    set_sixteenByte(opcode_bytes, sixteen);
 
     OpCode new_opcode;
     new_opcode.size = size;
@@ -115,62 +138,64 @@ void mov32_r_m(uint8_t reg, uint8_t mem_reg)
     op_codes_array_size++;
 }
 
-void mov32_r_mi(uint8_t reg_dest, uint8_t reg_base, int32_t offset)
+void mov32_16_r_mi(uint8_t reg_dest, uint8_t reg_base, int32_t offset, uint8_t sixteen)
 {
+    check_sixteen(sixteen);
     OpCode new_opcode;
-
+    char *opcode_bytes;
     if (reg_base == REG_ESP)
     {
-        char *opcode_bytes = malloc(7);
+        opcode_bytes = malloc(7 + sixteen);
         if (opcode_bytes == NULL)
         {
             perror("Failed to allocate memory for opcode_bytes");
             exit(EXIT_FAILURE);
         }
 
-        opcode_bytes[0] = 0x8B;                  // Opcode for MOV reg32, r/m32
-        opcode_bytes[1] = 0x84 + (reg_dest * 8); // Constructed ModR/M byte
-        opcode_bytes[2] = 0x24;                  // SIB byte
+        opcode_bytes[0 + sixteen] = 0x8B;                  // Opcode for MOV reg32, r/m32
+        opcode_bytes[1 + sixteen] = 0x84 + (reg_dest * 8); // Constructed ModR/M byte
+        opcode_bytes[2 + sixteen] = 0x24;                  // SIB byte
 
-        memcpy(&opcode_bytes[3], &offset, 4);
+        memcpy(&opcode_bytes[3 + sixteen], &offset, 4);
 
-        new_opcode.size = 7;
+        new_opcode.size = 7 + sixteen;
         new_opcode.code = opcode_bytes;
     }
     else if (reg_base == REG_EBP)
     {
-        char *opcode_bytes = malloc(6);
+        opcode_bytes = malloc(6 + sixteen);
         if (opcode_bytes == NULL)
         {
             perror("Failed to allocate memory for opcode_bytes");
             exit(EXIT_FAILURE);
         }
 
-        opcode_bytes[0] = 0x8B;                  // Opcode for MOV reg32, r/m32
-        opcode_bytes[1] = 0x85 + (reg_dest * 8); // Constructed ModR/M byte
+        opcode_bytes[0 + sixteen] = 0x8B;                  // Opcode for MOV reg32, r/m32
+        opcode_bytes[1 + sixteen] = 0x85 + (reg_dest * 8); // Constructed ModR/M byte
 
-        memcpy(&opcode_bytes[2], &offset, 4);
+        memcpy(&opcode_bytes[2 + sixteen], &offset, 4);
 
-        new_opcode.size = 6;
+        new_opcode.size = 6 + sixteen;
         new_opcode.code = opcode_bytes;
     }
     else
     {
-        char *opcode_bytes = malloc(6);
+        opcode_bytes = malloc(6 + sixteen);
         if (opcode_bytes == NULL)
         {
             perror("Failed to allocate memory for opcode_bytes");
             exit(EXIT_FAILURE);
         }
 
-        opcode_bytes[0] = 0x8B;                             // Opcode for MOV reg32, r/m32
-        opcode_bytes[1] = 0x80 + reg_base + (reg_dest * 8); // Constructed ModR/M byte
+        opcode_bytes[0 + sixteen] = 0x8B;                             // Opcode for MOV reg32, r/m32
+        opcode_bytes[1 + sixteen] = 0x80 + reg_base + (reg_dest * 8); // Constructed ModR/M byte
 
-        memcpy(&opcode_bytes[2], &offset, 4);
+        memcpy(&opcode_bytes[2 + sixteen], &offset, 4);
 
-        new_opcode.size = 6;
+        new_opcode.size = 6 + sixteen;
         new_opcode.code = opcode_bytes;
     }
+    set_sixteenByte(opcode_bytes, sixteen);
 
     // Add the opcode to the array
     op_codes_array = realloc(op_codes_array,
@@ -183,56 +208,58 @@ void mov32_r_mi(uint8_t reg_dest, uint8_t reg_base, int32_t offset)
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
-void mov32_r_mr(uint8_t reg, uint8_t reg_base, uint8_t reg_offset)
+void mov32_16_r_mr(uint8_t reg, uint8_t reg_base, uint8_t reg_offset, uint8_t sixteen)
 {
+    check_sixteen(sixteen);
     OpCode new_opcode;
-
+    char *opcode_bytes;
     if (reg_base == REG_ESP)
     {
-        char *opcode_bytes = malloc(3);
+        opcode_bytes = malloc(3 + sixteen);
         if (opcode_bytes == NULL)
         {
             perror("Failed to allocate memory for opcode_bytes");
             exit(EXIT_FAILURE);
         }
-        opcode_bytes[0] = 0x8B;
-        opcode_bytes[1] = 0x04 + (reg * 8);
-        opcode_bytes[2] = 0x04 + (reg_offset * 8);
+        opcode_bytes[0 + sixteen] = 0x8B;
+        opcode_bytes[1 + sixteen] = 0x04 + (reg * 8);
+        opcode_bytes[2 + sixteen] = 0x04 + (reg_offset * 8);
 
-        new_opcode.size = 3;
+        new_opcode.size = 3 + sixteen;
         new_opcode.code = opcode_bytes;
     }
     else if (reg_base == REG_EBP)
     {
-        char *opcode_bytes = malloc(4);
+        opcode_bytes = malloc(4 + sixteen);
         if (opcode_bytes == NULL)
         {
             perror("Failed to allocate memory for opcode_bytes");
             exit(EXIT_FAILURE);
         }
-        opcode_bytes[0] = 0x8B;
-        opcode_bytes[1] = 0x44 + (reg * 8);
-        opcode_bytes[2] = 0x05 + (reg_offset * 8);
-        opcode_bytes[3] = 0x00;
+        opcode_bytes[0 + sixteen] = 0x8B;
+        opcode_bytes[1 + sixteen] = 0x44 + (reg * 8);
+        opcode_bytes[2 + sixteen] = 0x05 + (reg_offset * 8);
+        opcode_bytes[3 + sixteen] = 0x00;
 
-        new_opcode.size = 4;
+        new_opcode.size = 4 + sixteen;
         new_opcode.code = opcode_bytes;
     }
     else
     {
-        char *opcode_bytes = malloc(3);
+        opcode_bytes = malloc(3 + sixteen);
         if (opcode_bytes == NULL)
         {
             perror("Failed to allocate memory for opcode_bytes");
             exit(EXIT_FAILURE);
         }
-        opcode_bytes[0] = 0x8B;
-        opcode_bytes[1] = 0x04 + (reg * 8);
-        opcode_bytes[2] = (reg_base * 8) + reg_offset;
+        opcode_bytes[0 + sixteen] = 0x8B;
+        opcode_bytes[1 + sixteen] = 0x04 + (reg * 8);
+        opcode_bytes[2 + sixteen] = (reg_base * 8) + reg_offset;
 
-        new_opcode.size = 3;
+        new_opcode.size = 3 + sixteen;
         new_opcode.code = opcode_bytes;
     }
+    set_sixteenByte(opcode_bytes, sixteen);
 
     // Add the opcode to the array
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
@@ -245,19 +272,21 @@ void mov32_r_mr(uint8_t reg, uint8_t reg_base, uint8_t reg_offset)
     op_codes_array_size++;
 }
 
-void mov32_r_r(uint8_t reg1, uint8_t reg2)
+void mov32_16_r_r(uint8_t reg1, uint8_t reg2, uint8_t sixteen)
 {
-    char *opcode_bytes = malloc(2);
+    check_sixteen(sixteen);
+    char *opcode_bytes = malloc(2 + sixteen);
     if (opcode_bytes == NULL)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
-    opcode_bytes[0] = 0x89;
-    opcode_bytes[1] = 0xC0 + reg1 + (reg2 * 8);
+    opcode_bytes[0 + sixteen] = 0x89;
+    opcode_bytes[1 + sixteen] = 0xC0 + reg1 + (reg2 * 8);
+    set_sixteenByte(opcode_bytes, sixteen);
 
     OpCode new_opcode;
-    new_opcode.size = 2;
+    new_opcode.size = 2 + sixteen;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -271,98 +300,107 @@ void mov32_r_r(uint8_t reg1, uint8_t reg2)
     op_codes_array_size++;
 }
 
-void mov32_m_i(uint8_t reg1, uint32_t value)
+void mov32_16_m_i(uint8_t reg1, uint32_t value, uint8_t sixteen)
 {
+    check_sixteen(sixteen);
     uint8_t *opcode_bytes;
     size_t size;
 
-    if (reg1 == 4)
+    if (reg1 == REG_ESP)
     {
-        size = 7;
-        opcode_bytes = malloc(size);
+        size = 7+ sixteen;
+        opcode_bytes = malloc(size );
 
-        opcode_bytes[0] = 0xC7;
-        opcode_bytes[1] = 0x04;
-        opcode_bytes[2] = 0x24;
+        opcode_bytes[0 + sixteen] = 0xC7;
+        opcode_bytes[1 + sixteen] = 0x04;
+        opcode_bytes[2 + sixteen] = 0x24;
 
         // Copiar os 4 bytes do immediate
-        memcpy(&opcode_bytes[3], &value, 4);
+        memcpy(&opcode_bytes[3 + sixteen], &value, 4);
     }
-    else if (reg1 == 5)
+    else if (reg1 == REG_EBP)
     {
-        size = 7;
+        size = 7+ sixteen;
         opcode_bytes = malloc(size);
 
-        opcode_bytes[0] = 0xC7;
-        opcode_bytes[1] = 0x45;
-        opcode_bytes[2] = 0x00;
+        opcode_bytes[0 + sixteen] = 0xC7;
+        opcode_bytes[1 + sixteen] = 0x45;
+        opcode_bytes[2 + sixteen] = 0x00;
 
-        memcpy(&opcode_bytes[3], &value, 4);
+        memcpy(&opcode_bytes[3 + sixteen], &value, 4);
     }
     else
     {
-        size = 6;
+        size = 6+ sixteen;
         opcode_bytes = malloc(size);
 
-        opcode_bytes[0] = 0xC7;
-        opcode_bytes[1] = (0 << 3) | reg1;
-        memcpy(&opcode_bytes[2], &value, 4);
+        opcode_bytes[0 + sixteen] = 0xC7;
+        opcode_bytes[1 + sixteen] = (0 << 3) | reg1;
+        memcpy(&opcode_bytes[2 + sixteen], &value, 4);
     }
+    set_sixteenByte(opcode_bytes, sixteen);
 
     OpCode new_opcode;
     new_opcode.size = size;
     new_opcode.code = (char *)opcode_bytes;
 
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
     op_codes_array[op_codes_array_size] = new_opcode;
     op_codes_array_size++;
 }
 
-void mov32_m_r(uint8_t reg1, uint8_t reg2)
+void mov32_16_m_r(uint8_t reg1, uint8_t reg2, uint8_t sixteen)
 {
+    check_sixteen(sixteen);
     OpCode new_opcode;
+    uint8_t *opcode_bytes;
+
     if (reg1 == REG_ESP)
     {
-        uint8_t *opcode_bytes;
-        opcode_bytes = malloc(3);
+        opcode_bytes = malloc(3 + sixteen);
 
-        opcode_bytes[0] = 0x89;
+        opcode_bytes[0 + sixteen] = 0x89;
 
-        opcode_bytes[1] = 0x04 + (reg2 * 8);
+        opcode_bytes[1 + sixteen] = 0x04 + (reg2 * 8);
 
-        opcode_bytes[2] = 0x24;
+        opcode_bytes[2 + sixteen] = 0x24;
 
-        new_opcode.size = 3;
+        new_opcode.size = 3 + sixteen;
         new_opcode.code = opcode_bytes;
     }
     else if (reg1 == REG_EBP)
     {
-        uint8_t *opcode_bytes;
-        opcode_bytes = malloc(3);
+        opcode_bytes = malloc(3 + sixteen);
 
-        opcode_bytes[0] = 0x89;
+        opcode_bytes[0 + sixteen] = 0x89;
 
-        opcode_bytes[1] = 0x45 + (reg2 * 8);
+        opcode_bytes[1 + sixteen] = 0x45 + (reg2 * 8);
 
-        opcode_bytes[2] = 0x00;
+        opcode_bytes[2 + sixteen] = 0x00;
 
-        new_opcode.size = 3;
+        new_opcode.size = 3 + sixteen;
         new_opcode.code = opcode_bytes;
     }
     else
     {
-        char *opcode_bytes = malloc(2);
+        opcode_bytes = malloc(2 + sixteen);
         if (opcode_bytes == NULL)
         {
             perror("Failed to allocate memory for opcode_bytes");
             exit(EXIT_FAILURE);
         }
-        opcode_bytes[0] = 0x89;
-        opcode_bytes[1] = 0x00 + reg1 + (reg2 * 8);
+        opcode_bytes[0 + sixteen] = 0x89;
+        opcode_bytes[1 + sixteen] = 0x00 + reg1 + (reg2 * 8);
 
-        new_opcode.size = 2;
+        new_opcode.size = 2 + sixteen;
         new_opcode.code = opcode_bytes;
     }
+    set_sixteenByte(opcode_bytes, sixteen);
 
     // Add the opcode to the array
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
@@ -375,23 +413,25 @@ void mov32_m_r(uint8_t reg1, uint8_t reg2)
     op_codes_array_size++;
 }
 
-void mov32_mi_i(uint8_t reg, int32_t offset, uint32_t value)
+void mov32_16_mi_i(uint8_t reg, int32_t offset, uint32_t value, uint8_t sixteen)
 {
+    check_sixteen(sixteen);
     OpCode new_opcode;
 
-    char *opcode_bytes = malloc(10);
+    char *opcode_bytes = malloc(10+ sixteen);
     if (opcode_bytes == NULL)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
-    opcode_bytes[0] = 0xC7;
-    opcode_bytes[1] = 0x80 + reg;
-    memcpy(&opcode_bytes[2], &offset, 4);
-    memcpy(&opcode_bytes[6], &value, 4);
+    opcode_bytes[0 + sixteen] = 0xC7;
+    opcode_bytes[1 + sixteen] = 0x80 + reg;
+    memcpy(&opcode_bytes[2 + sixteen], &offset, 4);
+    memcpy(&opcode_bytes[6 + sixteen], &value, 4);
 
-    new_opcode.size = 10;
+    new_opcode.size = 10 + sixteen;
     new_opcode.code = opcode_bytes;
+    set_sixteenByte(opcode_bytes, sixteen);
 
     // Add the opcode to the array
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
@@ -405,21 +445,23 @@ void mov32_mi_i(uint8_t reg, int32_t offset, uint32_t value)
 }
 
 // works for all :D
-void mov32_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2)
+void mov32_16_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2, uint8_t sixteen)
 {
+    check_sixteen(sixteen);
     OpCode new_opcode;
 
-    char *opcode_bytes = malloc(6);
+    char *opcode_bytes = malloc(6 + sixteen);
     if (opcode_bytes == NULL)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
-    opcode_bytes[0] = 0x89;
-    opcode_bytes[1] = 0x80 + reg + (reg2 * 8);
-    memcpy(&opcode_bytes[2], &offset, 4);
+    opcode_bytes[0 + sixteen] = 0x89;
+    opcode_bytes[1 + sixteen] = 0x80 + reg + (reg2 * 8);
+    memcpy(&opcode_bytes[2 + sixteen], &offset, 4);
+    set_sixteenByte(opcode_bytes, sixteen);
 
-    new_opcode.size = 6;
+    new_opcode.size = 6 + sixteen;
     new_opcode.code = opcode_bytes;
     // Add the opcode to the array
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
@@ -432,23 +474,25 @@ void mov32_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2)
     op_codes_array_size++;
 }
 
-void mov32_mr_i(uint8_t reg, uint8_t reg2, uint32_t value)
+void mov32_16_mr_i(uint8_t reg, uint8_t reg2, uint32_t value, uint8_t sixteen)
 {
-    char *opcode_bytes = malloc(7);
+    check_sixteen(sixteen);
+    char *opcode_bytes = malloc(7+ sixteen);
     if (opcode_bytes == NULL)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
-    opcode_bytes[0] = 0xC7;
-    opcode_bytes[1] = 0x04;
-    opcode_bytes[2] = (reg * 8) + reg2;
+    opcode_bytes[0 + sixteen] = 0xC7;
+    opcode_bytes[1 + sixteen] = 0x04;
+    opcode_bytes[2 + sixteen] = (reg * 8) + reg2;
 
-    memcpy(&opcode_bytes[3], &value, 4);
+    memcpy(&opcode_bytes[3 + sixteen], &value, 4);
 
     OpCode new_opcode;
-    new_opcode.size = 7;
+    new_opcode.size = 7 + sixteen;
     new_opcode.code = opcode_bytes;
+    set_sixteenByte(opcode_bytes, sixteen);
 
     // Add the opcode to the array
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
@@ -461,21 +505,23 @@ void mov32_mr_i(uint8_t reg, uint8_t reg2, uint32_t value)
     op_codes_array_size++;
 }
 
-void mov32_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3)
+void mov32_16_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3, uint8_t sixteen)
 {
-    char *opcode_bytes = malloc(3);
+    check_sixteen(sixteen);
+    char *opcode_bytes = malloc(3 + sixteen);
     if (opcode_bytes == NULL)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
-    opcode_bytes[0] = 0x89;
-    opcode_bytes[1] = 0x04 + (reg3 * 8);
-    opcode_bytes[2] = (reg_base * 8) + reg2;
+    opcode_bytes[0 + sixteen] = 0x89;
+    opcode_bytes[1 + sixteen] = 0x04 + (reg3 * 8);
+    opcode_bytes[2 + sixteen] = (reg_base * 8) + reg2;
 
     OpCode new_opcode;
-    new_opcode.size = 3;
+    new_opcode.size = 3 + sixteen;
     new_opcode.code = opcode_bytes;
+    set_sixteenByte(opcode_bytes, sixteen);
 
     // Add the opcode to the array
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));

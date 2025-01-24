@@ -14,7 +14,6 @@
 #include "../variables/variables.h"
 #include "../parser/parser.h"
 #include "../parser/parser_help.h"
-#include "../functions/bFunctions16/bFunctions16.h"
 #include "../functions/bFunctions32/bFunctions32.h"
 
 void asm_mov_x_r(FILE *file, char **tokens)
