@@ -19,7 +19,8 @@
 /*
 ao passar valor de variaveis para registers sobreescreve o valor da EAX
 */
-// falta fazer passar um reg pra variavel :D
+// falta arithmetics e gates
+
 int convert_string_to_reg(char *reg)
 {
     if (strcmp(reg, "ebp") == 0)
@@ -533,7 +534,7 @@ void asm_add(FILE *file, char **tokens)
     printf("add %s, %s\n", tokens[1], tokens[2]);
 }
 
-void asm_movss_offset(FILE *file, char **tokens)
+void asm_sub(FILE *file, char **tokens)
 {
     int reg1 = convert_string_to_reg(tokens[1]);
     int reg2 = convert_string_to_reg(tokens[2]);
@@ -543,8 +544,32 @@ void asm_movss_offset(FILE *file, char **tokens)
         exit(1);
     }
 
-    mov_x_r(reg1, reg2);
-    printf("movss %s, %s \n", tokens[1], tokens[2]);
+    sub_reg32(reg1, reg2);
+    printf("sub %s, %s\n", tokens[1], tokens[2]);
+}
+
+void asm_subi(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int *values = asm_get_number(tokens, 2, -1);
+    int value = values[0];
+    if (values[1] == 0)
+    {
+        if (reg1 == -1)
+        {
+            printf("Error: Register %s not found\n", tokens[1]);
+            exit(1);
+        }
+
+        sub(reg1, value);
+        printf("sub %s, %d\n", tokens[1], value);
+    }
+    else
+    {
+        printf("Error: Invalid number\n");
+        exit(1);
+    }
+   
 }
 
 int parse_movs(FILE *file, char **tokens)
@@ -661,9 +686,14 @@ int parse_extras(FILE *file, char **tokens)
         asm_add(file, tokens);
         return 1;
     }
-    else if (strcmp(tokens[0], "movss") == 0)
+    else if (strcmp(tokens[0], "sub") == 0)
     {
-        asm_movss_offset(file, tokens);
+        asm_sub(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "subi") == 0)
+    {
+        asm_subi(file, tokens);
         return 1;
     }
     else
@@ -779,6 +809,7 @@ void parse_asm_function(FILE *file)
     parsed = parsed || parse_jumps(file, tokens);
     parsed = parsed || parse_movs16(file, tokens);
     parsed = parsed || parse_movs8(file, tokens);
+    parsed = parsed || parse_floats(file, tokens);
 
     if (!parsed)
     {

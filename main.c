@@ -22,6 +22,9 @@ BIG TODO:
     - Fazer documentacao BOUA para isto, exemplo:
         explicar como as variaves funcionam, com o base pointer etc, links para outros docs;
 
+asm_parser->falta arithmetics e gates
+e fix no esp
+
 next:
     check function for esp memory fuckkkkk
     idea is create another type float like -> f3.14

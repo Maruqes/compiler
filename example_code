@@ -212,18 +212,32 @@ func main()
 
 
     ff testeFloat = f3.14;
+    dd testemds = 0;
+
+    asm(mov32 eax testeFloat);
+    asm(mov_x_r xmm0 eax);
+
+    asm(cvtss2si eax xmm0);
+
+    asm(mov32 testemds eax);
 
 
-    // if testeFloat = 1078523331 {
-    //     return 0;
-    // }
+    dd teste = 0;
+    asm(subi esp 4);
+    asm(mov32 eax 65);
+    asm(mov32_m_r esp eax);
+    asm(mov32 ebx 0);
+    asm(mov32_r_mr eax esp ebx);
+    asm(mov32 teste eax);
+    asm(pop edx);
 
-    ff testeFloat2 = 350;
-    ff* testeFloat3 = &testeFloat2;
-    ff* testeFloat4 = &testeFloat3;
-    ff* testeFloat5 = &testeFloat4;
 
 
+    if teste = 65 {
+        if testemds = 3 {
+            return 350;
+        }
+    }
 
-    return ***testeFloat5;
+    return 0;
 }

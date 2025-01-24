@@ -31,6 +31,7 @@ void mov32_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3);
 
 // xmm
 void mov_x_r(uint8_t xmmReg, uint8_t reg);
+void mov_r_x(uint8_t xmmReg, uint8_t reg);
 void cvtsi2ss(uint8_t xmmReg, uint8_t reg);
 void cvtss2si(uint8_t reg, uint8_t xmmReg);
 void ucomiss(uint8_t xmm1, uint8_t xmm2);
