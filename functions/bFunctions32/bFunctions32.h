@@ -35,5 +35,10 @@ void mov_r_x(uint8_t xmmReg, uint8_t reg);
 void cvtsi2ss(uint8_t xmmReg, uint8_t reg);
 void cvtss2si(uint8_t reg, uint8_t xmmReg);
 void ucomiss(uint8_t xmm1, uint8_t xmm2);
+void addss(uint8_t xmm1, uint8_t xmm2);
+void subss(uint8_t xmm1, uint8_t xmm2);
+void mulss(uint8_t xmm1, uint8_t xmm2);
+void divss(uint8_t xmm1, uint8_t xmm2);
+void sqrtss(uint8_t xmm1, uint8_t xmm2);
 
 #endif // BFUNCTIONS32_H

@@ -23,7 +23,7 @@ BIG TODO:
         explicar como as variaves funcionam, com o base pointer etc, links para outros docs;
 
 asm_parser->falta arithmetics e gates
-e fix no esp
+ver funcoes 32/16 todasss e memso para 8(aidna nao tem esp conditions)
 
 next:
     check function for esp memory fuckkkkk

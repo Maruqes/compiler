@@ -166,7 +166,7 @@ void cvtss2si(uint8_t reg, uint8_t xmmReg)
 
 void ucomiss(uint8_t xmm1, uint8_t xmm2)
 {
-    char *opcode_bytes = malloc(4);
+    char *opcode_bytes = malloc(3);
     if (opcode_bytes == NULL)
     {
         perror("Failed to allocate memory for opcode_bytes");
@@ -175,6 +175,147 @@ void ucomiss(uint8_t xmm1, uint8_t xmm2)
     opcode_bytes[0] = 0x0F;
     opcode_bytes[1] = 0x2E;
     opcode_bytes[2] = 0xC0 + (xmm1 * 8) + xmm2;
+
+    OpCode new_opcode;
+    new_opcode.size = 3;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}
+// from down here not tested
+void addss(uint8_t xmm1, uint8_t xmm2)
+{
+    char *opcode_bytes = malloc(4);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[0] = 0xF3;
+    opcode_bytes[1] = 0x0F;
+    opcode_bytes[2] = 0x58;
+    opcode_bytes[3] = 0xC0 + (xmm1 * 8) + xmm2;
+
+    OpCode new_opcode;
+    new_opcode.size = 4;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}
+
+void subss(uint8_t xmm1, uint8_t xmm2)
+{
+    char *opcode_bytes = malloc(4);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[0] = 0xF3;
+    opcode_bytes[1] = 0x0F;
+    opcode_bytes[2] = 0x5C;
+    opcode_bytes[3] = 0xC0 + (xmm1 * 8) + xmm2;
+
+    OpCode new_opcode;
+    new_opcode.size = 4;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}
+
+void mulss(uint8_t xmm1, uint8_t xmm2)
+{
+    char *opcode_bytes = malloc(4);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[0] = 0xF3;
+    opcode_bytes[1] = 0x0F;
+    opcode_bytes[2] = 0x59;
+    opcode_bytes[3] = 0xC0 + (xmm1 * 8) + xmm2;
+
+    OpCode new_opcode;
+    new_opcode.size = 4;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}
+
+void divss(uint8_t xmm1, uint8_t xmm2)
+{
+    char *opcode_bytes = malloc(4);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[0] = 0xF3;
+    opcode_bytes[1] = 0x0F;
+    opcode_bytes[2] = 0x5E;
+    opcode_bytes[3] = 0xC0 + (xmm1 * 8) + xmm2;
+
+    OpCode new_opcode;
+    new_opcode.size = 4;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}
+
+
+void sqrtss(uint8_t xmm1, uint8_t xmm2)
+{
+    char *opcode_bytes = malloc(4);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[0] = 0xF3;
+    opcode_bytes[1] = 0x0F;
+    opcode_bytes[2] = 0x51;
+    opcode_bytes[3] = 0xC0 + (xmm1 * 8) + xmm2;
 
     OpCode new_opcode;
     new_opcode.size = 4;

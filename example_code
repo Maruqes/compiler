@@ -202,7 +202,7 @@ func main()
     asm(mov32 ebx 1);
     asm(mov32 ecx 65);
     asm(mov16_mr_r eax ebx ecx);
-    
+
     printStringLen(addr, 13);
 
     dd s;
@@ -230,7 +230,7 @@ func main()
     dd teste = 0;
     asm(subi esp 4);
     asm(mov32 eax 65);
-    asm(mov32_m_r esp eax);
+    asm(mov32_m_r esp  eax);
     asm(mov32 ebx 0);
     asm(mov32_r_mr eax esp ebx);
     asm(mov32 teste eax);
