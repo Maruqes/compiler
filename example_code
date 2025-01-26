@@ -237,6 +237,127 @@ func main()
     asm(pop edx);
 
 
+    dd testESPEBP = 0;
+    //testing all 32 functions with esp and ebp regs :D
+    //ESP TESTING
+    //mov32_m_r
+    asm(subi esp 4);
+    asm(mov32 eax 10);
+    asm(mov32_m_r esp eax);
+    asm(pop eax);
+    asm(mov32 testESPEBP eax);
+    
+    if testESPEBP ! 10 {
+        return 0;
+    }
+
+    //mov32_r_m
+    asm(mov32 ebx 15);
+    asm(push ebx);
+    asm(mov32_r_m eax esp);
+    asm(mov32 testESPEBP eax);
+
+    if testESPEBP ! 15 {
+        return 0;
+    }   
+
+
+    //mov32_r_mi
+    asm(mov32 ebx 20);
+    asm(push ebx);
+    asm(subi esp 4);
+    asm(mov32_r_mi eax esp 4);
+    asm(mov32 testESPEBP eax);
+
+    if testESPEBP ! 20 {
+        return 0;
+    }
+
+
+    //mov32_r_mr
+    asm(mov32 ebx 25);
+    asm(push ebx);
+    asm(subi esp 4);
+    asm(subi esp 4);
+    asm(mov32 eax 8);
+    asm(mov32_r_mr ebx esp eax);
+    asm(mov32 testESPEBP ebx);
+
+    if testESPEBP ! 25 {
+        return 0;
+    }
+
+    //mov32_m_i
+    asm(subi esp 4);
+    asm(mov32_m_i esp 30);
+    asm(pop eax);
+    asm(mov32 testESPEBP eax);
+
+    if testESPEBP ! 30 {
+        return 0;
+    }
+
+
+    //mov32_m_r
+    asm(subi esp 4);
+    asm(mov32 ebx 35);
+    asm(mov32_m_r esp ebx);
+    asm(pop eax);
+    asm(mov32 testESPEBP eax);
+
+    if testESPEBP ! 35 {
+        return 0;
+    }
+
+
+    //mov32_mi_r
+    asm(subi esp 4);
+    asm(subi esp 4);
+    asm(mov32 ebx 40);
+    asm(mov32_mi_r esp 4 ebx);
+    asm(pop eax);
+    asm(pop eax);
+    asm(mov32 testESPEBP eax);
+
+    if testESPEBP ! 40 {
+        return 0;
+    }
+
+
+    //mov32_16_mr_r
+    asm(subi esp 4);
+    asm(subi esp 4);
+    asm(mov32 ebx 4);
+    asm(mov32 eax 50);
+    asm(mov32_mr_r esp ebx eax);
+    asm(pop eax);
+    asm(pop eax);
+    asm(mov32 testESPEBP eax);
+
+    if testESPEBP ! 50 {
+        return 0;
+    }
+
+
+    //detting ebp - esp
+    //mov32_16_mr_r
+    asm(subi esp 4);
+    asm(mov32 eax ebp);
+    asm(mov32 ebx esp);
+    asm(sub eax ebx);
+    asm(neg eax);
+    asm(mov32 ebx 55);
+    asm(mov32_mr_r ebp eax ebx);
+    asm(pop eax);
+    asm(mov32 testESPEBP eax);
+
+    if testESPEBP ! 55 {
+        return 0;
+    }
+
+
+
+
 
     if teste = 65 {
         if testemds = 3 {

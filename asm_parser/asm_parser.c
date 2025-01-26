@@ -238,7 +238,7 @@ void asm_mov32(FILE *file, char **tokens)
             }
         }
 
-        mov32_16_r_r(reg, reg2,0);
+        mov32_16_r_r(reg, reg2, 0);
         printf("mov %s, %s\n", tokens[1], tokens[2]);
     }
     free(values);
@@ -262,7 +262,7 @@ void asm_mov32_mi_i(FILE *file, char **tokens)
             exit(1);
         }
 
-        mov32_16_mi_i(reg, offset, value,0);
+        mov32_16_mi_i(reg, offset, value, 0);
         printf("mov %s, off:%d, val:%d\n", tokens[1], offset, value);
     }
     else
@@ -271,6 +271,8 @@ void asm_mov32_mi_i(FILE *file, char **tokens)
         exit(1);
     }
 }
+
+
 
 void asm_mov32_r_m(FILE *file, char **tokens)
 {
@@ -283,7 +285,7 @@ void asm_mov32_r_m(FILE *file, char **tokens)
         exit(1);
     }
 
-    mov32_16_r_m(reg1, reg2,0);
+    mov32_16_r_m(reg1, reg2, 0);
     printf("mov %s, %s\n", tokens[1], tokens[2]);
 }
 
@@ -300,7 +302,7 @@ void asm_mov32_m_i(FILE *file, char **tokens)
             exit(1);
         }
 
-        mov32_16_m_i(reg1, value,0);
+        mov32_16_m_i(reg1, value, 0);
         printf("mov %s, %d\n", tokens[1], value);
     }
     else
@@ -322,7 +324,7 @@ void asm_mov32_m_r(FILE *file, char **tokens)
         exit(1);
     }
 
-    mov32_16_m_r(reg1, reg2,0);
+    mov32_16_m_r(reg1, reg2, 0);
     printf("mov %s, %s\n", tokens[1], tokens[2]);
 }
 
@@ -338,7 +340,7 @@ void asm_mov32_mr_r(FILE *file, char **tokens)
         exit(1);
     }
 
-    mov32_16_mr_r(reg1, reg2, reg3,0);
+    mov32_16_mr_r(reg1, reg2, reg3, 0);
     printf("mov [%s + %s], %s\n", tokens[1], tokens[2], tokens[3]);
 }
 
@@ -354,7 +356,7 @@ void asm_mov32_r_mr(FILE *file, char **tokens)
         exit(1);
     }
 
-    mov32_16_r_mr(reg1, reg2, reg3,0);
+    mov32_16_r_mr(reg1, reg2, reg3, 0);
     printf("mov %s, [%s + %s]\n", tokens[1], tokens[2], tokens[3]);
 }
 
@@ -372,7 +374,7 @@ void asm_mov32_mr_i(FILE *file, char **tokens)
             exit(1);
         }
 
-        mov32_16_mr_i(reg1, reg2, value,0);
+        mov32_16_mr_i(reg1, reg2, value, 0);
         printf("mov %s, [%s + %d]\n", tokens[1], tokens[2], value);
     }
     else
@@ -397,7 +399,7 @@ void asm_mov32_mi_r(FILE *file, char **tokens)
             exit(1);
         }
 
-        mov32_16_mi_r(reg1, offset, reg2,0);
+        mov32_16_mi_r(reg1, offset, reg2, 0);
         printf("mov %s, [%d + %s]\n", tokens[1], offset, tokens[3]);
     }
     else
@@ -422,7 +424,7 @@ void asm_mov32_r_mi(FILE *file, char **tokens)
             exit(1);
         }
 
-        mov32_16_r_mi(reg1, reg2, offset,0);
+        mov32_16_r_mi(reg1, reg2, offset, 0);
         printf("mov %s, %s + %d\n", tokens[1], tokens[2], offset);
     }
     else
@@ -570,6 +572,42 @@ void asm_subi(FILE *file, char **tokens)
     }
 }
 
+void asm_addi(FILE *file, char **tokens)
+{
+    int reg1 = convert_string_to_reg(tokens[1]);
+    int *values = asm_get_number(tokens, 2, -1);
+    int value = values[0];
+    if (values[1] == 0)
+    {
+        if (reg1 == -1)
+        {
+            printf("Error: Register %s not found\n", tokens[1]);
+            exit(1);
+        }
+
+        add(reg1, value);
+        printf("add %s, %d\n", tokens[1], value);
+    }
+    else
+    {
+        printf("Error: Invalid number\n");
+        exit(1);
+    }
+}
+
+void asm_neg(FILE *file, char **tokens)
+{
+    int reg = convert_string_to_reg(tokens[1]);
+    if (reg == -1)
+    {
+        printf("Error: Register %s not found\n", tokens[1]);
+        exit(1);
+    }
+
+    neg(reg);
+    printf("neg %s\n", tokens[1]);
+}
+
 int parse_movs(FILE *file, char **tokens)
 {
     if (strcmp(tokens[0], "mov32") == 0)
@@ -692,6 +730,15 @@ int parse_extras(FILE *file, char **tokens)
     else if (strcmp(tokens[0], "subi") == 0)
     {
         asm_subi(file, tokens);
+        return 1;
+    }
+    else if (strcmp(tokens[0], "addi") == 0)
+    {
+        asm_addi(file, tokens);
+        return 1;
+    } else if (strcmp(tokens[0], "neg") == 0)
+    {
+        asm_neg(file, tokens);
         return 1;
     }
     else
