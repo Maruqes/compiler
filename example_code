@@ -339,6 +339,7 @@ func main()
     }
 
 
+    //EBP TESTING
     //detting ebp - esp
     //mov32_16_mr_r
     asm(subi esp 4);
@@ -354,9 +355,6 @@ func main()
     if testESPEBP ! 55 {
         return 0;
     }
-
-
-
 
 
     if teste = 65 {

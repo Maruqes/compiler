@@ -1,4 +1,3 @@
-
 func test(){
     return 10;
 }
@@ -111,6 +110,7 @@ func setLetter(dd addr, dd offset, db letter, dw letter2){
     return 0;
 }
 
+
 func getStringLen(dd addr){
     dd len = 0;
 
@@ -145,22 +145,34 @@ func printString(dd addr){
     return 0;
 }
 
+func printStringLen(dd addr, dd len){
+
+    asm(mov32 ecx addr);
+    asm(mov32 ebx 1);
+    asm(mov32 edx len);
+    asm(mov32 eax 4);
+    asm(syscall);
+    return 0;
+}
+
 func main()
 {
-    dd resultado = 0;
-    resultado = resultado + test();
-    resultado = resultado + test_whiles();
-    resultado = resultado + test_deaddressing();
-    resultado = resultado + test_ifs();
-    resultado = resultado + test_fors();
-    resultado = resultado + testRecursion(0);
-    resultado = resultado + test_params(4,1,1,1,3);
-    resultado = resultado + nestedForLoops();
-    resultado = resultado + nestedIfs();
-    resultado = resultado + ret10if10(10);
-   
-    
-    if resultado ! 190 {
+    dd total = 0;
+
+    // Testes individuais
+    total = total + test();               // Espera 10
+    total = total + test_whiles();        // Espera 10
+    total = total + test_deaddressing();  // Espera 10
+    total = total + test_ifs();           // Espera 10
+    total = total + test_fors();          // Espera 10
+    total = total + testRecursion(0);     // Espera 10
+    total = total + test_params(4,1,1,1,3); // Espera 10
+    total = total + nestedForLoops();     // Espera 100
+    total = total + nestedIfs();          // Espera 10
+    total = total + ret10if10(10);        // Espera 10
+
+    // Verificar soma final das funções (deveria ser 190)
+    if total ! 190 {
         return 0;
     }
 
@@ -177,11 +189,175 @@ func main()
     setLetter(addr, 2, 'L', 0);
     setLetter(addr, 3, 'L', 0);
     setLetter(addr, 4, 'O', 0);
-    setLetter(addr, 5, 10, 0);
+    setLetter(addr, 5, 'O', 0);
+    setLetter(addr, 6, '_', 0);
+    setLetter(addr, 7, 'M', 0);
+    setLetter(addr, 8, 'U', 0);
+    setLetter(addr, 9, 'N', 0);
+    setLetter(addr, 10, 'D', 0);
+    setLetter(addr, 11, 'O', 0);
+    setLetter(addr, 12, 10, 0);
 
 
-    printString(addr);
+    printStringLen(addr, 13);
+
+    dd s;
+    CreateString("Hello World\n");
+    asm(mov32 s eax);
+
+    dd s2 = CreateString("Hello World2\n");
+
+    //example comment
+    printString(s);     // ola
+    printString(s2);
 
 
-    return 350;
+    ff testeFloat = f3.14;
+    dd testemds = 0;
+
+    asm(mov32 eax testeFloat);
+    asm(mov_x_r xmm0 eax);
+
+    asm(cvtss2si eax xmm0);
+
+    asm(mov32 testemds eax);
+
+
+    dd teste = 0;
+    asm(subi esp 4);
+    asm(mov32 eax 65);
+    asm(mov32_m_r esp  eax);
+    asm(mov32 ebx 0);
+    asm(mov32_r_mr eax esp ebx);
+    asm(mov32 teste eax);
+    asm(pop edx);
+
+
+    dd testESPEBP = 0;
+    //testing all 32 functions with esp and ebp regs :D
+    //ESP TESTING
+    //mov32_m_r
+    asm(subi esp 4);
+    asm(mov32 eax 10);
+    asm(mov32_m_r esp eax);
+    asm(pop eax);
+    asm(mov32 testESPEBP eax);
+    
+    if testESPEBP ! 10 {
+        return 0;
+    }
+
+    //mov32_r_m
+    asm(mov32 ebx 15);
+    asm(push ebx);
+    asm(mov32_r_m eax esp);
+    asm(mov32 testESPEBP eax);
+
+    if testESPEBP ! 15 {
+        return 0;
+    }   
+
+
+    //mov32_r_mi
+    asm(mov32 ebx 20);
+    asm(push ebx);
+    asm(subi esp 4);
+    asm(mov32_r_mi eax esp 4);
+    asm(mov32 testESPEBP eax);
+
+    if testESPEBP ! 20 {
+        return 0;
+    }
+
+
+    //mov32_r_mr
+    asm(mov32 ebx 25);
+    asm(push ebx);
+    asm(subi esp 4);
+    asm(subi esp 4);
+    asm(mov32 eax 8);
+    asm(mov32_r_mr ebx esp eax);
+    asm(mov32 testESPEBP ebx);
+
+    if testESPEBP ! 25 {
+        return 0;
+    }
+
+    //mov32_m_i
+    asm(subi esp 4);
+    asm(mov32_m_i esp 30);
+    asm(pop eax);
+    asm(mov32 testESPEBP eax);
+
+    if testESPEBP ! 30 {
+        return 0;
+    }
+
+
+    //mov32_m_r
+    asm(subi esp 4);
+    asm(mov32 ebx 35);
+    asm(mov32_m_r esp ebx);
+    asm(pop eax);
+    asm(mov32 testESPEBP eax);
+
+    if testESPEBP ! 35 {
+        return 0;
+    }
+
+
+    //mov32_mi_r
+    asm(subi esp 4);
+    asm(subi esp 4);
+    asm(mov32 ebx 40);
+    asm(mov32_mi_r esp 4 ebx);
+    asm(pop eax);
+    asm(pop eax);
+    asm(mov32 testESPEBP eax);
+
+    if testESPEBP ! 40 {
+        return 0;
+    }
+
+
+    //mov32_16_mr_r
+    asm(subi esp 4);
+    asm(subi esp 4);
+    asm(mov32 ebx 4);
+    asm(mov32 eax 50);
+    asm(mov32_mr_r esp ebx eax);
+    asm(pop eax);
+    asm(pop eax);
+    asm(mov32 testESPEBP eax);
+
+    if testESPEBP ! 50 {
+        return 0;
+    }
+
+
+    //EBP TESTING
+    //detting ebp - esp
+    //mov32_16_mr_r
+    asm(subi esp 4);
+    asm(mov32 eax ebp);
+    asm(mov32 ebx esp);
+    asm(sub eax ebx);
+    asm(neg eax);
+    asm(mov32 ebx 55);
+    asm(mov32_mr_r ebp eax ebx);
+    asm(pop eax);
+    asm(mov32 testESPEBP eax);
+
+    if testESPEBP ! 55 {
+        return 0;
+    }
+
+
+    if teste = 65 {
+        if testemds = 3 {
+            return 350;
+        }
+    }
+
+    return 0;
 }

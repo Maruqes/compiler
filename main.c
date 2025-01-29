@@ -24,7 +24,7 @@ BIG TODO:
 
 
 asm_parser->falta arithmetics e gates
-ver funcoes 32/16 todasss e memso para 8(aidna nao tem esp conditions)
+ver funcoes 32/16 todasss e memso para 8(ainda nao tem esp conditions)
 
 next:
     check function for esp memory fuckkkkk
