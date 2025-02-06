@@ -438,13 +438,6 @@ int parse_it(char *token, FILE *file)
         return 1;
     }
 
-    if (strcmp(token, "ff") == 0)
-    {
-        parse_create_int(file, FF);
-        free(token);
-        return 1;
-    }
-
     if (strcmp(token, "dd") == 0)
     {
         parse_create_int(file, DD);

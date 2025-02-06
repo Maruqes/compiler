@@ -216,7 +216,7 @@ func main()
     printString(s2);
 
 
-    ff testeFloat = f3.14;
+    dd testeFloat = f3.14;
     dd testemds = 0;
 
     asm(mov32 eax testeFloat);

@@ -184,10 +184,6 @@ int check_type(char *type)
     {
         return DD;
     }
-    else if (strcmp(type, "ff") == 0)
-    {
-        return FF;
-    }
     return 0;
 }
 
@@ -202,10 +198,6 @@ uint32_t get_type_length(int valueType)
         return DW;
     }
     else if (valueType == DD)
-    {
-        return DD;
-    }
-    else if (valueType == FF)
     {
         return DD;
     }
