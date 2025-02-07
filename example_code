@@ -155,6 +155,61 @@ func printStringLen(dd addr, dd len){
     return 0;
 }
 
+func floatAdd(dd a, dd b){
+    asm(mov32 eax a);
+    asm(mov_x_r xmm0 eax);
+    asm(mov32 eax b);
+    asm(mov_x_r xmm1 eax);
+    asm(addss xmm0 xmm1);
+    asm(mov_r_x eax xmm0);
+    return;
+}
+
+func floatMul(dd a, dd b){
+    asm(mov32 eax a);
+    asm(mov_x_r xmm0 eax);
+    asm(mov32 eax b);
+    asm(mov_x_r xmm1 eax);
+    asm(mulss xmm0 xmm1);
+    asm(mov_r_x eax xmm0);
+    return;
+}
+
+func floatSub(dd a, dd b){
+    asm(mov32 eax a);
+    asm(mov_x_r xmm0 eax);
+    asm(mov32 eax b);
+    asm(mov_x_r xmm1 eax);
+    asm(subss xmm0 xmm1);
+    asm(mov_r_x eax xmm0);
+    return;
+}
+
+func floatDiv(dd a, dd b){
+    asm(mov32 eax a);
+    asm(mov_x_r xmm0 eax);
+    asm(mov32 eax b);
+    asm(mov_x_r xmm1 eax);
+    asm(divss xmm0 xmm1);
+    asm(mov_r_x eax xmm0);
+    return;
+}
+
+func convertFloatToInt(dd a){
+    asm(mov32 eax a);
+    asm(mov_x_r xmm0 eax);
+    asm(cvtss2si eax xmm0);
+    return;
+}
+
+func convertIntToFloat(dd a){
+    asm(mov32 eax a);
+    asm(cvtsi2ss xmm0 eax);
+    asm(mov_r_x eax xmm0);
+    return;
+}
+
+
 func main()
 {
     dd total = 0;
@@ -215,16 +270,6 @@ func main()
     printString(s);     // ola
     printString(s2);
 
-
-    dd testeFloat = f3.14;
-    dd testemds = 0;
-
-    asm(mov32 eax testeFloat);
-    asm(mov_x_r xmm0 eax);
-
-    asm(cvtss2si eax xmm0);
-
-    asm(mov32 testemds eax);
 
 
     dd teste = 0;
@@ -358,8 +403,27 @@ func main()
 
 
     if teste = 65 {
-        if testemds = 3 {
-            return 350;
+        dd valor1 = f3.0;
+        dd valor2 = f3.0;
+        
+        dd testeFloat = floatAdd(valor1, valor2);
+        dd testeFconvert = convertFloatToInt(testeFloat);
+        
+        dd testeMul = floatMul(valor1, valor2);
+        dd testeSub = floatSub(testeMul, valor1);
+        dd testeDiv = floatDiv(testeMul, valor1);
+        dd testeIntToFloat = convertIntToFloat(testeFconvert);
+        
+        if testeFconvert = 6 {
+            if testeMul = f9.0 {
+                if testeSub = f6.0 {
+                    if testeDiv = f3.0 {
+                        if testeIntToFloat = f6.0 {
+                            return 350;
+                        }
+                    }
+                }
+            }
         }
     }
 

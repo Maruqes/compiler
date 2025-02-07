@@ -4,7 +4,7 @@
 #include "../../arithmetic/arithmetic.h"
 
 // f3 0f 10 04 24  -> movss xmm0, [esp]
-void mov_xmm0_esp(uint8_t xmmReg)
+void mov_xmm_esp(uint8_t xmmReg)
 {
     char *opcode_bytes = malloc(5);
     if (opcode_bytes == NULL)
@@ -15,7 +15,7 @@ void mov_xmm0_esp(uint8_t xmmReg)
     opcode_bytes[0] = 0xF3;
     opcode_bytes[1] = 0x0F;
     opcode_bytes[2] = 0x10;
-    opcode_bytes[3] = 0x04;
+    opcode_bytes[3] = 0x04 + (xmmReg * 8);
     opcode_bytes[4] = 0x24;
 
     OpCode new_opcode;
@@ -34,7 +34,7 @@ void mov_xmm0_esp(uint8_t xmmReg)
 }
 
 // f3 0f 11 04 24  -> movss [esp], xmm0
-void mov_esp_xmm0(uint8_t xmmReg)
+void mov_esp_xmm(uint8_t xmmReg)
 {
     char *opcode_bytes = malloc(5);
     if (opcode_bytes == NULL)
@@ -66,14 +66,14 @@ void mov_esp_xmm0(uint8_t xmmReg)
 void mov_x_r(uint8_t xmmReg, uint8_t reg)
 {
     push_reg(reg);
-    mov_xmm0_esp(xmmReg);
+    mov_xmm_esp(xmmReg);
     add(REG_ESP, 4);
 }
 
 void mov_r_x(uint8_t xmmReg, uint8_t reg)
 {
     sub(REG_ESP, 4);
-    mov_esp_xmm0(xmmReg);
+    mov_esp_xmm(xmmReg);
     pop_reg(reg);
 }
 
