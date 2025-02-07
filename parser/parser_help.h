@@ -43,5 +43,5 @@ void parse_asm_function(FILE *file);
 int is_valid_number(const char *str);
 int checkFuncType(char *type);
 
-void parse_float(FILE *fp, char *token, uint8_t reg);
+void parse_float(FILE *fp, uint8_t reg);
 #endif

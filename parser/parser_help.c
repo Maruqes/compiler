@@ -131,19 +131,15 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
         mov_reg32_reg32(reg, REG_EAX);
         pop_eax();
     }
-    else if (token[0] == 'f')
+    // inside functions
+    else if (parse_inside_functions(file, token, reg) == 1)
     {
-        parse_float(file, token, reg);
+        return;
     }
     else
     {
 
-        // inside functions
-        if (parse_inside_functions(file, token, reg) == 1)
-        {
-            return;
-        }
-        else if (is_valid_number(token))
+        if (is_valid_number(token))
         {
             uint32_t val = atoi(token);
             mov_reg32(reg, val);

@@ -61,7 +61,6 @@ int get_check_free_semicolon(FILE *f)
     return 1;
 }
 
-
 void set_param_manually(int *params_count)
 {
     push_reg(REG_EBX);
@@ -128,7 +127,7 @@ void add_function(char *name)
     }
     functions[functions_count].name = malloc(strlen(name) + 1);
     strcpy(functions[functions_count].name, name);
-    functions[functions_count].return_type = "DD";   //becouse all function return 4 bytes
+    functions[functions_count].return_type = "DD"; // becouse all function return 4 bytes
     functions_count++;
 }
 
@@ -172,9 +171,14 @@ reg is the register to store the return value
 */
 int parse_inside_functions(FILE *file, char *token, uint8_t reg)
 {
-    if (strcmp(token, "CreateString") == 0)
+    if (strcmp(token, "CString") == 0)
     {
         parse_CreateString(file, reg);
+        return 1;
+    }
+    else if (strcmp(token, "CFloat") == 0)
+    {
+        parse_float(file, reg);
         return 1;
     }
     return 0;

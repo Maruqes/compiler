@@ -261,14 +261,16 @@ func main()
     printStringLen(addr, 13);
 
     dd s;
-    CreateString("Hello World\n");
+    CString("Hello World\n");
     asm(mov32 s eax);
 
-    dd s2 = CreateString("Hello World2\n");
+    dd s2 = CString("Hello World2\n");
 
     //example comment
     printString(s);     // ola
     printString(s2);
+
+    printString(CString("Hello World3\n"));
 
 
 
@@ -403,8 +405,8 @@ func main()
 
 
     if teste = 65 {
-        dd valor1 = f3.0;
-        dd valor2 = f3.0;
+        dd valor1 = CFloat(3.0);
+        dd valor2 = CFloat(3.0);
         
         dd testeFloat = floatAdd(valor1, valor2);
         dd testeFconvert = convertFloatToInt(testeFloat);
@@ -415,10 +417,10 @@ func main()
         dd testeIntToFloat = convertIntToFloat(testeFconvert);
         
         if testeFconvert = 6 {
-            if testeMul = f9.0 {
-                if testeSub = f6.0 {
-                    if testeDiv = f3.0 {
-                        if testeIntToFloat = f6.0 {
+            if testeMul = CFloat(9.0) {
+                if testeSub = CFloat(6.0) {
+                    if testeDiv = CFloat(3.0) {
+                        if testeIntToFloat = CFloat(6.0) {
                             return 350;
                         }
                     }

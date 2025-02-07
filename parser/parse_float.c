@@ -24,13 +24,19 @@ union parse_float_union
     uint32_t i;
 };
 
-void parse_float(FILE *fp, char *token, uint8_t reg)
+void parse_float(FILE *fp, uint8_t reg)
 {
-    token++; // skip the f
+    char *left_bracket = get_token(fp);
+    if (left_bracket[0] != '(')
+    {
+        printf("Error: Expected '('\n");
+        exit(1);
+    }
+    char *token = get_token(fp);
     char *dot = get_token(fp);
     if (dot[0] != '.')
     {
-        printf("Error: Expected '.'\n");
+        printf("Error: Expected '.' found %s\n", dot);
         exit(1);
     }
     char *afterDot = get_token(fp);
@@ -39,7 +45,6 @@ void parse_float(FILE *fp, char *token, uint8_t reg)
         printf("Error: Expected number\n");
         exit(1);
     }
-
 
     char *temp = malloc(strlen(token) + strlen(afterDot) + 2);
     strcpy(temp, token);
@@ -51,8 +56,14 @@ void parse_float(FILE *fp, char *token, uint8_t reg)
 
     mov_reg32(reg, p.i);
 
-
     free(dot);
     free(afterDot);
     free(temp);
+
+    char *right_bracket = get_token(fp);
+    if (right_bracket[0] != ')')
+    {
+        printf("Error: Expected ')'\n");
+        exit(1);
+    }
 }
