@@ -27,12 +27,8 @@ asm_parser->falta arithmetics e gates
 ver funcoes 32/16 todasss e memso para 8(ainda nao tem esp conditions)
 
 next:
-    check function for esp memory fuckkkkk
-    idea is create another type float like -> f3.14
-    float myF = f3.14;
-    dd myF_as_int = 0x4048f5c3;
-
-    a function to convert them vice versa and simple :D
+    include other files
+    && || 
 
 medium:
     global vars  the way this is done this cant be done :D

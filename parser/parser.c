@@ -421,9 +421,20 @@ void parse_while(FILE *file)
     free(temp_label_name_end);
 }
 
+int parse_include(FILE *file)
+{
+
+    return 1;
+}
+
 // should free token;
 int parse_it(char *token, FILE *file)
 {
+    if (strcmp(token, "include") == 0)
+    {
+        free(token);
+        return 1;
+    }
     if (strcmp(token, "func") == 0)
     {
         parse_create_function(file);

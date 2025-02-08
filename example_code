@@ -1,3 +1,5 @@
+include "ficheiro_include"
+
 func test(){
     return 10;
 }
