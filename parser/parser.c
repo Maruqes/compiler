@@ -423,6 +423,9 @@ void parse_while(FILE *file)
 
 int parse_include(FILE *file)
 {
+    char *file_name = get_token(file);
+    printf("Including file %s\n", file_name);
+    start_parsing(file_name);
 
     return 1;
 }
@@ -432,7 +435,8 @@ int parse_it(char *token, FILE *file)
 {
     if (strcmp(token, "include") == 0)
     {
-        free(token);
+        parse_include(file);
+        free(token);    
         return 1;
     }
     if (strcmp(token, "func") == 0)
