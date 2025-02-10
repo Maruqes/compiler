@@ -136,6 +136,7 @@ func convertIntToFloat(dd a){
 
 func main()
 {
+
     dd total = 0;
 
     // Testes individuais
@@ -328,6 +329,8 @@ func main()
     }
 
 
+  
+
     if teste = 65 {
         dd valor1 = CFloat(3.0);
         dd valor2 = CFloat(3.0);
@@ -339,12 +342,13 @@ func main()
         dd testeSub = floatSub(testeMul, valor1);
         dd testeDiv = floatDiv(testeMul, valor1);
         dd testeIntToFloat = convertIntToFloat(testeFconvert);
-            
+
+
         if testeFconvert = 6 {
             if testeMul = CFloat(9.0) {
                 if testeSub = CFloat(6.0) {
                     if testeDiv = CFloat(3.0) {
-                        if testeIntToFloat = CFloat(6.0) {
+                        if testeIntToFloat = floatAdd(CFloat(3.0), CFloat(3.0)) {
                             return 350;
                         }
                     }

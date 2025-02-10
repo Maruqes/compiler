@@ -25,7 +25,6 @@ BIG TODO:
 
 next:
     include other files
-    && || gates(or and etc)
 
 medium:
     global vars  the way this is done this cant be done :D

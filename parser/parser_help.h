@@ -20,6 +20,7 @@ void add_function(char *name);
 void free_functions();
 int checkFuncType(char *type);
 int parse_inside_functions(FILE *file, char *token, uint8_t reg);
+char *parse_until_charset(FILE *file, char *charset);
 
 int get_check_free_semicolon(FILE *f);
 

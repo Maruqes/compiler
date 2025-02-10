@@ -306,20 +306,32 @@ void parse_create_return(FILE *file)
 
 void parse_ifs(FILE *file)
 {
-    char *left_condition = get_token(file);
-    char *condition = get_token(file);
-    char *right_condition = get_token(file);
+
+    // first part
+    char *firstPart = parse_until_charset(file, "<>!=");
+    if (strcmp(firstPart, "=") != 0 && strcmp(firstPart, "<") != 0 && strcmp(firstPart, ">") != 0 && strcmp(firstPart, "!") != 0)
+    {
+        printf("Error: Expected =<>!\n");
+        exit(1);
+    }
+    push_reg(REG_EAX);
+
+    // second part
+    char *secondPart = parse_until_charset(file, "{");
+    if (strcmp(secondPart, "{") != 0)
+    {
+        printf("Error: Expected {\n");
+        exit(1);
+    }
+
+    pop_reg(REG_EBX);
 
     char *temp_label_name = create_temp_label();
 
-    printf("if %s %s %s\n", left_condition, condition, right_condition);
-
-    parse_data_types(file, left_condition, REG_EDX);
-    parse_data_types(file, right_condition, REG_EBX);
-
-    cmp_reg32(REG_EDX, REG_EBX);
-    create_comparion_bytes(condition, temp_label_name);
-
+    //order of regs matters
+    cmp_reg32(REG_EBX, REG_EAX);
+    create_comparion_bytes(firstPart, temp_label_name);
+   
     char *token = get_token(file);
     while (strcmp(token, "}") != 0)
     {
@@ -328,12 +340,12 @@ void parse_ifs(FILE *file)
     }
     create_label(temp_label_name);
 
-    free(left_condition);
-    free(condition);
-    free(right_condition);
-    free(token);
-    free(temp_label_name);
+    printf("if %s %s\n", firstPart, secondPart);
+
+    free(secondPart);
+    free(firstPart);
 }
+
 
 void parse_fors(FILE *file)
 {
@@ -421,12 +433,31 @@ void parse_while(FILE *file)
     free(temp_label_name_end);
 }
 
+char **included_files;
+uint32_t number_of_files;
+
 int parse_include(FILE *file)
 {
     char *file_name = get_token(file);
     printf("Including file %s\n", file_name);
+
+    for (int i = 0; i < number_of_files; i++)
+    {
+        if (strcmp(included_files[i], file_name) == 0)
+        {
+            printf("Error: File %s already included\n", file_name);
+            exit(1);
+        }
+    }
+
     start_parsing(file_name);
 
+    included_files = realloc(included_files, sizeof(char *) * (number_of_files + 1));
+    included_files[number_of_files] = malloc(strlen(file_name) + 1);
+    strcpy(included_files[number_of_files], file_name);
+    number_of_files++;
+
+    free(file_name);
     return 1;
 }
 
@@ -436,7 +467,7 @@ int parse_it(char *token, FILE *file)
     if (strcmp(token, "include") == 0)
     {
         parse_include(file);
-        free(token);    
+        free(token);
         return 1;
     }
     if (strcmp(token, "func") == 0)

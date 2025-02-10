@@ -171,6 +171,7 @@ int cmp_char_charset(char c, char *charset)
     return 0;
 }
 
+// returns in EAX the value of the expression
 char *parse_until_charset(FILE *file, char *charset)
 {
     printf("Parsing until charset: %s\n", charset);
