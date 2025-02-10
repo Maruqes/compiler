@@ -23,17 +23,12 @@ BIG TODO:
         explicar como as variaves funcionam, com o base pointer etc, links para outros docs;
 
 
-asm_parser->falta arithmetics e gates
-ver funcoes 32/16 todasss e memso para 8(ainda nao tem esp conditions)
-
 next:
     include other files
-    && || 
+    && || gates(or and etc)
 
 medium:
     global vars  the way this is done this cant be done :D
-    handle multiple files
-    library support
 
 far:
     strutcs
