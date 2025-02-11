@@ -277,3 +277,30 @@ void popa()
     }
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
+
+void push_32value(uint32_t val)
+{
+    char *opcode_bytes = malloc(5);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0x68;            // Opcode for 'push imm32'
+    memcpy(&opcode_bytes[1], &val, 4); // Immediate value
+
+    OpCode new_opcode;
+    new_opcode.size = 5; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}

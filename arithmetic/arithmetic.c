@@ -2,6 +2,7 @@
 #include "../functions/functions.h"
 #include "../push_pop/push_pop.h"
 #include "../mov_reg_reg/mov_reg_reg.h"
+#include "../logic/logic.h"
 
 void add_eax(uint32_t value)
 {
@@ -340,4 +341,11 @@ void neg(uint8_t reg_code)
         exit(EXIT_FAILURE);
     }
     op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+// mod
+void mod_reg32(uint8_t reg1, uint8_t reg2)
+{
+    dec_reg32(reg2);
+    andf(reg1, reg2);
 }

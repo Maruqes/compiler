@@ -30,4 +30,6 @@ void pop_symbol(char *symbol_name);
 void pusha();
 void popa();
 
+void push_32value(uint32_t val);
+
 #endif

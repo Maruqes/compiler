@@ -43,6 +43,7 @@ char *symbol_tokens[] = {
     ">",
     "*",
     "&",
+    "|",
     "!",
     "[",
     "]",
@@ -50,7 +51,7 @@ char *symbol_tokens[] = {
     ".",
     "#",
     "'"};
-char *arithmetic_symbols[] = {"+", "-", "*", "/", "^"};
+char *arithmetic_symbols[] = {"+", "-", "*", "/", "^", "%"};
 char **token_save;
 
 uint64_t labels_count = 0;
@@ -86,7 +87,8 @@ int is_symbol(char token)
     return 0;
 }
 
-void create_comparion_bytes(char *condition, char *temp_label_name)
+// if condition false jump to to_jump
+void create_comparison_bytes(char *condition, char *temp_label_name)
 {
     if (strcmp(condition, "=") == 0)
     {
@@ -110,6 +112,29 @@ void create_comparion_bytes(char *condition, char *temp_label_name)
     }
     printf("Error: Condition %s not found\n", condition);
     exit(EXIT_FAILURE);
+}
+
+// push 0 if false 1 if true
+void push_comparison_value_to_stack(uint8_t reg1, uint8_t reg2, char *condition)
+{
+    char *set0 = create_temp_label();
+    char *end = create_temp_label();
+    // order of regs matters
+    cmp_reg32(REG_EBX, REG_EAX);
+    create_comparison_bytes(condition, set0);
+
+    mov_eax(1);
+    jmp(end);
+
+    create_label(set0);
+    mov_eax(0);
+
+    create_label(end);
+
+    push_eax();
+
+    free(set0);
+    free(end);
 }
 
 char *get_token(FILE *fp)
@@ -304,7 +329,7 @@ void parse_create_return(FILE *file)
     ret();
 }
 
-void parse_comparison(FILE *file, char *to_jump, char *char_set_to_compare)
+char parse_comparison_to_stack(FILE *file, char *char_set_to_compare)
 {
     // first part
     char *firstPart = parse_until_charset(file, "<>!=");
@@ -315,22 +340,70 @@ void parse_comparison(FILE *file, char *to_jump, char *char_set_to_compare)
     }
     push_reg(REG_EAX);
 
-    // second part
     char *secondPart = parse_until_charset(file, char_set_to_compare);
     if (cmp_char_charset(secondPart[0], char_set_to_compare) == 0)
     {
         printf("Error: Expected %s\n", char_set_to_compare);
         exit(1);
     }
-
     pop_reg(REG_EBX);
 
-    // order of regs matters
-    cmp_reg32(REG_EBX, REG_EAX);
-    create_comparion_bytes(firstPart, to_jump);
+    push_comparison_value_to_stack(REG_EBX, REG_EAX, firstPart);
 
+    char c = secondPart[0];
     free(firstPart);
     free(secondPart);
+    printf("returning %s\n", secondPart);
+    return c;
+}
+
+// if condition false jump to to_jump
+// parse until char_set_to_compare
+void parse_comparison(FILE *file, char *to_jump, char *char_set_to_compare)
+{
+    int char_len = strlen(char_set_to_compare);
+    char *new_charset = malloc(char_len + 3);
+    strcpy(new_charset, char_set_to_compare);
+    new_charset[char_len] = '&';
+    new_charset[char_len + 1] = '|';
+    new_charset[char_len + 2] = '\0';
+    uint8_t *logic_gates = malloc(100);
+    int logic_gates_count = 0;
+
+    char c = parse_comparison_to_stack(file, new_charset);
+
+    while (c == '&' || c == '|')
+    {
+        logic_gates[logic_gates_count] = c;
+        logic_gates_count++;
+        c = parse_comparison_to_stack(file, new_charset);
+    }
+
+    printf("logic gates count %d\n", logic_gates_count);
+    for (int i = 0; i < logic_gates_count; i++)
+    {
+        if (logic_gates[i] == '&')
+        {
+            pop_eax();
+            pop_ebx();
+
+            andf(REG_EAX, REG_EBX);
+            push_eax();
+        }
+        else if (logic_gates[i] == '|')
+        {
+            pop_eax();
+            pop_ebx();
+
+            orf(REG_EAX, REG_EBX);
+            push_eax();
+        }
+    }
+
+    pop_eax();
+    mov_ebx(1);
+    cmp_reg32(REG_EAX, REG_EBX);
+    jump_if_not_equal(to_jump);
 }
 
 void parse_ifs(FILE *file)
@@ -353,68 +426,47 @@ void parse_fors(FILE *file)
     char *token = get_token(file);
     parse_it(token, file); // for i = 0;
 
-    char *left_condition = get_token(file);
-    char *condition = get_token(file);
-    char *right_condition = get_token(file);
-    printf("for %s %s %s\n", left_condition, condition, right_condition); // i < 10;
-
-    get_check_free_semicolon(file);
-
-    char *for1Label = create_temp_label();
-    char *for2Label = create_temp_label();
+    char *comparison_label = create_temp_label();
+    char *increment_label = create_temp_label();
+    char *code_label = create_temp_label();
     char *endfor = create_temp_label();
 
-    jmp(for2Label);
+    create_label(comparison_label);
+    parse_comparison(file, endfor, ";");
+    jmp(code_label);
 
+    create_label(increment_label);
     token = get_token(file);
-    create_label(for1Label);
     parse_it(token, file); // i = i + 1;
+    ret();
 
-    create_label(for2Label);
-
-    parse_data_types(file, left_condition, REG_EDX);
-    parse_data_types(file, right_condition, REG_EBX);
-
-    cmp_reg32(REG_EDX, REG_EBX);
-    create_comparion_bytes(condition, endfor);
-
+    create_label(code_label);
     token = get_token(file);
     while (strcmp(token, "}") != 0)
     {
         parse_it(token, file);
         token = get_token(file);
     }
-    jmp(for1Label);
+    call(increment_label);
+    jmp(comparison_label);
 
     create_label(endfor);
 
-    free(left_condition);
-    free(condition);
-    free(right_condition);
     free(token);
-    free(for1Label);
-    free(for2Label);
     free(endfor);
+    free(comparison_label);
+    free(code_label);
+    free(increment_label);
 }
 
 void parse_while(FILE *file)
 {
-    char *left_condition = get_token(file);
-    char *condition = get_token(file);
-    char *right_condition = get_token(file);
 
     char *temp_label_name = create_temp_label();
     char *temp_label_name_end = create_temp_label();
 
-    printf("while %s %s %s\n", left_condition, condition, right_condition);
-
     create_label(temp_label_name);
-
-    parse_data_types(file, left_condition, REG_EDX);
-    parse_data_types(file, right_condition, REG_EBX);
-
-    cmp_reg32(REG_EDX, REG_EBX);
-    create_comparion_bytes(condition, temp_label_name_end);
+    parse_comparison(file, temp_label_name_end, "{");
 
     char *token = get_token(file);
     while (strcmp(token, "}") != 0)
@@ -425,9 +477,6 @@ void parse_while(FILE *file)
     jmp(temp_label_name);
     create_label(temp_label_name_end);
 
-    free(left_condition);
-    free(condition);
-    free(right_condition);
     free(token);
 
     free(temp_label_name);

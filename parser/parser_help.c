@@ -225,6 +225,17 @@ char *parse_until_charset(FILE *file, char *charset)
 
             free(var);
         }
+        else if (next_token[0] == '%')
+        {
+             char *var = get_token(file);
+            parse_data_types(file, var, REG_EBX);
+
+            mov_reg32_reg32(REG_ECX, REG_EAX);
+            mod_reg32(REG_ECX, REG_EBX);
+            mov_reg32_reg32(REG_EAX, REG_ECX);
+
+            free(var);
+        }
         else if (next_token[0] == '\n')
         {
             printf("Error: Expected ';'\n");
@@ -240,7 +251,7 @@ char *parse_until_charset(FILE *file, char *charset)
         free(next_token);
         next_token = get_token(file);
     }
-    printf("End of parsing\n");
+    printf("End of parsing returning %s\n", next_token);
     return next_token;
 }
 

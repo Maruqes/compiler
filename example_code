@@ -136,7 +136,7 @@ func convertIntToFloat(dd a){
 
 func main()
 {
-
+    
     dd total = 0;
 
     // Testes individuais
@@ -146,13 +146,33 @@ func main()
     total = total + test_ifs();           // Espera 10
     total = total + test_fors();          // Espera 10
     total = total + testRecursion(0);     // Espera 10
-    total = total + test_params(4,1,1,1,3); // Espera 10
+    total = total + test_params(4,1,0,2,3); // Espera 10
     total = total + nestedForLoops();     // Espera 100
     total = total + nestedIfs();          // Espera 10
     total = total + ret10if10(10);        // Espera 10
+    total = total + forlooptest();        // Espera 45
+    total = total + forlooptest2();             // Espera 10
+    total = total + test_gates();             // Espera 35
+    total = total + test_and_only();             // Espera 1
+    total = total + test_and_false();             // Espera 0
+    total = total + test_or_only();             // Espera 0
+    total = total + test_or_true();             // Espera 1
+    total = total + test_while_gate();             // Espera 6
+    total = total + test_precedence();             // Espera 1
+    total = total + test_nested_gates();             // Espera 1
+    total = total + test_nested_gates_fail();             // Espera 0
+    total = total + forloop_gate_test();             // Espera 5
+    
+    total = total + test_simple_gate1();             // Espera 5
+    total = total + test_simple_gate2();     // Espera 0
+    total = total + test_complex_gate();     // Espera 50
+    total = total + test_gate_with_numbers();// Espera 300
+    total = total + test_gate_with_arithmetic();// Espera 5
+    total = total + test_gate_multiple();    // Espera 500
+    total = total + test_gate_false();       // Espera 1000
+    total = total + test_gate_nested_like(); // Espera 999
 
-    // Verificar soma final das funções (deveria ser 190)
-    if total ! 190 {
+    if total ! 3249 {
         return 0;
     }
 
