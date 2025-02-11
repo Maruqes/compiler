@@ -304,9 +304,8 @@ void parse_create_return(FILE *file)
     ret();
 }
 
-void parse_ifs(FILE *file)
+void parse_comparison(FILE *file, char *to_jump, char *char_set_to_compare)
 {
-
     // first part
     char *firstPart = parse_until_charset(file, "<>!=");
     if (strcmp(firstPart, "=") != 0 && strcmp(firstPart, "<") != 0 && strcmp(firstPart, ">") != 0 && strcmp(firstPart, "!") != 0)
@@ -317,21 +316,29 @@ void parse_ifs(FILE *file)
     push_reg(REG_EAX);
 
     // second part
-    char *secondPart = parse_until_charset(file, "{");
-    if (strcmp(secondPart, "{") != 0)
+    char *secondPart = parse_until_charset(file, char_set_to_compare);
+    if (cmp_char_charset(secondPart[0], char_set_to_compare) == 0)
     {
-        printf("Error: Expected {\n");
+        printf("Error: Expected %s\n", char_set_to_compare);
         exit(1);
     }
 
     pop_reg(REG_EBX);
 
+    // order of regs matters
+    cmp_reg32(REG_EBX, REG_EAX);
+    create_comparion_bytes(firstPart, to_jump);
+
+    free(firstPart);
+    free(secondPart);
+}
+
+void parse_ifs(FILE *file)
+{
     char *temp_label_name = create_temp_label();
 
-    //order of regs matters
-    cmp_reg32(REG_EBX, REG_EAX);
-    create_comparion_bytes(firstPart, temp_label_name);
-   
+    parse_comparison(file, temp_label_name, "{");
+
     char *token = get_token(file);
     while (strcmp(token, "}") != 0)
     {
@@ -339,13 +346,7 @@ void parse_ifs(FILE *file)
         token = get_token(file);
     }
     create_label(temp_label_name);
-
-    printf("if %s %s\n", firstPart, secondPart);
-
-    free(secondPart);
-    free(firstPart);
 }
-
 
 void parse_fors(FILE *file)
 {
