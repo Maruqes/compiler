@@ -137,6 +137,11 @@ void push_comparison_value_to_stack(uint8_t reg1, uint8_t reg2, char *condition)
     free(end);
 }
 
+void go_back_x_char(int x, FILE *file)
+{
+    fseek(file, -x, SEEK_CUR);
+}
+
 char *get_token(FILE *fp)
 {
     int c;
@@ -320,7 +325,6 @@ void parse_create_function(FILE *file)
 // return in EAX
 void parse_create_return(FILE *file)
 {
-
     parse_after_equal(file);
 
     printf("return \n");
@@ -406,11 +410,22 @@ void parse_comparison(FILE *file, char *to_jump, char *char_set_to_compare)
     jump_if_not_equal(to_jump);
 }
 
+void parse_block(FILE *file)
+{
+    char *token = get_token(file);
+    while (strcmp(token, "}") != 0)
+    {
+        parse_it(token, file);
+        token = get_token(file);
+    }
+    free(token);
+}
+
 void parse_ifs(FILE *file)
 {
-    char *temp_label_name = create_temp_label();
-
-    parse_comparison(file, temp_label_name, "{");
+    char *false_label = create_temp_label();
+    char *end_label = create_temp_label();
+    parse_comparison(file, false_label, "{"); // if comparison is false jump to false_label
 
     char *token = get_token(file);
     while (strcmp(token, "}") != 0)
@@ -418,7 +433,29 @@ void parse_ifs(FILE *file)
         parse_it(token, file);
         token = get_token(file);
     }
-    create_label(temp_label_name);
+    jmp(end_label); // executed jmp to end
+
+    create_label(false_label);
+
+    char *else_token = get_token(file);
+    if (strcmp(else_token, "elif") == 0)
+    {
+        parse_ifs(file);
+    }
+    else if (strcmp(else_token, "else") == 0)
+    {
+        parse_block(file);
+    }
+    else
+    {
+        go_back_x_char(strlen(else_token), file);
+    }
+
+    nop();
+    create_label(end_label);
+
+    free(token);
+    free(false_label);
 }
 
 void parse_fors(FILE *file)
@@ -441,18 +478,12 @@ void parse_fors(FILE *file)
     ret();
 
     create_label(code_label);
-    token = get_token(file);
-    while (strcmp(token, "}") != 0)
-    {
-        parse_it(token, file);
-        token = get_token(file);
-    }
+    parse_block(file);
     call(increment_label);
     jmp(comparison_label);
 
     create_label(endfor);
 
-    free(token);
     free(endfor);
     free(comparison_label);
     free(code_label);
@@ -461,23 +492,15 @@ void parse_fors(FILE *file)
 
 void parse_while(FILE *file)
 {
-
     char *temp_label_name = create_temp_label();
     char *temp_label_name_end = create_temp_label();
 
     create_label(temp_label_name);
     parse_comparison(file, temp_label_name_end, "{");
 
-    char *token = get_token(file);
-    while (strcmp(token, "}") != 0)
-    {
-        parse_it(token, file);
-        token = get_token(file);
-    }
+    parse_block(file);
     jmp(temp_label_name);
     create_label(temp_label_name_end);
-
-    free(token);
 
     free(temp_label_name);
     free(temp_label_name_end);

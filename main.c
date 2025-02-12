@@ -24,7 +24,8 @@ BIG TODO:
 
 
 next:
-    include other files
+    else if
+    else
 
 medium:
     global vars  the way this is done this cant be done :D

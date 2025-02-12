@@ -293,3 +293,161 @@ func test_gate_nested_like(){
     }
     return a;
 }
+
+func testing_else1(){
+    dd testelf = 0;
+    if 1 = 0 {
+        testelf = testelf + 351;
+    }else {
+        testelf = testelf + 10;
+    }
+    return testelf;
+}
+
+func testing_else2(){
+    dd testelf = 0;
+    if 1 = 0 {
+        testelf = testelf + 351;
+    }elif 1 = 2 {
+        testelf = testelf + 349;
+    }else {
+        testelf = testelf + 10;
+    }
+    return testelf;
+}
+
+func testing_else3(){
+    dd testelf = 0;
+    if 1 = 0 {
+        testelf = testelf + 351;
+    }elif 1 = 2 {
+        testelf = testelf + 349;
+    }elif 1 = 3 {
+        testelf = testelf + 348;
+    }else {
+        testelf = testelf + 10;
+    }
+    return testelf;
+}
+
+func testing_else10(){
+    dd testelf = 0;
+    if 1 = 0 {
+        testelf = testelf + 351;
+    }elif 1 = 2 {
+        testelf = testelf + 349;
+    }elif 1 = 3 {
+        testelf = testelf + 348;
+    }elif 1 = 4 {
+        testelf = testelf + 347;
+    }elif 1 = 5 {
+        testelf = testelf + 346;
+    }elif 1 = 6 {
+        testelf = testelf + 345;
+    }elif 1 = 7 {
+        testelf = testelf + 344;
+    }elif 1 = 8 {
+        testelf = testelf + 343;
+    }elif 1 = 9 {
+        testelf = testelf + 342;
+    }else {
+        testelf = testelf + 10;
+    }
+    return testelf;
+}
+
+func testing_elif1(){
+    dd testelf = 0;
+    if 1 = 0 {
+        testelf = testelf + 351;
+    }elif 1 = 1 {
+        testelf = testelf + 10;
+    }else {
+        testelf = testelf + 350;
+    }
+    return testelf;
+}
+
+func testing_elif2(){
+    dd testelf = 0;
+    if 1 = 0 {
+        testelf = testelf + 351;
+    }elif 1 = 2 {
+        testelf = testelf + 349;
+    }elif 1 = 1 {
+        testelf = testelf + 10;
+    }else {
+        testelf = testelf + 348;
+    }
+    return testelf;
+}
+
+func testing_elif3(){
+    dd testelf = 0;
+    if 1 = 0 {
+        testelf = testelf + 351;
+    }elif 1 = 2 {
+        testelf = testelf + 349;
+    }elif 1 = 3 {
+        testelf = testelf + 348;
+    }elif 1 = 1 {
+        testelf = testelf + 10;
+    }else {
+        testelf = testelf + 347;
+    }
+    return testelf;
+}
+
+func testing_elif10(){
+    dd testelf = 0;
+    if 1 = 0 {
+        testelf = testelf + 351;
+    }elif 1 = 2 {
+        testelf = testelf + 349;
+    }elif 1 = 3 {
+        testelf = testelf + 348;
+    }elif 1 = 4 {
+        testelf = testelf + 347;
+    }elif 1 = 5 {
+        testelf = testelf + 346;
+    }elif 1 = 6 {
+        testelf = testelf + 345;
+    }elif 1 = 7 {
+        testelf = testelf + 344;
+    }elif 1 = 8 {
+        testelf = testelf + 343;
+    }elif 1 = 9 {
+        testelf = testelf + 342;
+    }elif 1 = 1 {
+        testelf = testelf + 10;
+    }else {
+        testelf = testelf + 341;
+    }
+    return testelf;
+}
+
+func testing_elif11(){
+    dd testelf = 0;
+    if 1 = 0 {
+        testelf = testelf + 351;
+    }elif 1 = 2 {
+        testelf = testelf + 349;
+    }elif 1 = 3 {
+        testelf = testelf + 348;
+    }elif 1 = 4 {
+        testelf = testelf + 347;
+    }elif 1 = 5 {
+        testelf = testelf + 346;
+    }elif 1 = 1 {
+        testelf = testelf + 10;
+    }elif 1 = 7 {
+        testelf = testelf + 344;
+    }elif 1 = 8 {
+        testelf = testelf + 343;
+    }elif 1 = 9 {
+        testelf = testelf + 342;
+    }elif 1 = 10 {
+        testelf = testelf + 341;
+    }
+    return testelf;
+}

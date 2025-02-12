@@ -12,5 +12,6 @@
 
 void start_parsing(char *filename);
 char *get_token(FILE *fp);
+void go_back_x_char(int x, FILE *file);
 
 #endif

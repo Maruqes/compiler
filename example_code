@@ -135,8 +135,18 @@ func convertIntToFloat(dd a){
 
 
 func main()
-{
-    
+
+    // dd testelf = 0;
+    // if 1 = 0 {
+    //     testelf = testelf + 351;
+    // }elif 1 = 2 {
+    //     testelf = testelf + 349;
+    // }else {
+    //     testelf = testelf + 350;
+    // }
+
+    // return testelf;
+
     dd total = 0;
 
     // Testes individuais
@@ -172,7 +182,18 @@ func main()
     total = total + test_gate_false();       // Espera 1000
     total = total + test_gate_nested_like(); // Espera 999
 
-    if total ! 3249 {
+    total = total + testing_else1();      // Espera 10
+    total = total + testing_else2();      // Espera 10
+    total = total + testing_else3();      // Espera 10
+    total = total + testing_else10();      // Espera 10
+    total = total + testing_elif1();      // Espera 10
+    total = total + testing_elif2();      // Espera 10
+    total = total + testing_elif3();      // Espera 10
+    total = total + testing_elif10();      // Espera 10
+    total = total + testing_elif11();      // Espera 10
+
+
+    if total ! 3339 {
         return 0;
     }
 
