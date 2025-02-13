@@ -24,8 +24,7 @@ BIG TODO:
 
 
 next:
-    else if
-    else
+  
 
 medium:
     global vars  the way this is done this cant be done :D
