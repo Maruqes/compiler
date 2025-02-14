@@ -44,6 +44,41 @@ int is_valid_number(const char *str)
     return 1;
 }
 
+uint32_t parse_hexadecimal(char *token)
+{
+    // Salta a parte "x" ou "0x", dependendo do caso
+    token += 1;  // se tiveres só "xFFFFFFFF"
+    // ou token += 2; se tiveres "0xFFFFFFFF"
+
+    uint32_t val = 0;
+    for (int i = 0; token[i] != '\0'; i++)
+    {
+        char c = token[i];
+        uint32_t digit = 0;
+
+        if (c >= '0' && c <= '9')
+        {
+            digit = c - '0';
+        }
+        else if (c >= 'A' && c <= 'F')
+        {
+            digit = c - 'A' + 10;
+        }
+        else if (c >= 'a' && c <= 'f')
+        {
+            digit = c - 'a' + 10;
+        }
+        else
+        {
+            // Tratamento de erro se o caracter não for hex
+        }
+
+        val = val * 16 + digit;
+    }
+
+    return val;
+}
+
 Function_struct *functions;
 uint32_t functions_count = 0;
 
@@ -169,6 +204,32 @@ file
 token is name of function
 reg is the register to store the return value
 */
+
+void parse_not(FILE *file, uint8_t reg)
+{
+    char *token = get_token(file);
+    if (strcmp(token, "(") != 0)
+    {
+        printf("Error: Expected '('\n");
+        exit(1);
+    }
+    free(token);
+    token = get_token(file);
+    get_var(reg, token);
+    not(reg); // return value in EAX
+    
+    //clear )
+    free(token);
+    token = get_token(file);
+    if (strcmp(token, ")") != 0)
+    {
+        printf("Error: Expected ')'\n");
+        exit(1);
+    }
+    free(token);
+
+}
+
 int parse_inside_functions(FILE *file, char *token, uint8_t reg)
 {
     if (strcmp(token, "CString") == 0)
@@ -179,6 +240,11 @@ int parse_inside_functions(FILE *file, char *token, uint8_t reg)
     else if (strcmp(token, "CFloat") == 0)
     {
         parse_float(file, reg);
+        return 1;
+    }
+    else if (strcmp(token, "not") == 0)
+    {
+        parse_not(file, reg);
         return 1;
     }
     return 0;

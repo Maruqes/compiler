@@ -43,6 +43,7 @@ void parse_string_array_value_setter(FILE *file, char *arr_var_name);
 
 void parse_asm_function(FILE *file);
 int is_valid_number(const char *str);
+uint32_t parse_hexadecimal(char * token);
 int checkFuncType(char *type);
 
 void parse_float(FILE *fp, uint8_t reg);

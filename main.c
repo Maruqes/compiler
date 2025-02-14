@@ -24,13 +24,14 @@ BIG TODO:
 
 
 next:
-  
+  melhorar parser
+  talvez mais umas inner functions
 
 medium:
     global vars  the way this is done this cant be done :D
 
 far:
-    strutcs
+    structs
 */
 
 // ELF header structure for 32-bit executable

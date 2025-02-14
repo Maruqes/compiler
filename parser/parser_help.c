@@ -151,6 +151,11 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
             mov_reg32(reg, -val_int);
             free(val);
         }
+        else if (token[0] == 'x')
+        {
+            uint32_t val = parse_hexadecimal(token);
+            mov_reg32(reg, val);
+        }
         else
         {
             printf("Error parse_data_types: Symbol '%s' not found\n", token);
@@ -227,7 +232,7 @@ char *parse_until_charset(FILE *file, char *charset)
         }
         else if (next_token[0] == '%')
         {
-             char *var = get_token(file);
+            char *var = get_token(file);
             parse_data_types(file, var, REG_EBX);
 
             mov_reg32_reg32(REG_ECX, REG_EAX);

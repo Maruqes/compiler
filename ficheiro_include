@@ -451,3 +451,19 @@ func testing_elif11(){
     }
     return testelf;
 }
+
+func testeNot(){
+    dd a = 0;
+    if not(a) = xFFFFFFFF {
+        a = 10;
+    }
+    return a;
+}
+
+func testeNot2(){
+    dd a = x341618A;
+    if not(a) = xFCBE9E75 {
+        a = 10;
+    }
+    return a;
+}

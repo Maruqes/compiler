@@ -192,8 +192,11 @@ func main()
     total = total + testing_elif10();      // Espera 10
     total = total + testing_elif11();      // Espera 10
 
+    total = total + testeNot();      // Espera 10
+    total = total + testeNot2();      // Espera 10
 
-    if total ! 3339 {
+
+    if total ! 3359 {
         return 0;
     }
 
@@ -369,6 +372,7 @@ func main()
         return 0;
     }
 
+    
 
   
 
