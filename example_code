@@ -134,7 +134,7 @@ func convertIntToFloat(dd a){
 }
 
 
-func main()
+func main(){
 
     // dd testelf = 0;
     // if 1 = 0 {

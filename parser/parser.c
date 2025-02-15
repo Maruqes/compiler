@@ -87,6 +87,18 @@ int is_symbol(char token)
     return 0;
 }
 
+//will parse until '}'
+void parse_block(FILE *file)
+{
+    char *token = get_token(file);
+    while (strcmp(token, "}") != 0)
+    {
+        parse_it(token, file);
+        token = get_token(file);
+    }
+    free(token);
+}
+
 // if condition false jump to to_jump
 void create_comparison_bytes(char *condition, char *temp_label_name)
 {
@@ -235,103 +247,6 @@ char *get_token(FILE *fp)
     return NULL;
 }
 
-typedef struct Paramtemp
-{
-    char *name;
-    int type;
-} Paramtemp;
-
-// system with a memory allocation with address pushed to stack
-void get_params(FILE *file)
-{
-    char *token = get_token(file);
-    free(token);
-
-    int params_count = 0;
-    Paramtemp *params = NULL;
-
-    token = get_token(file);
-    while (strcmp(token, ")") != 0)
-    {
-        if (strcmp(token, ",") == 0)
-        {
-            free(token);
-            token = get_token(file);
-        }
-        int paramType = check_type(token);
-        if (paramType == 0)
-        {
-            printf("Error:  Unknown param get_params %s\n", token);
-            exit(1);
-        }
-
-        char *name = get_token(file);
-
-        if (name[0] == '*')
-        {
-            free(name);
-            name = get_token(file);
-        }
-        printf("param %s\n", name);
-        printf("TYPE %d\n", paramType);
-        mov_reg32(REG_EDX, 0); // limpar reg edx
-
-        Paramtemp temp;
-        temp.name = malloc(strlen(name) + 1);
-        strcpy(temp.name, name);
-        temp.type = paramType;
-
-        params = realloc(params, sizeof(Paramtemp) * (params_count + 1));
-        params[params_count] = temp;
-
-        params_count++;
-
-        free(name);
-        free(token);
-        token = get_token(file);
-    }
-
-    for (int i = 0; i < params_count; i++)
-    {
-        Paramtemp param = params[params_count - i - 1];
-        add_var_to_array_with_offset(param.name, get_type_length(param.type), get_current_scope(), get_type_length(param.type), -8 - (i * 4), param.type);
-    }
-
-    for (int i = 0; i < params_count; i++)
-    {
-        free(params[i].name);
-    }
-    free(params);
-    free(token);
-}
-
-void parse_create_function(FILE *file)
-{
-    char *name = get_token(file);
-
-    printf("func %s\n", name);
-
-    create_label(name);
-    create_new_stack();
-
-    add_function(name);
-    set_current_scope(name);
-
-    get_params(file);
-
-    free(name);
-}
-
-// return in EAX
-void parse_create_return(FILE *file)
-{
-    parse_after_equal(file);
-
-    printf("return \n");
-
-    restore_stack();
-    ret();
-}
 
 char parse_comparison_to_stack(FILE *file, char *char_set_to_compare)
 {
@@ -410,16 +325,7 @@ void parse_comparison(FILE *file, char *to_jump, char *char_set_to_compare)
     jump_if_not_equal(to_jump);
 }
 
-void parse_block(FILE *file)
-{
-    char *token = get_token(file);
-    while (strcmp(token, "}") != 0)
-    {
-        parse_it(token, file);
-        token = get_token(file);
-    }
-    free(token);
-}
+
 
 void parse_ifs(FILE *file)
 {

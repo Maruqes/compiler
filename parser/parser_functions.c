@@ -47,7 +47,7 @@ int is_valid_number(const char *str)
 uint32_t parse_hexadecimal(char *token)
 {
     // Salta a parte "x" ou "0x", dependendo do caso
-    token += 1;  // se tiveres só "xFFFFFFFF"
+    token += 1; // se tiveres só "xFFFFFFFF"
     // ou token += 2; se tiveres "0xFFFFFFFF"
 
     uint32_t val = 0;
@@ -198,6 +198,117 @@ char *get_current_scope()
     return current_scope;
 }
 
+
+//functions
+typedef struct Paramtemp
+{
+    char *name;
+    int type;
+} Paramtemp;
+
+// system with a memory allocation with address pushed to stack
+void get_params(FILE *file)
+{
+    char *token = get_token(file);
+    free(token);
+
+    int params_count = 0;
+    Paramtemp *params = NULL;
+
+    token = get_token(file);
+    while (strcmp(token, ")") != 0)
+    {
+        if (strcmp(token, ",") == 0)
+        {
+            free(token);
+            token = get_token(file);
+        }
+        int paramType = check_type(token);
+        if (paramType == 0)
+        {
+            printf("Error:  Unknown param get_params %s\n", token);
+            exit(1);
+        }
+
+        char *name = get_token(file);
+
+        if (name[0] == '*')
+        {
+            free(name);
+            name = get_token(file);
+        }
+        printf("param %s\n", name);
+        printf("TYPE %d\n", paramType);
+        mov_reg32(REG_EDX, 0); // limpar reg edx
+
+        Paramtemp temp;
+        temp.name = malloc(strlen(name) + 1);
+        strcpy(temp.name, name);
+        temp.type = paramType;
+
+        params = realloc(params, sizeof(Paramtemp) * (params_count + 1));
+        params[params_count] = temp;
+
+        params_count++;
+
+        free(name);
+        free(token);
+        token = get_token(file);
+    }
+
+    for (int i = 0; i < params_count; i++)
+    {
+        Paramtemp param = params[params_count - i - 1];
+        add_var_to_array_with_offset(param.name, get_type_length(param.type), get_current_scope(), get_type_length(param.type), -8 - (i * 4), param.type);
+    }
+
+    for (int i = 0; i < params_count; i++)
+    {
+        free(params[i].name);
+    }
+    free(params);
+    free(token);
+}
+
+void parse_create_function(FILE *file)
+{
+    char *name = get_token(file);
+
+    printf("func %s\n", name);
+
+    create_label(name);
+    create_new_stack();
+
+    add_function(name);
+    set_current_scope(name);
+
+    get_params(file);
+
+    free(name);
+
+    // get { and parse block
+    char *token = get_token(file);
+    if (strcmp(token, "{") != 0)
+    {
+        printf("token %s\n", token);
+        printf("Error: Expected {\n");
+        exit(1);
+    }
+
+    parse_block(file);
+}
+
+// return in EAX
+void parse_create_return(FILE *file)
+{
+    parse_after_equal(file);
+
+    printf("return \n");
+
+    restore_stack();
+    ret();
+}
+
 /*
 inside functions
 file
@@ -217,8 +328,8 @@ void parse_not(FILE *file, uint8_t reg)
     token = get_token(file);
     get_var(reg, token);
     not(reg); // return value in EAX
-    
-    //clear )
+
+    // clear )
     free(token);
     token = get_token(file);
     if (strcmp(token, ")") != 0)
@@ -227,7 +338,6 @@ void parse_not(FILE *file, uint8_t reg)
         exit(1);
     }
     free(token);
-
 }
 
 int parse_inside_functions(FILE *file, char *token, uint8_t reg)
