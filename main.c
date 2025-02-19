@@ -31,6 +31,7 @@ medium:
     global vars  the way this is done this cant be done :D
 
 far:
+    put this on a server to compile online
     structs
 */
 
