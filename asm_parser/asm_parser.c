@@ -26,121 +26,125 @@ int convert_string_to_reg(char *reg)
     {
         return REG_EBP;
     }
-    if (strcmp(reg, "esp") == 0)
+    else if (strcmp(reg, "esp") == 0)
     {
         return REG_ESP;
     }
-    if (strcmp(reg, "eax") == 0)
+    else if (strcmp(reg, "eax") == 0)
     {
         return REG_EAX;
     }
-    if (strcmp(reg, "ebx") == 0)
+    else if (strcmp(reg, "ebx") == 0)
     {
         return REG_EBX;
     }
-    if (strcmp(reg, "ecx") == 0)
+    else if (strcmp(reg, "ecx") == 0)
     {
         return REG_ECX;
     }
-    if (strcmp(reg, "edx") == 0)
+    else if (strcmp(reg, "edx") == 0)
     {
         return REG_EDX;
     }
-    if (strcmp(reg, "esi") == 0)
+    else if (strcmp(reg, "esi") == 0)
     {
         return REG_ESI;
     }
-    if (strcmp(reg, "edi") == 0)
+    else if (strcmp(reg, "edi") == 0)
     {
         return REG_EDI;
     }
-    if (strcmp(reg, "ah") == 0)
+    else if (strcmp(reg, "ah") == 0)
     {
         return REG_AH;
     }
-    if (strcmp(reg, "bh") == 0)
+    else if (strcmp(reg, "bh") == 0)
     {
         return REG_BH;
     }
-    if (strcmp(reg, "ch") == 0)
+    else if (strcmp(reg, "ch") == 0)
     {
         return REG_CH;
     }
-    if (strcmp(reg, "dh") == 0)
+    else if (strcmp(reg, "dh") == 0)
     {
         return REG_DH;
     }
-    if (strcmp(reg, "al") == 0)
+    else if (strcmp(reg, "al") == 0)
     {
         return REG_AL;
     }
-    if (strcmp(reg, "bl") == 0)
+    else if (strcmp(reg, "bl") == 0)
     {
         return REG_BL;
     }
-    if (strcmp(reg, "cl") == 0)
+    else if (strcmp(reg, "cl") == 0)
     {
         return REG_CL;
     }
-    if (strcmp(reg, "dl") == 0)
+    else if (strcmp(reg, "dl") == 0)
     {
         return REG_DL;
     }
-    if (strcmp(reg, "ax") == 0)
+    else if (strcmp(reg, "ax") == 0)
     {
         return REG_AX;
     }
-    if (strcmp(reg, "bx") == 0)
+    else if (strcmp(reg, "bx") == 0)
     {
         return REG_BX;
     }
-    if (strcmp(reg, "cx") == 0)
+    else if (strcmp(reg, "cx") == 0)
     {
         return REG_CX;
     }
-    if (strcmp(reg, "dx") == 0)
+    else if (strcmp(reg, "dx") == 0)
     {
         return REG_DX;
     }
-    if (strcmp(reg, "si") == 0)
+    else if (strcmp(reg, "si") == 0)
     {
         return REG_SI;
     }
-    if (strcmp(reg, "di") == 0)
+    else if (strcmp(reg, "di") == 0)
     {
         return REG_DI;
     }
-    if (strcmp(reg, "xmm0") == 0)
+    else if (strcmp(reg, "xmm0") == 0)
     {
         return XMM0;
     }
-    if (strcmp(reg, "xmm1") == 0)
+    else if (strcmp(reg, "xmm1") == 0)
     {
         return XMM1;
     }
-    if (strcmp(reg, "xmm2") == 0)
+    else if (strcmp(reg, "xmm2") == 0)
     {
         return XMM2;
     }
-    if (strcmp(reg, "xmm3") == 0)
+    else if (strcmp(reg, "xmm3") == 0)
     {
         return XMM3;
     }
-    if (strcmp(reg, "xmm4") == 0)
+    else if (strcmp(reg, "xmm4") == 0)
     {
         return XMM4;
     }
-    if (strcmp(reg, "xmm5") == 0)
+    else if (strcmp(reg, "xmm5") == 0)
     {
         return XMM5;
     }
-    if (strcmp(reg, "xmm6") == 0)
+    else if (strcmp(reg, "xmm6") == 0)
     {
         return XMM6;
     }
-    if (strcmp(reg, "xmm7") == 0)
+    else if (strcmp(reg, "xmm7") == 0)
     {
         return XMM7;
+    }
+    else
+    {
+        return -1;
     }
 
     return -1;
@@ -271,8 +275,6 @@ void asm_mov32_mi_i(FILE *file, char **tokens)
         exit(1);
     }
 }
-
-
 
 void asm_mov32_r_m(FILE *file, char **tokens)
 {
@@ -736,7 +738,8 @@ int parse_extras(FILE *file, char **tokens)
     {
         asm_addi(file, tokens);
         return 1;
-    } else if (strcmp(tokens[0], "neg") == 0)
+    }
+    else if (strcmp(tokens[0], "neg") == 0)
     {
         asm_neg(file, tokens);
         return 1;
