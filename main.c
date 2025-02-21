@@ -17,23 +17,17 @@
 #include "parser/parser.h"
 #include "parser/parser_help.h"
 
-/*
-BIG TODO:
-    - Fazer documentacao BOUA para isto, exemplo:
-        explicar como as variaves funcionam, com o base pointer etc, links para outros docs;
-
-
-next:
-  melhorar parser
-  talvez mais umas inner functions
-
-medium:
-    global vars  the way this is done this cant be done :D
-
-far:
-    put this on a server to compile online
-    structs
-*/
+#define BASE_ADDRESS 0x08048000 // Common base address for 32-bit executables
+#define ELF_MAGIC "\x7f" \
+                  "ELF"
+#define ELF_CLASS_32 1
+#define ELF_DATA_LITTLE_ENDIAN 1
+#define ELF_VERSION_CURRENT 1
+#define ELF_TYPE_EXECUTABLE 2
+#define ELF_MACHINE_X86 3
+#define ELF_PT_LOAD 1
+#define ELF_FLAGS_RWX 7
+#define ELF_ALIGN_PAGE 0x1000
 
 // ELF header structure for 32-bit executable
 struct Elf32_Ehdr
@@ -95,8 +89,6 @@ void cleanup()
     free_functions();
 }
 
-#define BASE_ADDRESS 0x08048000 // Common base address for 32-bit executables
-
 void print(char *symbol_name, uint32_t size)
 {
     pusha();
@@ -108,11 +100,52 @@ void print(char *symbol_name, uint32_t size)
     popa();
 }
 
+void init_elf_header(struct Elf32_Ehdr *ehdr, size_t code_offset)
+{
+    memset(ehdr, 0, sizeof(struct Elf32_Ehdr));
+    memcpy(ehdr->e_ident, ELF_MAGIC, 4);
+    ehdr->e_ident[4] = ELF_CLASS_32;
+    ehdr->e_ident[5] = ELF_DATA_LITTLE_ENDIAN;
+    ehdr->e_ident[6] = ELF_VERSION_CURRENT;
+    ehdr->e_type = ELF_TYPE_EXECUTABLE;
+    ehdr->e_machine = ELF_MACHINE_X86;
+    ehdr->e_version = ELF_VERSION_CURRENT;
+    ehdr->e_entry = BASE_ADDRESS + code_offset;
+    ehdr->e_phoff = sizeof(struct Elf32_Ehdr);
+    ehdr->e_ehsize = sizeof(struct Elf32_Ehdr);
+    ehdr->e_phentsize = sizeof(struct Elf32_Phdr);
+    ehdr->e_phnum = 1;
+}
+
+void init_program_header(struct Elf32_Phdr *phdr, size_t code_offset, size_t custom_code_size, size_t data_size)
+{
+    memset(phdr, 0, sizeof(struct Elf32_Phdr));
+    phdr->p_type = ELF_PT_LOAD;
+    phdr->p_offset = code_offset;
+    phdr->p_vaddr = BASE_ADDRESS + code_offset;
+    phdr->p_paddr = phdr->p_vaddr;
+    phdr->p_filesz = custom_code_size + data_size;
+    phdr->p_memsz = custom_code_size + data_size;
+    phdr->p_flags = ELF_FLAGS_RWX;
+    phdr->p_align = ELF_ALIGN_PAGE;
+}
+
+int write_to_file(int fd, const void *buf, size_t count)
+{
+    if (write(fd, buf, count) != count)
+    {
+        perror("write");
+        close(fd);
+        return 1;
+    }
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     if (argc != 3)
     {
-        printf("Usage: %s <file>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <input_file> <output_file>\n", argv[0]);
         return 1;
     }
 
@@ -143,36 +176,13 @@ int main(int argc, char *argv[])
     add_custom_code_size();
 
     // ELF header
-    struct Elf32_Ehdr ehdr = {0};
-    memcpy(ehdr.e_ident, "\x7f"
-                         "ELF",
-           4);           // ELF Magic number
-    ehdr.e_ident[4] = 1; // 32-bit
-    ehdr.e_ident[5] = 1; // Little-endian
-    ehdr.e_ident[6] = 1; // ELF version
-    ehdr.e_type = 2;     // Executable file
-    ehdr.e_machine = 3;  // x86 architecture
-    ehdr.e_version = 1;  // ELF version
-
-    // Calculate offsets and addresses
+    struct Elf32_Ehdr ehdr;
     size_t code_offset = sizeof(struct Elf32_Ehdr) + sizeof(struct Elf32_Phdr);
+    init_elf_header(&ehdr, code_offset);
 
-    ehdr.e_entry = BASE_ADDRESS + code_offset;    // Entry point (where code starts)
-    ehdr.e_phoff = sizeof(struct Elf32_Ehdr);     // Program header offset
-    ehdr.e_ehsize = sizeof(struct Elf32_Ehdr);    // ELF header size
-    ehdr.e_phentsize = sizeof(struct Elf32_Phdr); // Program header entry size
-    ehdr.e_phnum = 1;                             // Number of program headers
-
-    // Program header (describing the executable segment)
-    struct Elf32_Phdr phdr = {0};
-    phdr.p_type = 1;                           // PT_LOAD (Loadable segment)
-    phdr.p_offset = code_offset;               // Offset of the code in the file
-    phdr.p_vaddr = BASE_ADDRESS + code_offset; // Virtual address to load code
-    phdr.p_paddr = phdr.p_vaddr;               // Physical address (not used)
-    phdr.p_filesz = custom_code_size;          // Size of code + buffer in the file
-    phdr.p_memsz = custom_code_size;           // Size of code + buffer in memory
-    phdr.p_flags = 7;                          // Read + Write + Execute permissions
-    phdr.p_align = 0x1000;                     // Alignment (page size)
+    // Program header
+    struct Elf32_Phdr phdr;
+    init_program_header(&phdr, code_offset, custom_code_size, data_size);
 
     // All strings
     create_constant_string("msg", "FUNCIONA\n", phdr.p_vaddr + custom_code_size + data_size);
@@ -184,9 +194,6 @@ int main(int argc, char *argv[])
 
     fixup_addresses();
 
-    phdr.p_filesz = custom_code_size + data_size;
-    phdr.p_memsz = custom_code_size + data_size;
-
     // Write the ELF file
     int fd = open(filenameOutput, O_CREAT | O_WRONLY | O_TRUNC, 0755);
     if (fd < 0)
@@ -195,16 +202,9 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (write(fd, &ehdr, sizeof(ehdr)) != sizeof(ehdr)) // Write ELF header
+    if (write_to_file(fd, &ehdr, sizeof(ehdr)) ||
+        write_to_file(fd, &phdr, sizeof(phdr)))
     {
-        perror("write");
-        close(fd);
-        return 1;
-    }
-    if (write(fd, &phdr, sizeof(phdr)) != sizeof(phdr)) // Write program header
-    {
-        perror("write");
-        close(fd);
         return 1;
     }
 
