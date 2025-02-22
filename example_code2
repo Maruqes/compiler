@@ -1,8 +1,0 @@
-
-func main()
-{
-    dd s2 = CreateString("OLA\n");
-    asm(mov32 eax s2);
-    asm(int 19);
-    return 0;
-}
