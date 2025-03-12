@@ -13,10 +13,10 @@ func test_whiles(){
 
 
 func test_deaddressing(){
-    db a = 10;
-    db*b = &a;
-    db*c = &b;
-    db*d = &c;
+    dd a = 10;
+    dd*b = &a;
+    dd*c = &b;
+    dd*d = &c;
     return ***d;
 }
 
