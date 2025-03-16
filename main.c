@@ -150,13 +150,14 @@ int main(int argc, char *argv[])
     }
 
     char *filename = argv[1];
-    char *filenameOutput = argv[2];
+    char *filenameOutput = strdup(argv[2]); // duplicar se pretendes alterar
+    char *last_filename = set_base_compile_folder(filename, &filenameOutput);
 
     create_new_stack();
 
     jmp("start");
 
-    start_parsing(filename);
+    start_parsing(last_filename);
 
     create_label("start");
     call("main");

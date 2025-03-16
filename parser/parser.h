@@ -16,4 +16,6 @@ void go_back_x_char(int x, FILE *file);
 void parse_block(FILE *file);
 void parse_create_function(FILE *file);
 void parse_create_return(FILE *file);
+
+char *set_base_compile_folder(char *filename, char **filenameOutput);
 #endif

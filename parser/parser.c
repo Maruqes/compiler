@@ -87,7 +87,7 @@ int is_symbol(char token)
     return 0;
 }
 
-//will parse until '}'
+// will parse until '}'
 void parse_block(FILE *file)
 {
     char *token = get_token(file);
@@ -247,7 +247,6 @@ char *get_token(FILE *fp)
     return NULL;
 }
 
-
 char parse_comparison_to_stack(FILE *file, char *char_set_to_compare)
 {
     // first part
@@ -324,8 +323,6 @@ void parse_comparison(FILE *file, char *to_jump, char *char_set_to_compare)
     cmp_reg32(REG_EAX, REG_EBX);
     jump_if_not_equal(to_jump);
 }
-
-
 
 void parse_ifs(FILE *file)
 {
@@ -557,13 +554,56 @@ int parse_it(char *token, FILE *file)
     return 0;
 }
 
+char *BASE_COMPILE_FOLDER;
+// If filename is "a/b/c/file.asm"
+//   BASE_COMPILE_FOLDER will be "a/b/c/"
+//   The function returns "file.asm"
+//   And filenameOutput is updated to BASE_COMPILE_FOLDER + (its original value)
+
+char *set_base_compile_folder(char *filename, char **filenameOutput)
+{
+    char *last_filename;
+    const char *p = strrchr(filename, '/');
+    if (p == NULL)
+    {
+        BASE_COMPILE_FOLDER = strdup("./");
+        last_filename = strdup(filename);
+    }
+    else
+    {
+        size_t folder_len = p - filename + 1; // inclui a '/'
+        BASE_COMPILE_FOLDER = strndup(filename, folder_len);
+        last_filename = strdup(p + 1);
+    }
+    printf("BASE_COMPILE_FOLDER: %s\n", BASE_COMPILE_FOLDER);
+
+    // Atualiza filenameOutput: prefixa BASE_COMPILE_FOLDER ao valor original.
+    char *new_output = malloc(strlen(BASE_COMPILE_FOLDER) + strlen(*filenameOutput) + 1);
+    if (new_output == NULL)
+    {
+        fprintf(stderr, "Erro na alocação de memória\n");
+        exit(1);
+    }
+    strcpy(new_output, BASE_COMPILE_FOLDER);
+    strcat(new_output, *filenameOutput);
+    free(*filenameOutput);
+    *filenameOutput = new_output;
+
+    return last_filename;
+}
+
 void start_parsing(char *filename)
 {
-    printf("Parsing file %s\n\n\n\n\n\n\n\n", filename);
-    FILE *file = fopen(filename, "r");
+    char *finalFilename = malloc(strlen(BASE_COMPILE_FOLDER) + strlen(filename) + 1);
+    strcpy(finalFilename, BASE_COMPILE_FOLDER);
+    strcat(finalFilename, filename);
+
+    printf("Parsing file %s\n\n\n\n\n\n\n\n", finalFilename);
+
+    FILE *file = fopen(finalFilename, "r");
     if (file == NULL)
     {
-        printf("Error: Could not open file %s\n", filename);
+        printf("Error: Could not open file %s\n", finalFilename);
         exit(1);
     }
 
@@ -575,7 +615,7 @@ void start_parsing(char *filename)
         }
     }
 
-    printf("\n\n\n\n\n\nFinished parsing file %s\n", filename);
+    printf("\n\n\n\n\n\nFinished parsing file %s\n", finalFilename);
 
     fclose(file);
 }

@@ -1,6 +1,6 @@
-include "strings"
-include "floats"
-include "ficheiro_include"
+include "includes/strings"
+include "includes/floats"
+include "includes/ficheiro_include"
 
 
 
