@@ -85,11 +85,17 @@ func printStringLen(dd addr, dd len){
 }
 
 func convertStringToNumber(dd addr){
+    db minus = getLetter(addr, 0);
+    dd possible_minus = 1;
+    if minus = '-' {
+        possible_minus = -1;
+        addr = addr + 1;
+    }
     //get each char and convert to number, sum it to result
     dd result = 0;
 
     for dd i = 0; i < getStringLen(addr) - 1; i++;{
-        db letter = getLetter(addr, 0);
+        db letter = getLetter(addr, i);
         if letter < 48 | letter > 57 {
             return -1;
         }
@@ -98,20 +104,39 @@ func convertStringToNumber(dd addr){
         result = result + letter;
     }
 
-    return result;
+    return result * possible_minus;
 }
 
 func convertNumberToString(dd number, dd addr){
-    //convert number to string
+    if number < 0 {
+        setLetter(addr, 0, '-', 0);
+        number = number * -1;
+        addr = addr + 1;
+    }
+    // convert number to string in reverse order first
     dd i = 0;
     while number > 0 {
-        db letter = number % 10;
-        number = number / 10;
+        dd temp = number / 10;
+        dd mult = temp * 10;
+        db letter = number - mult;
+        number = temp;
         letter = letter + 48;
         setLetter(addr, i, letter, 0);
         i = i + 1;
     }
     setLetter(addr, i, 0, 0);
+
+    // reverse the string in place
+    dd start = 0;
+    dd end = i - 1; // skip the null terminator
+    while start < end {
+        db tmp1 = getLetter(addr, start);
+        db tmp2 = getLetter(addr, end);
+        setLetter(addr, start, tmp2, 0);
+        setLetter(addr, end, tmp1, 0);
+        start = start + 1;
+        end = end - 1;
+    }
     return 0;
 }
 
@@ -128,6 +153,6 @@ func getInputString(dd addr, dd len){
 
 func getDDInput(){
     dd input = allocMemPage(1);
-    getInputString(input, 11); //11 max int length 10 + end string 0
+    getInputString(input, 12); //11 max int length 10 + end string 0 + possible - sign
     return convertStringToNumber(input);
 }

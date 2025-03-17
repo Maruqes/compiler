@@ -15,7 +15,7 @@ func main(){
 
 	dd inputOp = allocMemPage(1);
 	getInputString(inputOp, 2);
-	dd op = getLetter(inputOp,0);
+	dd op = getLetter(inputOp, 0);
 
 	
 
@@ -30,31 +30,21 @@ func main(){
 		printString(CString("Esse numero nao e valido!\n"));
 	} 
 
+
 	dd result = 0;
 
-	// if op = 43 {
-	// 	result = teste1 + teste2;
-	// } elif op = 45 {
-	// 	result = teste1 - teste2;
-	// } elif op = 42 {
-	// 	result = teste1 * teste2;
-	// } elif op = 47 {
-	// 	result = teste1 / teste2;
-	// } else {
-	// 	printString(CString("Operacao invalida!\n"));
-	// }
-
-	result = teste1 + teste2;
-
-	if teste1 = 10 & teste2 = 20{
-		printString(CString("idodeowdedewh"));
-	}
-
-	if result = 30 {
-		printString(CString("Resultado correto!\n"));
+	if op = '+' {
+		result = teste1 + teste2;
+	} elif op = '-' {
+		result = teste1 - teste2;
+	} elif op = '*' {
+		result = teste1 * teste2;
+	} elif op = '/' {
+		result = teste1 / teste2;
 	} else {
-		printString(CString("Resultado incorreto!\n"));
+		printString(CString("Operacao invalida!\n"));
 	}
+
 
 	dd resultString = allocMemPage(1);
 	convertNumberToString(result, resultString);
