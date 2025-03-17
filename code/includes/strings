@@ -1,4 +1,4 @@
-func allocMem1PageString(dd pge){
+func allocMemPage(dd pge){
     dd page = pge * 4096;
     asm(mov32 eax 192);
     asm(mov32 ebx 0);
@@ -12,7 +12,7 @@ func allocMem1PageString(dd pge){
 
 func createString(){
     asm(pusha);
-    dd page1 = allocMem1PageString(2);
+    dd page1 = allocMemPage(2);
     asm(popa);
     return page1;
 }
@@ -30,6 +30,14 @@ func setLetter(dd addr, dd offset, db letter, dw letter2){
 
     return 0;
 }
+func getLetter(dd addr, dd offset){
+    db letter = 0;
+    asm(mov32 ecx addr);
+    asm(mov32 eax offset);
+    asm(mov8_r_mr bl ecx eax);
+    asm(mov8 letter bl);
+    return letter;
+}
 
 
 func getStringLen(dd addr){
@@ -38,7 +46,7 @@ func getStringLen(dd addr){
     while 1 = 1{
 
         db letter = 0;
-        
+
         asm(mov32 ebx 0);
         asm(mov32 ecx addr);
         asm(mov32 eax len);
@@ -74,4 +82,52 @@ func printStringLen(dd addr, dd len){
     asm(mov32 eax 4);
     asm(syscall);
     return 0;
+}
+
+func convertStringToNumber(dd addr){
+    //get each char and convert to number, sum it to result
+    dd result = 0;
+
+    for dd i = 0; i < getStringLen(addr) - 1; i++;{
+        db letter = getLetter(addr, 0);
+        if letter < 48 | letter > 57 {
+            return -1;
+        }
+        letter = letter - 48;
+        result = result * 10;
+        result = result + letter;
+    }
+
+    return result;
+}
+
+func convertNumberToString(dd number, dd addr){
+    //convert number to string
+    dd i = 0;
+    while number > 0 {
+        db letter = number % 10;
+        number = number / 10;
+        letter = letter + 48;
+        setLetter(addr, i, letter, 0);
+        i = i + 1;
+    }
+    setLetter(addr, i, 0, 0);
+    return 0;
+}
+
+func getInputString(dd addr, dd len){
+
+    asm(mov32 ecx addr);
+    asm(mov32 ebx 0);
+    asm(mov32 edx len);
+    asm(mov32 eax 3);
+    asm(syscall);
+    return 0;
+}
+
+
+func getDDInput(){
+    dd input = allocMemPage(1);
+    getInputString(input, 11); //11 max int length 10 + end string 0
+    return convertStringToNumber(input);
 }

@@ -1,0 +1,66 @@
+include "includes/strings"
+include "includes/floats"
+
+
+
+
+
+func main(){
+	printString(CString("Hello World!\n"));
+
+	// dd testeInput = allocMemPage(1);
+	// getInputString(testeInput, 5);
+	// printString(testeInput);
+	printString(CString("Calculadora: + - * /\n"));
+
+	dd inputOp = allocMemPage(1);
+	getInputString(inputOp, 2);
+	dd op = getLetter(inputOp,0);
+
+	
+
+
+	dd teste1 = getDDInput();
+	if teste1 = -1 {
+		printString(CString("Esse numero nao e valido!\n"));
+	} 
+
+	dd teste2 = getDDInput();
+	if teste2 = -1 {
+		printString(CString("Esse numero nao e valido!\n"));
+	} 
+
+	dd result = 0;
+
+	// if op = 43 {
+	// 	result = teste1 + teste2;
+	// } elif op = 45 {
+	// 	result = teste1 - teste2;
+	// } elif op = 42 {
+	// 	result = teste1 * teste2;
+	// } elif op = 47 {
+	// 	result = teste1 / teste2;
+	// } else {
+	// 	printString(CString("Operacao invalida!\n"));
+	// }
+
+	result = teste1 + teste2;
+
+	if teste1 = 10 & teste2 = 20{
+		printString(CString("idodeowdedewh"));
+	}
+
+	if result = 30 {
+		printString(CString("Resultado correto!\n"));
+	} else {
+		printString(CString("Resultado incorreto!\n"));
+	}
+
+	dd resultString = allocMemPage(1);
+	convertNumberToString(result, resultString);
+	printString(resultString);
+
+
+	printString(CString("End of tests!\n"));
+	return 0;
+}
