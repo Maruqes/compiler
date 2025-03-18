@@ -1,0 +1,26 @@
+include "includes/strings"
+include "includes/floats"
+
+
+
+func print_words(dd addr, dd len){
+    for dd i = 0; i < len; i++;{
+        //arrays na piça
+    }
+}
+
+func main(){
+	printString(CString("Hello World!\n"));
+
+    dd input = allocMemPage(1);
+    getInputString(input, 1000);
+
+    while getLetter(input,0) ! 10 {
+        printString(input);
+        setstr(input, 1000, 0);
+        getInputString(input, 1000);
+    } 
+
+	printString(CString("End of tests!\n"));
+	return 0;
+}

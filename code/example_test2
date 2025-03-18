@@ -21,14 +21,7 @@ func main(){
 
 
 	dd teste1 = getDDInput();
-	if teste1 = -1 {
-		printString(CString("Esse numero nao e valido!\n"));
-	} 
-
 	dd teste2 = getDDInput();
-	if teste2 = -1 {
-		printString(CString("Esse numero nao e valido!\n"));
-	} 
 
 
 	dd result = 0;

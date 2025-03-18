@@ -17,11 +17,7 @@ func createString(){
     return page1;
 }
 
-func setLetter(dd addr, dd offset, db letter, dw letter2){
-
-    if letter2 = 65535{
-        return 0;
-    }
+func setLetter(dd addr, dd offset, db letter){
 
     asm(mov32 ecx addr);
     asm(mov8 bl letter);
@@ -109,9 +105,13 @@ func convertStringToNumber(dd addr){
 
 func convertNumberToString(dd number, dd addr){
     if number < 0 {
-        setLetter(addr, 0, '-', 0);
+        setLetter(addr, 0, '-');
         number = number * -1;
         addr = addr + 1;
+    } elif number = 0 {
+        setLetter(addr, 0, '0');
+        setLetter(addr, 1, 0);
+        return 0;
     }
     // convert number to string in reverse order first
     dd i = 0;
@@ -121,10 +121,10 @@ func convertNumberToString(dd number, dd addr){
         db letter = number - mult;
         number = temp;
         letter = letter + 48;
-        setLetter(addr, i, letter, 0);
+        setLetter(addr, i, letter);
         i = i + 1;
     }
-    setLetter(addr, i, 0, 0);
+    setLetter(addr, i, 0);
 
     // reverse the string in place
     dd start = 0;
@@ -132,8 +132,8 @@ func convertNumberToString(dd number, dd addr){
     while start < end {
         db tmp1 = getLetter(addr, start);
         db tmp2 = getLetter(addr, end);
-        setLetter(addr, start, tmp2, 0);
-        setLetter(addr, end, tmp1, 0);
+        setLetter(addr, start, tmp2);
+        setLetter(addr, end, tmp1);
         start = start + 1;
         end = end - 1;
     }
@@ -155,4 +155,29 @@ func getDDInput(){
     dd input = allocMemPage(1);
     getInputString(input, 12); //11 max int length 10 + end string 0 + possible - sign
     return convertStringToNumber(input);
+}
+
+func strcmp(dd addr1, dd addr2){
+    dd strlen1 = getStringLen(addr1);
+    dd strlen2 = getStringLen(addr2);
+
+    dd i = 0;
+    while i < strlen1 | i < strlen2 {
+        db letter1 = getLetter(addr1, i);
+        db letter2 = getLetter(addr2, i);
+        if letter1 ! letter2 {
+            return 0;
+        }
+        i = i + 1;
+    }
+
+    return 1;
+}
+
+
+func setstr(dd addr1, dd len, dd code){
+    for dd i = 0; i < len; i++;{
+        setLetter(addr1, i, code);
+    }
+    return 0;
 }
