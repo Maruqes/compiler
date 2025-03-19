@@ -1,6 +1,6 @@
 include "includes/strings"
 include "includes/floats"
-
+include "includes/arrays"
 
 
 func print_words(dd addr, dd len){
@@ -12,14 +12,59 @@ func print_words(dd addr, dd len){
 func main(){
 	printString(CString("Hello World!\n"));
 
-    dd input = allocMemPage(1);
-    getInputString(input, 1000);
+    dd words = CString("ola\n");
 
-    while getLetter(input,0) ! 10 {
-        printString(input);
-        setstr(input, 1000, 0);
-        getInputString(input, 1000);
-    } 
+    db w1 = getDBArrayValue(words, 0);
+    db w2 = getDBArrayValue(words, 1);
+    db w3 = getDBArrayValue(words, 2);
+    db w4 = getDBArrayValue(words, 3);
+
+    if w1 = 'o' {
+        printString(CString("o\n"));
+    }
+
+    if w2 = 'l' {
+        printString(CString("l\n"));
+    }
+
+    if w3 = 'a' {
+        printString(CString("a\n"));
+    }
+
+    if w4 = 10 {
+        printString(CString("newline\n"));
+    }
+
+    dw ww1 = getDWArrayValue(words, 0);
+    dw ww2 = getDWArrayValue(words, 1); 
+    dw ww3 = getDWArrayValue(words, 2);
+    dw ww4 = getDWArrayValue(words, 3);
+
+    //be carefull with litle endian :D    'ol'
+    if ww1 = 27759 {
+        printString(CString("FUNFAAA CRL\n"));
+    }
+
+    setDBArrayValue(words, 0, 'O');
+    setDBArrayValue(words, 1, 'L');
+    setDBArrayValue(words, 2, 'A');
+    setDBArrayValue(words, 3, 10);
+    setDBArrayValue(words, 4, 0);
+    printString(words);
+
+
+
+
+
+
+    // dd input = allocMemPage(1);
+    // getInputString(input, 1000);
+
+    // while getLetter(input,0) ! 10 {
+    //     printString(input);
+    //     setstr(input, 1000, 0);
+    //     getInputString(input, 1000);
+    // } 
 
 	printString(CString("End of tests!\n"));
 	return 0;
