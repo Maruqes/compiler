@@ -12,49 +12,15 @@ func print_words(dd addr, dd len){
 func main(){
 	printString(CString("Hello World!\n"));
 
-    dd words = CString("ola\n");
+ 
 
-    db w1 = getDBArrayValue(words, 0);
-    db w2 = getDBArrayValue(words, 1);
-    db w3 = getDBArrayValue(words, 2);
-    db w4 = getDBArrayValue(words, 3);
 
-    if w1 = 'o' {
-        printString(CString("o\n"));
+    for dd i = 0; i < 10000000; i++;{
+        dd randString = allocMemPage(1);
+        for dd j = 0; j < 1024; j++;{
+            setDDArrayValue(randString, j, 65);
+        }
     }
-
-    if w2 = 'l' {
-        printString(CString("l\n"));
-    }
-
-    if w3 = 'a' {
-        printString(CString("a\n"));
-    }
-
-    if w4 = 10 {
-        printString(CString("newline\n"));
-    }
-
-    dw ww1 = getDWArrayValue(words, 0);
-    dw ww2 = getDWArrayValue(words, 1); 
-    dw ww3 = getDWArrayValue(words, 2);
-    dw ww4 = getDWArrayValue(words, 3);
-
-    //be carefull with litle endian :D    'ol'
-    if ww1 = 27759 {
-        printString(CString("FUNFAAA CRL\n"));
-    }
-
-    setDBArrayValue(words, 0, 'O');
-    setDBArrayValue(words, 1, 'L');
-    setDBArrayValue(words, 2, 'A');
-    setDBArrayValue(words, 3, 10);
-    setDBArrayValue(words, 4, 0);
-    printString(words);
-
-
-
-
 
 
     // dd input = allocMemPage(1);

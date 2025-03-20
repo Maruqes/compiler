@@ -12,7 +12,7 @@ func allocMemPage(dd pge){
 
 func createString(){
     asm(pusha);
-    dd page1 = allocMemPage(2);
+    dd page1 = allocMemPage(1);
     asm(popa);
     return page1;
 }
