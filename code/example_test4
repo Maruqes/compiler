@@ -8,25 +8,17 @@ func main(){
 
 
     dd resultString = allocMemPage(1);
-    dd print1 = CString("Allocating memory page\n");
-    dd print2 = CString("Memory page allocated at address");
-    dd print3 = CString("Memory page filled\n");
-    dd print4 = CString("Memory page freed\n\n\n\n");
+    dd print1 = CString("\n");
 	
 
     for dd i = 0; i < 100000000; i++;{
         dd mmPage = allocMemPage(1);
         if mmPage = -1 {
-            printString(CString("Error allocating memory page\n"));
+            printString(CString("ERRO: mmap devolveu -1\n"));
             return 0;
         }
-
-        printChar(65);
         
-        
-        for dd j = 0; j < 1024; j++;{
-            setDDArrayValue(mmPage, j, j);
-        }
+        setDDArrayValue(mmPage, 0, 123456);
         freeMemPage(mmPage, 1);
     }
 	printString(CString("End of tests!\n"));

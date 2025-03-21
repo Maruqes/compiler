@@ -162,6 +162,7 @@ func convertNumberToString(dd number, dd addr){
     return 0;
 }
 
+
 func getInputString(dd addr, dd len){
 
     asm(mov32 ecx addr);
@@ -208,5 +209,40 @@ func printASCII_AsNumber(dd char){
     dd addr = allocMemPage(1);
     convertNumberToString(char, addr);
     printString(addr);
+    return 0;
+}
+
+func printHex(dd number){
+    dd addr = allocMemPage(1);
+    setstr(addr, 10, 0);
+    dd i = 0;
+    while number > 0 {
+        dd temp = number / 16;
+        dd mult = temp * 16;
+        dd letter = number - mult;
+        number = temp;
+        if letter < 10 {
+            letter = letter + 48;
+        } else {
+            letter = letter + 55;
+        }
+        setLetter(addr, i, letter);
+        i = i + 1;
+    }
+    setLetter(addr, i, 0);
+
+    // reverse the string in place
+    dd start = 0;
+    dd end = i - 1; // skip the null terminator
+    while start < end {
+        db tmp1 = getLetter(addr, start);
+        db tmp2 = getLetter(addr, end);
+        setLetter(addr, start, tmp2);
+        setLetter(addr, end, tmp1);
+        start = start + 1;
+        end = end - 1;
+    }
+    printString(addr);
+    freeMemPage(addr, 1);
     return 0;
 }

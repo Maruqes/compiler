@@ -44,9 +44,9 @@ void set_sixteenByte(char *opcode_bytes, uint8_t sixteen)
 // Function to move immediate value into a 32-bit register
 void mov32_16_r_i(uint8_t reg_code, uint32_t value, uint8_t sixteen)
 {
-    if (reg_code == REG_ESP || reg_code == REG_EBP)
+    if (reg_code == REG_ESP)
     {
-        perror("Cannot move immediate value into ESP or EBP");
+        perror("Cannot move immediate value into ESP");
         exit(EXIT_FAILURE);
     }
     check_sixteen(sixteen);
