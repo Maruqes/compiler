@@ -10,6 +10,15 @@ func allocMemPage(dd pge){
     return;
 }
 
+func freeMemPage(dd addr, dd pge_number) {
+    dd page = pge_number * 4096;
+    asm(mov32 eax 91); 
+    asm(mov32 ebx addr);
+    asm(mov32 ecx page);
+    asm(syscall);
+    return 0;
+}
+
 func createString(){
     asm(pusha);
     dd page1 = allocMemPage(1);
@@ -67,6 +76,19 @@ func printString(dd addr){
     asm(mov32 edx len);
     asm(mov32 eax 4);
     asm(syscall);
+    return 0;
+}
+
+func printChar(db letter){
+    dd buffer = allocMemPage(1);
+    setLetter(buffer, 0, letter);
+    asm(mov32 ecx buffer);
+    asm(mov32 ebx 1);
+    asm(mov32 edx 1);
+    asm(mov32 eax 4);
+    asm(syscall);
+
+    freeMemPage(buffer, 1);
     return 0;
 }
 
@@ -179,5 +201,12 @@ func setstr(dd addr1, dd len, dd code){
     for dd i = 0; i < len; i++;{
         setLetter(addr1, i, code);
     }
+    return 0;
+}
+
+func printASCII_AsNumber(dd char){
+    dd addr = allocMemPage(1);
+    convertNumberToString(char, addr);
+    printString(addr);
     return 0;
 }

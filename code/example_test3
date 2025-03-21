@@ -5,32 +5,27 @@ include "includes/arrays"
 
 func print_words(dd addr, dd len){
     for dd i = 0; i < len; i++;{
-        //arrays na piça
+        db char_i = getDBArrayValue(addr, i);
+        if char_i = 32 {
+            printChar(10);
+        } else {
+            printChar(char_i);
+        }
     }
 }
 
 func main(){
 	printString(CString("Hello World!\n"));
+    
 
- 
+    dd input = allocMemPage(1);
+    getInputString(input, 1000);
 
-
-    for dd i = 0; i < 10000000; i++;{
-        dd randString = allocMemPage(1);
-        for dd j = 0; j < 1024; j++;{
-            setDDArrayValue(randString, j, 65);
-        }
-    }
-
-
-    // dd input = allocMemPage(1);
-    // getInputString(input, 1000);
-
-    // while getLetter(input,0) ! 10 {
-    //     printString(input);
-    //     setstr(input, 1000, 0);
-    //     getInputString(input, 1000);
-    // } 
+    while getLetter(input,0) ! 10 {
+        print_words(input,getStringLen(input));
+        setstr(input, 1000, 0);
+        getInputString(input, 1000);
+    } 
 
 	printString(CString("End of tests!\n"));
 	return 0;

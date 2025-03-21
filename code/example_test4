@@ -1,0 +1,34 @@
+include "includes/strings"
+include "includes/floats"
+include "includes/arrays"
+
+
+func main(){
+	printString(CString("Hello World!\n"));
+
+
+    dd resultString = allocMemPage(1);
+    dd print1 = CString("Allocating memory page\n");
+    dd print2 = CString("Memory page allocated at address");
+    dd print3 = CString("Memory page filled\n");
+    dd print4 = CString("Memory page freed\n\n\n\n");
+	
+
+    for dd i = 0; i < 100000000; i++;{
+        dd mmPage = allocMemPage(1);
+        if mmPage = -1 {
+            printString(CString("Error allocating memory page\n"));
+            return 0;
+        }
+
+        printChar(65);
+        
+        
+        for dd j = 0; j < 1024; j++;{
+            setDDArrayValue(mmPage, j, j);
+        }
+        freeMemPage(mmPage, 1);
+    }
+	printString(CString("End of tests!\n"));
+	return 0;
+}
