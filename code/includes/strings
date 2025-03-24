@@ -19,6 +19,25 @@ func freeMemPage(dd addr, dd pge_number) {
     return 0;
 }
 
+//nanoseconds is from 0 to 999999999
+func sleep(dd seconds, dd nanoseconds){
+    asm(mov32 eax nanoseconds);
+    asm(push eax);
+
+    asm(mov32 eax seconds);
+    asm(push eax);
+
+    asm(mov32 ebx esp);
+    asm(mov32 ecx 0);
+
+    asm(mov32 eax 162);
+    asm(syscall);
+
+    asm(addi esp 8);
+
+    return 0;
+}
+
 func createString(){
     asm(pusha);
     dd page1 = allocMemPage(1);
