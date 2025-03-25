@@ -3,8 +3,8 @@ include "includes/floats"
 include "includes/arrays"
 
 
-func main(){
-	printString(CString("Hello World!\n"));
+func teste(){
+    printString(CString("Hello World!\n"));
 
 
     dd resultString = allocMemPage(1);
@@ -12,14 +12,13 @@ func main(){
     dd print1 = CString("\n");
     dd print2 = CString("Allocated memory\n");
     dd print3 = CString("Freeing memory\n");
-	
-    //com sleep falhou no 2094341
-    //sem sleep falhou no 2093765
-    for dd i = 0; i < 2999999; i++;{
+    dd print4 = CString("frejojreojreforeorefey\n");
+    
+    //limit stack of 8mb ahah
+    dd mmPage = 0;
+    for dd i = 0; i < 1099999; i++;{
       
-        // sleep(0, 100000);
-        // printString(print2);
-        dd mmPage = allocMemPage(1);
+        mmPage = allocMemPage(1);
         if mmPage = -1 {
             printString(CString("ERRO: mmap devolveu -1\n"));
             return 0;
@@ -35,8 +34,15 @@ func main(){
         
         setDDArrayValue(mmPage, 0, 123456);
         freeMemPage(mmPage, 1);
-        // printString(print3);
     }
 	printString(CString("End of tests!\n"));
+    return 0;
+}   
+
+func main(){
+    teste();
+    teste();
+    teste();
+    teste();
 	return 0;
 }

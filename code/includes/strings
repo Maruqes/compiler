@@ -6,7 +6,11 @@ func allocMemPage(dd pge){
     asm(mov32 edx 3);
     asm(mov32 esi 34);
     asm(mov32 edi -1);
+    asm(push ebp);
+    asm(mov32 ebp 0);
     asm(syscall);
+
+    asm(pop ebp);
     return;
 }
 
@@ -15,7 +19,11 @@ func freeMemPage(dd addr, dd pge_number) {
     asm(mov32 eax 91); 
     asm(mov32 ebx addr);
     asm(mov32 ecx page);
+    asm(push ebp);
+    asm(mov32 ebp 0);
     asm(syscall);
+    
+    asm(pop ebp);
     return 0;
 }
 
