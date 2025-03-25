@@ -14,6 +14,7 @@ func teste(){
     dd print3 = CString("Freeing memory\n");
     dd print4 = CString("frejojreojreforeorefey\n");
     
+
     //limit stack of 8mb ahah
     dd mmPage = 0;
     for dd i = 0; i < 1099999; i++;{

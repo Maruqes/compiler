@@ -1,0 +1,33 @@
+func open(dd filename, dd flags, dd mode){
+    asm(mov32 eax 5);
+    asm(mov32 ebx filename);
+    asm(mov32 ecx flags);
+    asm(mov32 edx mode);
+    asm(syscall);
+    return;
+}
+
+func write(dd fd, dd buffer, dd len){
+    asm(mov32 eax 4);
+    asm(mov32 ebx fd);
+    asm(mov32 ecx buffer);
+    asm(mov32 edx len);
+    asm(syscall);
+    return;
+}
+
+func read(dd fd, dd buffer, dd len){
+    asm(mov32 eax 3);
+    asm(mov32 ebx fd);
+    asm(mov32 ecx buffer);
+    asm(mov32 edx len);
+    asm(syscall);
+    return;
+}
+
+func close(dd fd){
+    asm(mov32 eax 6);
+    asm(mov32 ebx fd);
+    asm(syscall);
+    return;
+}

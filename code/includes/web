@@ -1,0 +1,88 @@
+func createSocket(){
+    dd res = 0;
+    // Prepara os argumentos para socket(AF_INET, SOCK_STREAM, 0)
+    asm(mov32 eax 0); 
+    asm(push eax);          // Protocolo = 0
+
+    asm(mov32 eax 1);
+    asm(push eax);          // Tipo = SOCK_STREAM
+
+    asm(mov32 eax 2);
+    asm(push eax);          // Domínio = AF_INET
+
+    asm(mov32 ecx esp);   // ecx aponta para o array de argumentos
+    asm(mov32 ebx 1);     // Código para a chamada socket
+    asm(mov32 eax 102);   // syscall: socketcall (102)
+    asm(syscall);
+    asm(mov32 res eax);   // Guarda o socket retornado
+    asm(addi esp 12);      // Limpa a stack (3 argumentos * 4 bytes)
+    return res;
+}
+
+func bind(dd sockfd, dd addr, dd addrlen){
+    // Prepara os argumentos para bind(sockfd, addr, addrlen)
+    asm(mov32 eax addrlen);
+    asm(push eax);
+
+    asm(mov32 eax addr);
+    asm(push eax);
+
+    asm(mov32 eax sockfd);
+    asm(push eax);
+
+    asm(mov32 ecx esp);   // ecx aponta para o array de argumentos
+    asm(mov32 ebx 2);     // Código para a chamada bind (2)
+    asm(mov32 eax 102);   // syscall: socketcall
+    asm(syscall);
+    asm(addi esp 12);      // Limpa a stack
+    return;
+}
+
+func listen(dd sockfd, dd backlog){
+    // Prepara os argumentos para listen(sockfd, backlog)
+    asm(mov32 eax backlog);
+    asm(push eax);
+
+    asm(mov32 eax sockfd);
+    asm(push eax);
+
+    asm(mov32 ecx esp);
+    asm(mov32 ebx 4);     // Código para listen (4)
+    asm(mov32 eax 102);   // syscall: socketcall
+    asm(syscall);
+    asm(addi esp 8);       // Limpa a stack (2 argumentos * 4 bytes)
+    return;
+}
+
+func accept(dd sockfd){
+    dd res = 0;
+    asm(mov32 eax sockfd);       // coloca sockfd em eax;
+    asm(xor edx edx);            // edx = 0;
+    asm(push edx);               // empurra addrlen = NULL;
+    asm(push edx);               // empurra addr = NULL;
+    asm(push eax);               // empurra sockfd;
+    asm(mov32 ecx esp);          // ecx aponta para os argumentos na stack;
+    asm(mov32 ebx 5);            // subchamada accept (5);
+    asm(mov32 eax 102);          // syscall: socketcall (102);
+    asm(syscall);                
+    asm(mov32 res eax);          // guarda o resultado (socket do cliente) em res;
+    asm(addi esp 12);            // limpa a stack (3 argumentos x 4 bytes);
+    return res;
+}
+
+func socketcall(dd client_socket, dd http_response, dd http_response_len){
+    asm(mov32 eax 0);                        // flags = 0;
+    asm(push eax);                           // empurra flags;
+    asm(mov32 eax http_response_len);        // coloca o comprimento da resposta em eax;
+    asm(push eax);                           // empurra o comprimento;
+    asm(mov32 eax http_response);            // coloca o apontador para a resposta em eax;
+    asm(push eax);                           // empurra o apontador;
+    asm(mov32 eax client_socket);            // coloca o socket do cliente em eax;
+    asm(push eax);                           // empurra o socket do cliente;
+    asm(mov32 ecx esp);                      // ecx aponta para os argumentos na stack;
+    asm(mov32 ebx 9);                        // subchamada send (9);
+    asm(mov32 eax 102);                      // syscall: socketcall (102);
+    asm(syscall);
+    asm(addi esp 16);                        // limpa a stack (4 argumentos x 4 bytes);
+    return;
+}

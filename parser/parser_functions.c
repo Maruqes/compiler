@@ -198,8 +198,7 @@ char *get_current_scope()
     return current_scope;
 }
 
-
-//functions
+// functions
 typedef struct Paramtemp
 {
     char *name;

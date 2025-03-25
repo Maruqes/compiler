@@ -1,0 +1,51 @@
+include "includes/strings"
+include "includes/floats"
+include "includes/arrays"
+include "includes/web"
+include "includes/files"
+
+
+
+func main(){
+    dd mds = createSocket();
+
+    dd errS = CString("Erro ao aceitar\n"); 
+
+    dd addr = allocMemPage(1);
+    setDBArrayValue(addr, 0, x02);
+    setDBArrayValue(addr, 1, x00);
+    setDBArrayValue(addr, 2, x1f);
+    setDBArrayValue(addr, 3, x90);
+    setDWArrayValue(addr, 4, x7f);
+    setDWArrayValue(addr, 5, x00);
+    setDWArrayValue(addr, 6, x00);
+    setDWArrayValue(addr, 7, x01);
+    setDWArrayValue(addr, 8, x00);
+    setDWArrayValue(addr, 9, x00);
+    setDWArrayValue(addr, 10, x00);
+    setDWArrayValue(addr, 11, x00);
+    setDWArrayValue(addr, 12, x00);
+    setDWArrayValue(addr, 13, x00);
+    setDWArrayValue(addr, 14, x00);
+    setDWArrayValue(addr, 15, x00);
+
+
+    dd addrlen = 16;
+
+
+    bind(mds, addr, addrlen);
+    listen(mds, 5);
+
+    dd http_response = CString("HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nHello World");
+    dd http_response_len = getStringLen(http_response);
+
+    // Loop do servidor: aceita ligações e envia a resposta HTTP
+    while 1 = 1 {
+        // Accept: accept(socket, NULL, NULL)
+        // Coloca o descriptor do socket do servidor (mds) em eax
+        dd acc = accept(mds);
+        socketcall(acc, http_response, http_response_len);
+        close(acc);
+    }
+    return 0;
+}   

@@ -210,6 +210,11 @@ char *get_token(FILE *fp)
                     token[i++] = '\n';
                     continue;
                 }
+                else if (c == 'r')
+                {
+                    token[i++] = '\r';
+                    continue;
+                }
                 else if (c == '0')
                 {
                     token[i++] = '\0';
