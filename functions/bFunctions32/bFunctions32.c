@@ -719,3 +719,74 @@ void setg_r(uint8_t reg, uint8_t sixteen)
     op_codes_array[op_codes_array_size] = new_opcode;
     op_codes_array_size++;
 }
+
+void shl_reg_imm(uint8_t reg, uint8_t imm, uint8_t sixteen)
+{
+    check_sixteen(sixteen);
+    // Aloca espaço para 3 bytes de opcode + os bytes "sixteen"
+    char *opcode_bytes = malloc(3 + sixteen);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    
+    // Opcode: C1 /4 ib
+    // Primeiro byte: C1
+    opcode_bytes[sixteen + 0] = 0xC1;
+    // Segundo byte: ModR/M – mod 11 (0xC0) | (/4 = 4<<3 = 0x20) | reg (valor do registo)
+    opcode_bytes[sixteen + 1] = 0xC0 | (4 << 3) | reg; // equivale a 0xE0 + reg
+    // Terceiro byte: valor imediato
+    opcode_bytes[sixteen + 2] = imm;
+    
+    OpCode new_opcode;
+    new_opcode.size = 3 + sixteen;
+    new_opcode.code = opcode_bytes;
+    set_sixteenByte(opcode_bytes, sixteen);
+    
+    // Adiciona o opcode ao array global
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}
+
+
+void shr_reg_imm(uint8_t reg, uint8_t imm, uint8_t sixteen)
+{
+    check_sixteen(sixteen);
+    // Aloca espaço para 3 bytes de opcode + os bytes "sixteen"
+    char *opcode_bytes = malloc(3 + sixteen);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    
+    // Opcode: C1 /5 ib
+    // Primeiro byte: C1
+    opcode_bytes[sixteen + 0] = 0xC1;
+    // Segundo byte: ModR/M – mod 11 (0xC0) | (/5 = 5<<3 = 0x28) | reg (valor do registo)
+    opcode_bytes[sixteen + 1] = 0xC0 | (5 << 3) | reg; // equivale a 0xE8 + reg
+    // Terceiro byte: valor imediato
+    opcode_bytes[sixteen + 2] = imm;
+    
+    OpCode new_opcode;
+    new_opcode.size = 3 + sixteen;
+    new_opcode.code = opcode_bytes;
+    set_sixteenByte(opcode_bytes, sixteen);
+    
+    // Adiciona o opcode ao array global
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}

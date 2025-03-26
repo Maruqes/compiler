@@ -339,6 +339,7 @@ void parse_not(FILE *file, uint8_t reg)
     free(token);
 }
 
+// fix better functions inputs
 int parse_inside_functions(FILE *file, char *token, uint8_t reg)
 {
     if (strcmp(token, "CString") == 0)

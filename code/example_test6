@@ -7,11 +7,12 @@ include "includes/files"
 
 func main(){
 
+    //do test and example for all codes
 
     dd resultString = allocMemPage(1);
     dd newLine = CString("\n");
-    dd test = 0;
-    test = -899045 < 899043;
+    dd test = 2 [ 1;
+
 
     convertNumberToString(test, resultString);
     printString(resultString);

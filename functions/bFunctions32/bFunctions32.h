@@ -45,4 +45,7 @@ void sete_r(uint8_t reg, uint8_t sixteen);
 void setne_r(uint8_t reg, uint8_t sixteen);
 void setl_r(uint8_t reg, uint8_t sixteen);
 void setg_r(uint8_t reg, uint8_t sixteen);
+
+void shl_reg_imm(uint8_t reg, uint8_t imm, uint8_t sixteen);
+void shr_reg_imm(uint8_t reg, uint8_t imm, uint8_t sixteen);
 #endif // BFUNCTIONS32_H

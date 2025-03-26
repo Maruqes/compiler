@@ -3,8 +3,6 @@ include "includes/floats"
 include "includes/arrays"
 include "includes/web"
 include "includes/files"
-
-
 // func create_sockaddr_in(dw sin_family, dw sin_port, dd sin_addr){
 //     dd addr = allocMemPage(1);
 //     //sin_family
@@ -23,37 +21,56 @@ include "includes/files"
 //     return addr;
 // }
 
+func create_sockaddr_in(db sin_family, dw sin_port, dd sin_addr){
+    dd addr = allocMemPage(1);
+    //sin_family
+    setDBArrayValue(addr, 0, sin_family);
+    setDBArrayValue(addr, 1, x00);
+
+    //sin_port
+    setDBArrayValue(addr, 2, sin_port & xff);
+    dd temp = sin_port ] 8;
+    setDBArrayValue(addr, 3, temp & xff);
+
+    //sin_addr  
+    setDWArrayValue(addr, 4, sin_addr);
+
+    setDWArrayValue(addr, 8, x00);
+
+    return addr;
+}
+
 func main(){
     dd mds = createSocket();
 
     dd errS = CString("Erro ao aceitar\n"); 
 
-    dd addr = allocMemPage(1);
-    //sin_family
-    setDBArrayValue(addr, 0, x02);
-    setDBArrayValue(addr, 1, x00);
+    dd addr = create_sockaddr_in(x02, x901f, x0100007f);
+    // //sin_family
+    // setDBArrayValue(addr, 0, x02);
+    // setDBArrayValue(addr, 1, x00);
 
-    //sin_port
-    setDBArrayValue(addr, 2, x1f);
-    setDBArrayValue(addr, 3, x90);
+    // //sin_port
+    // setDBArrayValue(addr, 2, x1f);
+    // setDBArrayValue(addr, 3, x90);
 
-    //sin_addr  
-    setDWArrayValue(addr, 4, x7f);
-    setDWArrayValue(addr, 5, x00);
-    setDWArrayValue(addr, 6, x00);
-    setDWArrayValue(addr, 7, x01);
+    // //sin_addr  
+    // setDWArrayValue(addr, 4, x7f);
+    // setDWArrayValue(addr, 5, x00);
+    // setDWArrayValue(addr, 6, x00);
+    // setDWArrayValue(addr, 7, x01);
 
-    //sin_zero
-    setDWArrayValue(addr, 8, x00);
-    setDWArrayValue(addr, 9, x00);
-    setDWArrayValue(addr, 10, x00);
-    setDWArrayValue(addr, 11, x00);
+    // //sin_zero
+    // setDWArrayValue(addr, 8, x00);
+    // setDWArrayValue(addr, 9, x00);
+    // setDWArrayValue(addr, 10, x00);
+    // setDWArrayValue(addr, 11, x00);
     
-    //sin_zero
-    setDWArrayValue(addr, 12, x00);
-    setDWArrayValue(addr, 13, x00);
-    setDWArrayValue(addr, 14, x00);
-    setDWArrayValue(addr, 15, x00);
+    // //sin_zero
+    // setDWArrayValue(addr, 12, x00);
+    // setDWArrayValue(addr, 13, x00);
+    // setDWArrayValue(addr, 14, x00);
+    // setDWArrayValue(addr, 15, x00);
 
 
     dd addrlen = 16;

@@ -289,6 +289,80 @@ char *parse_until_charset(FILE *file, char *charset)
 
             free(var);
         }
+        else if (next_token[0] == '&')
+        {
+            char *var = get_token(file);
+            parse_data_types(file, var, REG_EBX);
+
+            mov_reg32_reg32(REG_ECX, REG_EAX);
+            andf(REG_ECX, REG_EBX);
+            mov_reg32_reg32(REG_EAX, REG_ECX);
+
+            free(var);
+        }
+        else if (next_token[0] == '|')
+        {
+            char *var = get_token(file);
+            parse_data_types(file, var, REG_EBX);
+
+            mov_reg32_reg32(REG_ECX, REG_EAX);
+            orf(REG_ECX, REG_EBX);
+            mov_reg32_reg32(REG_EAX, REG_ECX);
+
+            free(var);
+        }
+        else if (next_token[0] == '^')
+        {
+            char *var = get_token(file);
+            parse_data_types(file, var, REG_EBX);
+
+            mov_reg32_reg32(REG_ECX, REG_EAX);
+            xorf(REG_ECX, REG_EBX);
+            mov_reg32_reg32(REG_EAX, REG_ECX);
+
+            free(var);
+        }
+        else if (next_token[0] == '~')
+        {
+            char *var = get_token(file);
+            parse_data_types(file, var, REG_EBX);
+
+            mov_reg32_reg32(REG_ECX, REG_EAX);
+            not(REG_ECX);
+            mov_reg32_reg32(REG_EAX, REG_ECX);
+
+            free(var);
+        }
+        else if (next_token[0] == '[')
+        {
+            char *var = get_token(file);
+            if (!is_valid_number(var))
+            {
+                printf("Error: Expected number\n");
+                exit(1);
+            }
+            uint32_t valInt = atoi(var);
+            mov_reg32_reg32(REG_ECX, REG_EAX);
+            shl_reg_imm(REG_ECX, valInt, 0);
+            mov_reg32_reg32(REG_EAX, REG_ECX);
+
+            free(var);
+        }
+        else if (next_token[0] == ']')
+        {
+            char *var = get_token(file);
+            if (!is_valid_number(var))
+            {
+                printf("Error: Expected number\n");
+                exit(1);
+            }
+            uint32_t valInt = atoi(var);
+            mov_reg32_reg32(REG_ECX, REG_EAX);
+            shr_reg_imm(REG_ECX, valInt, 0);
+            mov_reg32_reg32(REG_EAX, REG_ECX);
+
+            free(var);
+        }
         else if (next_token[0] == '\n')
         {
             printf("Error: Expected ';'\n");
