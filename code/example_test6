@@ -9,14 +9,32 @@ func main(){
 
     //do test and example for all codes
 
-    dd resultString = allocMemPage(1);
-    dd newLine = CString("\n");
-    dd test = 2 [ 1;
+    dd resultString = CString("Works\n");
+    dd notresultString = CString("Does Not Work\n");
 
+    dd a = 1 + 1; // sum
+    dd b = 1 - 1; // sub
+    dd c = 1 * 1; // mul
+    dd d = 1 / 1; // div 
+    dd e = 1 % 1; // mod
+    dd f = 1 = 1; // equal
+    dd g = 1 ! 1; // not equal
+    dd h = 1 < 1; // less than
+    dd i = 1 > 1; // greater than
 
-    convertNumberToString(test, resultString);
-    printString(resultString);
-    printString(newLine);
+    dd j = 1 & 1; // and
+    dd k = 1 | 1; // or
+    dd l = 1 ^ 1; // xor
+    dd m = ~1; // not
+
+    dd n = 1 [ 1; // shift left
+    dd o = 1 ] 1; // shift right
+
+    if a = 2 & b = 0 & c = 1 & d = 1 & e = 0 & f = 1 & g = 0 & h = 0 & i = 0 & j = 1 & k = 1 & l = 0 & m = -2 & n = 2 & o = 0 {
+        printString(resultString);
+    } else {
+        printString(notresultString);
+    }
 
     return 0;
 }   

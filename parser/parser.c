@@ -34,6 +34,7 @@ char *funcs_tokens[] = {"func", "endfunc", "return", "for", "endfor"};
 char *vars_tokens[] = {"int"};
 char *symbol_tokens[] = {
     ";",
+    "~",
     "=",
     "<",
     "(",

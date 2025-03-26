@@ -352,10 +352,5 @@ int parse_inside_functions(FILE *file, char *token, uint8_t reg)
         parse_float(file, reg);
         return 1;
     }
-    else if (strcmp(token, "not") == 0)
-    {
-        parse_not(file, reg);
-        return 1;
-    }
     return 0;
 }

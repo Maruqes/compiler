@@ -79,7 +79,6 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
     */
     // return no eax  que esta depois do =
     // check tipo de data
-
     if (reg == REG_ECX)
     {
         printf("ECX can not be used here func: parse_data_types\n");
@@ -100,6 +99,12 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
     {
         char *var = get_token(file);
         multiple_dereference(file, var, reg);
+    }
+    else if (token[0] == '~')
+    {
+        char *var = get_token(file);
+        parse_data_types(file, var, reg);
+        not(reg);
     }
     else if (token[0] == '&')
     {
@@ -318,17 +323,6 @@ char *parse_until_charset(FILE *file, char *charset)
 
             mov_reg32_reg32(REG_ECX, REG_EAX);
             xorf(REG_ECX, REG_EBX);
-            mov_reg32_reg32(REG_EAX, REG_ECX);
-
-            free(var);
-        }
-        else if (next_token[0] == '~')
-        {
-            char *var = get_token(file);
-            parse_data_types(file, var, REG_EBX);
-
-            mov_reg32_reg32(REG_ECX, REG_EAX);
-            not(REG_ECX);
             mov_reg32_reg32(REG_EAX, REG_ECX);
 
             free(var);
