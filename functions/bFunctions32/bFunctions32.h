@@ -41,4 +41,8 @@ void mulss(uint8_t xmm1, uint8_t xmm2);
 void divss(uint8_t xmm1, uint8_t xmm2);
 void sqrtss(uint8_t xmm1, uint8_t xmm2);
 
+void sete_r(uint8_t reg, uint8_t sixteen);
+void setne_r(uint8_t reg, uint8_t sixteen);
+void setl_r(uint8_t reg, uint8_t sixteen);
+void setg_r(uint8_t reg, uint8_t sixteen);
 #endif // BFUNCTIONS32_H

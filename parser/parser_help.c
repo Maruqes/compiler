@@ -193,7 +193,7 @@ char *parse_until_charset(FILE *file, char *charset)
     next_token = get_token(file);
     while (cmp_char_charset(next_token[0], charset) == 0)
     {
-        push_reg(REG_EBX);
+        // push_reg(REG_EBX);   tirei porque nao achei necessario TEM POP EM BAIXO
         if (next_token[0] == '+')
         {
             char *var = get_token(file);
@@ -241,6 +241,54 @@ char *parse_until_charset(FILE *file, char *charset)
 
             free(var);
         }
+        else if (next_token[0] == '=')
+        {
+            char *var = get_token(file);
+            parse_data_types(file, var, REG_EBX);
+
+            mov_reg32_reg32(REG_ECX, REG_EAX);
+            cmp_reg32(REG_ECX, REG_EBX);
+            mov_reg32(REG_EAX, 0);
+            sete_r(REG_EAX, 0);
+
+            free(var);
+        }
+        else if (next_token[0] == '!')
+        {
+            char *var = get_token(file);
+            parse_data_types(file, var, REG_EBX);
+
+            mov_reg32_reg32(REG_ECX, REG_EAX);
+            cmp_reg32(REG_ECX, REG_EBX);
+            mov_reg32(REG_EAX, 0);
+            setne_r(REG_EAX, 0);
+
+            free(var);
+        }
+        else if (next_token[0] == '<')
+        {
+            char *var = get_token(file);
+            parse_data_types(file, var, REG_EBX);
+
+            mov_reg32_reg32(REG_ECX, REG_EAX);
+            cmp_reg32(REG_ECX, REG_EBX);
+            mov_reg32(REG_EAX, 0);
+            setl_r(REG_EAX, 0);
+
+            free(var);
+        }
+        else if (next_token[0] == '>')
+        {
+            char *var = get_token(file);
+            parse_data_types(file, var, REG_EBX);
+
+            mov_reg32_reg32(REG_ECX, REG_EAX);
+            cmp_reg32(REG_ECX, REG_EBX);
+            mov_reg32(REG_EAX, 0);
+            setg_r(REG_EAX, 0);
+
+            free(var);
+        }
         else if (next_token[0] == '\n')
         {
             printf("Error: Expected ';'\n");
@@ -252,7 +300,7 @@ char *parse_until_charset(FILE *file, char *charset)
             printf("Error: Expected operator\n");
             exit(1);
         }
-        pop_reg(REG_EBX);
+        // pop_reg(REG_EBX);
         free(next_token);
         next_token = get_token(file);
     }

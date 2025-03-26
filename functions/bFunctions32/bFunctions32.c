@@ -597,3 +597,125 @@ void mov32_16_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3, uint8_t sixteen
     op_codes_array[op_codes_array_size] = new_opcode;
     op_codes_array_size++;
 }
+
+void sete_r(uint8_t reg, uint8_t sixteen)
+{
+    check_sixteen(sixteen);
+    // Instrução SETE r/m8 no modo registo:
+    // 2 bytes de opcode (0x0F 0x94) + 1 byte ModR/M (mod = 11, reg = 0, r/m = reg)
+    char *opcode_bytes = malloc(3 + sixteen);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    // Preenche a área reservada (após os primeiros 'sixteen' bytes)
+    opcode_bytes[sixteen + 0] = 0x0F;
+    opcode_bytes[sixteen + 1] = 0x94;
+    // ModR/M: mod = 11 (0xC0) | r/m (valor do reg)
+    opcode_bytes[sixteen + 2] = 0xC0 | reg;
+
+    OpCode new_opcode;
+    new_opcode.size = 3 + sixteen;
+    new_opcode.code = opcode_bytes;
+    set_sixteenByte(opcode_bytes, sixteen);
+
+    // Adiciona o opcode ao array global
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}
+
+
+void setne_r(uint8_t reg, uint8_t sixteen)
+{
+    check_sixteen(sixteen);
+    // Instrução SETNE r/m8 no modo registo:
+    // 2 bytes de opcode (0x0F 0x95) + 1 byte ModR/M (mod = 11, reg = 0, r/m = reg)
+    char *opcode_bytes = malloc(3 + sixteen);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[sixteen + 0] = 0x0F;
+    opcode_bytes[sixteen + 1] = 0x95;
+    opcode_bytes[sixteen + 2] = 0xC0 | reg;
+    
+    OpCode new_opcode;
+    new_opcode.size = 3 + sixteen;
+    new_opcode.code = opcode_bytes;
+    set_sixteenByte(opcode_bytes, sixteen);
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}
+
+void setl_r(uint8_t reg, uint8_t sixteen)
+{
+    check_sixteen(sixteen);
+    // Instrução SETL r/m8: 2 bytes de opcode (0x0F 0x9C) + 1 byte ModR/M
+    char *opcode_bytes = malloc(3 + sixteen);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[sixteen + 0] = 0x0F;
+    opcode_bytes[sixteen + 1] = 0x9C;  // Opcode para SETL
+    opcode_bytes[sixteen + 2] = 0xC0 | reg;  // ModR/M: mod 11, r/m = reg
+    
+    OpCode new_opcode;
+    new_opcode.size = 3 + sixteen;
+    new_opcode.code = opcode_bytes;
+    set_sixteenByte(opcode_bytes, sixteen);
+    
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}
+
+void setg_r(uint8_t reg, uint8_t sixteen)
+{
+    check_sixteen(sixteen);
+    // Instrução SETG r/m8: 2 bytes de opcode (0x0F 0x9F) + 1 byte ModR/M
+    char *opcode_bytes = malloc(3 + sixteen);
+    if (opcode_bytes == NULL)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    opcode_bytes[sixteen + 0] = 0x0F;
+    opcode_bytes[sixteen + 1] = 0x9F;  // Opcode para SETG
+    opcode_bytes[sixteen + 2] = 0xC0 | reg;  // ModR/M: mod 11, r/m = reg
+    
+    OpCode new_opcode;
+    new_opcode.size = 3 + sixteen;
+    new_opcode.code = opcode_bytes;
+    set_sixteenByte(opcode_bytes, sixteen);
+    
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (op_codes_array == NULL)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size] = new_opcode;
+    op_codes_array_size++;
+}

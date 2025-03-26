@@ -1,0 +1,21 @@
+include "includes/strings"
+include "includes/floats"
+include "includes/arrays"
+include "includes/web"
+include "includes/files"
+
+
+func main(){
+
+
+    dd resultString = allocMemPage(1);
+    dd newLine = CString("\n");
+    dd test = 0;
+    test = -899045 < 899043;
+
+    convertNumberToString(test, resultString);
+    printString(resultString);
+    printString(newLine);
+
+    return 0;
+}   
