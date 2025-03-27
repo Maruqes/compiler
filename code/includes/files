@@ -31,3 +31,34 @@ func close(dd fd){
     asm(syscall);
     return;
 }
+
+func fstat(dd fd, dd buffer){
+    asm(mov32 eax 108);
+    asm(mov32 ebx fd);
+    asm(mov32 ecx buffer);
+    asm(syscall);
+    return;
+}
+
+func getStatSize(dd buffer){
+    asm(mov32 ebx buffer);
+    asm(mov32_r_mi eax ebx 20);
+    return;
+}
+
+
+func readFromFile(dd filename){
+    dd print1 = CString("\n");
+
+    dd statbuf = allocMemPage(1);
+
+    dd fd = open(filename, 0, 0);
+    dd filestat = fstat(fd, statbuf);
+    dd len = getStatSize(statbuf);
+
+    dd bufferLen = len / 4096 + 1;
+    dd buffer = allocMemPage(1);
+    read(fd, buffer, len);
+    close(fd);
+    return buffer;
+}

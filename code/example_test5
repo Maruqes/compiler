@@ -23,7 +23,7 @@ func create_sockaddr_in(db sin_family, dw sin_port, dd sin_addr){
     return addr;
 }
 
-func createIpHex(dd a, dd b, dd c, dd d){
+func createIpHex (dd a, dd b, dd c, dd d){
     return a | b [ 8 | c [ 16 | d [ 24;
 }
 
@@ -39,9 +39,19 @@ func main(){
     bind(mds, addr, addrlen);
     listen(mds, 5);
 
-    dd http_response = CString("HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nHello World");
-    dd http_response_len = getStringLen(http_response);
+    dd html = readFromFile(CString("index.html"));
+    dd html_len = getStringLen(html);
+    dd nString = allocMemPage(1);
+    convertNumberToString(html_len, nString);
 
+    //  11\r\n\r\n
+    dd http_response2 = CString("HTTP/1.1 200 OK\r\nContent-Length:");
+    dd http_response3 = concat(http_response2, nString);
+    dd http_response4 = concat(http_response3, CString("\r\n\r\n"));
+
+    dd http_response = concat(http_response4, html);
+    dd http_response_len = getStringLen(http_response);
+    printString(http_response);
     // Loop do servidor: aceita ligações e envia a resposta HTTP
     while 1 = 1 {
         // Accept: accept(socket, NULL, NULL)

@@ -273,3 +273,33 @@ func printHex(dd number){
     freeMemPage(addr, 1);
     return 0;
 }
+
+func concat(dd addr1, dd addr2){
+    dd len1 = getStringLen(addr1);
+    dd len2 = getStringLen(addr2);
+
+    dd newPageAlloc = len1 + len2 + 1;
+    newPageAlloc = newPageAlloc / 4096 + 1;
+    dd addr = allocMemPage(newPageAlloc);
+
+    for dd i = 0; i < len1; i++;{
+        setLetter(addr, i, getLetter(addr1, i));
+    }
+    for dd j = 0; j < len2; j++;{
+        setLetter(addr, len1 + j, getLetter(addr2, j));
+    }
+    return addr;
+}
+
+func printAllBytesAsHex(dd addr, dd len){
+    dd newLine = CString("\n");
+    dd space = CString(" ");
+ 
+    for dd i = 0; i < len; i++;{
+        printHex(i);
+        printString(space);
+        printHex(getLetter(addr, i));
+        printString(newLine);
+    }
+    return 0;
+}

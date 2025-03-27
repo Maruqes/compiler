@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Gigante</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        header, nav, section, article, footer { padding: 20px; }
+        header { background-color: #4CAF50; color: white; }
+        nav { background: #333; }
+        nav ul { list-style: none; margin: 0; padding: 0; display: flex; }
+        nav ul li { margin: 0 10px; }
+        nav ul li a { color: #fff; text-decoration: none; }
+        .container { width: 90%; margin: auto; }
+        section { border-bottom: 1px solid #ddd; }
+        footer { background: #222; color: #aaa; text-align: center; }
+        .grid { display: flex; flex-wrap: wrap; gap: 20px; }
+        .grid-item { flex: 1 1 calc(33% - 20px); background: #f4f4f4; padding: 20px; box-sizing: border-box; }
+        @media (max-width: 768px) {
+            .grid-item { flex: 1 1 calc(50% - 20px); }
+        }
+        @media (max-width: 480px) {
+            .grid-item { flex: 1 1 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="container">
+            <h1>Bem-vindo ao HTML Gigante</h1>
+            <p>Este é um exemplo de um arquivo HTML extenso, com várias seções e conteúdos dinâmicos.</p>
+        </div>
+    </header>
+
+    <!-- NAVEGAÇÃO -->
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="#introducao">Introdução</a></li>
+                <li><a href="#sobre">Sobre</a></li>
+                <li><a href="#portfolio">Portfólio</a></li>
+                <li><a href="#artigos">Artigos</a></li>
+                <li><a href="#contato">Contato</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <div class="container">
+
+        <!-- Seção de Introdução -->
+        <section id="introducao">
+            <h2>Introdução</h2>
+            <p>Este documento HTML foi criado para demonstrar a capacidade de estruturar um documento completo, com diversas seções, layouts responsivos e conteúdo dinâmico. Aqui você encontrará exemplos de navegabilidade, seções de conteúdo, e uso de CSS para melhorar a apresentação.</p>
+        </section>
+
+        <!-- Seção Sobre -->
+        <section id="sobre">
+            <h2>Sobre Este Projeto</h2>
+            <p>O projeto tem como objetivo demonstrar um documento HTML de grandes proporções, com estrutura organizada para escalar diferentes tipos de conteúdo. É ideal para portfolios, blogs e páginas institucionais.</p>
+            <article>
+                <h3>Objetivos</h3>
+                <ul>
+                    <li>Demonstrar a criação de um arquivo HTML extenso.</li>
+                    <li>Exemplificar a separação de seções e a organização do conteúdo.</li>
+                    <li>Fornecer um template que pode ser usado como base para outros projetos.</li>
+                </ul>
+            </article>
+            <article>
+                <h3>Tecnologias Utilizadas</h3>
+                <ol>
+                    <li>HTML5</li>
+                    <li>CSS3</li>
+                    <li>JavaScript (para interação dinâmica)</li>
+                </ol>
+            </article>
+        </section>
+
+        <!-- Seção Portfólio -->
+        <section id="portfolio">
+            <h2>Portfólio</h2>
+            <p>Abaixo, veja alguns dos projetos que já foram desenvolvidos:</p>
+            <div class="grid">
+                <div class="grid-item">
+                    <h4>Projeto 1</h4>
+                    <p>Descrição do projeto número 1, mostrando as funcionalidades e tecnologias utilizadas.</p>
+                </div>
+                <div class="grid-item">
+                    <h4>Projeto 2</h4>
+                    <p>Descrição do projeto número 2, destacando os desafios superados e as soluções encontradas.</p>
+                </div>
+                <div class="grid-item">
+                    <h4>Projeto 3</h4>
+                    <p>Descrição do projeto número 3, com detalhes de implementação e design inovador.</p>
+                </div>
+                <div class="grid-item">
+                    <h4>Projeto 4</h4>
+                    <p>Descrição do projeto número 4, destacando a integração com APIs externas.</p>
+                </div>
+                <div class="grid-item">
+                    <h4>Projeto 5</h4>
+                    <p>Descrição do projeto número 5, focado em performance e escalabilidade.</p>
+                </div>
+                <div class="grid-item">
+                    <h4>Projeto 6</h4>
+                    <p>Descrição do projeto número 6, mostrando uma solução full-stack completa.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção Artigos -->
+        <section id="artigos">
+            <h2>Artigos Recentes</h2>
+            <article>
+                <h3>Título do Artigo 1</h3>
+                <p>Resumo do artigo 1. Este artigo aborda diversos tópicos de desenvolvimento web, práticas recomendadas e dicas para otimizar seu código. <a href="#">Leia mais...</a></p>
+            </article>
+            <article>
+                <h3>Título do Artigo 2</h3>
+                <p>Resumo do artigo 2. Descubra como implementar técnicas modernas de SPA e melhorar a experiência do usuário. <a href="#">Leia mais...</a></p>
+            </article>
+            <article>
+                <h3>Título do Artigo 3</h3>
+                <p>Resumo do artigo 3. Uma análise aprofundada sobre as melhores estratégias de SEO para websites modernos. <a href="#">Leia mais...</a></p>
+            </article>
+        </section>
+
+        <!-- Seção Contato -->
+        <section id="contato">
+            <h2>Contato</h2>
+            <p>Entre em contato através dos seguintes canais:</p>
+            <address>
+                <strong>Email:</strong> <a href="mailto:contato@exemplo.com">contato@exemplo.com</a><br>
+                <strong>Telefone:</strong> (11) 1234-5678<br>
+                <strong>Endereço:</strong> Rua Exemplo, 123 - Bairro, Cidade, Estado, CEP: 00000-000
+            </address>
+            <form action="https://exemplo.com/enviar-contato" method="post">
+                <label for="nome">Nome:</label><br>
+                <input type="text" id="nome" name="nome" required><br><br>
+
+                <label for="email">Email:</label><br>
+                <input type="email" id="email" name="email" required><br><br>
+
+                <label for="mensagem">Mensagem:</label><br>
+                <textarea id="mensagem" name="mensagem" rows="5" required></textarea><br><br>
+
+                <button type="submit">Enviar</button>
+            </form>
+        </section>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 Seu Nome ou Empresa. Todos os direitos reservados.</p>
+            <p>
+                <a href="#introducao" style="color: #aaa; text-decoration: none;">Voltar ao topo</a>
+            </p>
+        </div>
+    </footer>
+
+    <!-- SCRIPTS -->
+    <script>
+        // Script simples para navegação suave entre seções
+        document.querySelectorAll('nav ul li a').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html></form>
