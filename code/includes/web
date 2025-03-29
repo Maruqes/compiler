@@ -54,6 +54,44 @@ func listen(dd sockfd, dd backlog){
     return;
 }
 
+func readFromSocket(dd sockfd){
+    // Allocate a buffer to store the received data
+    dd buffer = allocMemPage(1);  
+    dd buffer_len = 4096;       // Use 4096 bytes for the buffer
+    dd resultString2 = allocMemPage(1);
+    dd received = 0;
+
+    // Prepare the arguments for recv(sockfd, buffer, buffer_len, 0)
+    asm(mov32 eax 0);          // flags = 0
+    asm(push eax);             // push flags
+
+    asm(mov32 eax buffer_len);
+    asm(push eax);             // push length
+
+    asm(mov32 eax buffer);
+    asm(push eax);             // push pointer to buffer
+
+    asm(mov32 eax sockfd);
+    asm(push eax);             // push socket descriptor
+
+    // Now setup the syscall struct in ecx and call socketcall for recv (code 10)
+    asm(mov32 ecx esp);
+    asm(mov32 ebx 10);         // subcall code for recv (10)
+    asm(mov32 eax 102);        // syscall: socketcall (102)
+    asm(syscall);
+
+    // Save the number of bytes received from eax
+    asm(addi esp 16);          // Clean up the stack (4 arguments * 4 bytes)
+
+    asm(mov32 received eax);
+
+    convertNumberToString(received, resultString2);
+    printString(resultString2);
+    printHex(buffer, received);
+    
+    return buffer;
+}
+
 func accept(dd sockfd){
     dd res = 0;
     asm(mov32 eax sockfd);       // coloca sockfd em eax;
@@ -67,10 +105,13 @@ func accept(dd sockfd){
     asm(syscall);                
     asm(mov32 res eax);          // guarda o resultado (socket do cliente) em res;
     asm(addi esp 12);            // limpa a stack (3 argumentos x 4 bytes);
+    readFromSocket(res); // Lê os dados do socket do cliente
+
     return res;
 }
 
 func socketcall(dd client_socket, dd http_response, dd http_response_len){
+
     asm(mov32 eax 0);                        // flags = 0;
     asm(push eax);                           // empurra flags;
     asm(mov32 eax http_response_len);        // coloca o comprimento da resposta em eax;
@@ -85,4 +126,20 @@ func socketcall(dd client_socket, dd http_response, dd http_response_len){
     asm(syscall);
     asm(addi esp 16);                        // limpa a stack (4 argumentos x 4 bytes);
     return;
+}
+
+
+func openHtlmFile(dd filename){
+    dd html = readFromFile(filename);
+    dd html_len = getStringLen(html);
+    dd nString = allocMemPage(1);
+    convertNumberToString(html_len, nString);
+
+    //  11\r\n\r\n
+    dd http_response2 = CString("HTTP/1.1 200 OK\r\nContent-Length:");
+    dd http_response3 = concat(http_response2, nString);
+    dd http_response4 = concat(http_response3, CString("\r\n\r\n"));
+
+    dd http_response = concat(http_response4, html);
+    return http_response;
 }
