@@ -46,9 +46,9 @@ func main(){
     while 1 = 1 {
         // Accept: accept(socket, NULL, NULL)
         // Coloca o descriptor do socket do servidor (mds) em eax
-        dd acc = accept(mds);
-        socketcall(acc, http_response, http_response_len);
-        close(acc);
+        dd req = accept(mds);
+        socketcall(req, http_response, http_response_len);
+        close(req);
     }
     return 0;
 }   

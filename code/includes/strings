@@ -303,3 +303,15 @@ func printAllBytesAsHex(dd addr, dd len){
     }
     return 0;
 }
+
+func printHexByLength(dd addr, dd len){
+    dd newLine = CString("\n");
+    dd space = CString(" ");
+ 
+    for dd i = 0; i < len; i++;{
+        printHex(getLetter(addr, i));
+        printString(space);
+    }
+    printString(newLine);
+    return 0;
+}

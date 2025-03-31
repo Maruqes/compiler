@@ -85,9 +85,7 @@ func readFromSocket(dd sockfd){
 
     asm(mov32 received eax);
 
-    convertNumberToString(received, resultString2);
-    printString(resultString2);
-    printHex(buffer, received);
+    printStringLen(buffer, received);
     
     return buffer;
 }
@@ -133,7 +131,6 @@ func openHtlmFile(dd filename){
     dd html = readFromFile(filename);
     dd html_len = getStringLen(html);
     dd nString = allocMemPage(1);
-    convertNumberToString(html_len, nString);
 
     //  11\r\n\r\n
     dd http_response2 = CString("HTTP/1.1 200 OK\r\nContent-Length:");
