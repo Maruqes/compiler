@@ -1,6 +1,6 @@
+include "includes/arrays"
 include "includes/strings"
 include "includes/floats"
-include "includes/arrays"
 include "includes/files"
 include "includes/web"
 
@@ -47,6 +47,18 @@ func main(){
         // Accept: accept(socket, NULL, NULL)
         // Coloca o descriptor do socket do servidor (mds) em eax
         dd req = accept(mds);
+
+        dd reqString = readFromSocket(req); // Lê os dados do socket do cliente
+        printString(reqString);
+        dd type = GetTypeOfRequest(reqString);
+        printString(type);
+        printString(type);
+        printString(type);
+        
+        dd endpoint = GetEndPointOfRequest(reqString);
+        printString(endpoint);
+        printString(endpoint);
+        printString(endpoint);
         socketcall(req, http_response, http_response_len);
         close(req);
     }

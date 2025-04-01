@@ -189,6 +189,17 @@ func convertNumberToString(dd number, dd addr){
     return 0;
 }
 
+func printNumber(dd number){
+    dd addr = allocMemPage(1);
+    convertNumberToString(number, addr);
+    printString(addr);
+    dd nl = CString("\n");
+    printString(nl);   
+    freeMemPage(addr, 1);
+    freeMemPage(nl, 1);
+    return 0;
+}
+
 
 func getInputString(dd addr, dd len){
 
@@ -314,4 +325,43 @@ func printHexByLength(dd addr, dd len){
     }
     printString(newLine);
     return 0;
+}
+
+func countNumberOfBytes(dd addr, dd len, db byte){
+    dd count = 0;
+    for dd i = 0; i < len; i++;{
+        db letter = getLetter(addr, i);
+        if letter = byte {
+            count = count + 1;
+        }
+    }
+    return count;
+}
+
+func GetUntilByte(dd addr, dd len, db byte){
+    dd count = 0;
+    for dd i = 0; i < len; i++;{
+        db letter = getLetter(addr, i);
+        if letter = byte {
+            i = len;
+        }
+        count = count + 1;
+    }
+    return count;
+}
+
+func GetUntilByteAndCopy(dd addr, dd len, db byte){
+    dd count = GetUntilByte(addr, len, byte);
+
+    printNumber(count);
+
+    dd newPageAlloc = count + 1;
+    newPageAlloc = newPageAlloc / 4096 + 1;
+    dd addr2 = allocMemPage(newPageAlloc);
+
+    for dd j = 0; j < count; j++;{
+        setLetter(addr2, j, getLetter(addr, j));
+    }
+    setLetter(addr2, count, 0);
+    return addr2;
 }

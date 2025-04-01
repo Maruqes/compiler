@@ -58,7 +58,6 @@ func readFromSocket(dd sockfd){
     // Allocate a buffer to store the received data
     dd buffer = allocMemPage(1);  
     dd buffer_len = 4096;       // Use 4096 bytes for the buffer
-    dd resultString2 = allocMemPage(1);
     dd received = 0;
 
     // Prepare the arguments for recv(sockfd, buffer, buffer_len, 0)
@@ -85,8 +84,6 @@ func readFromSocket(dd sockfd){
 
     asm(mov32 received eax);
 
-    printStringLen(buffer, received);
-    
     return buffer;
 }
 
@@ -103,7 +100,6 @@ func accept(dd sockfd){
     asm(syscall);                
     asm(mov32 res eax);          // guarda o resultado (socket do cliente) em res;
     asm(addi esp 12);            // limpa a stack (3 argumentos x 4 bytes);
-    readFromSocket(res); // Lê os dados do socket do cliente
 
     return res;
 }
@@ -139,4 +135,20 @@ func openHtlmFile(dd filename){
 
     dd http_response = concat(http_response4, html);
     return http_response;
+}
+
+//0-> 0->get, 1->post, 2->put, 3->delete
+//1-> endpoint
+func GetTypeOfRequest(dd request){
+    dd len = getStringLen(request);
+    dd res = GetUntilByteAndCopy(request, len, x20);
+    return res;
+}
+
+func GetEndPointOfRequest(dd request){
+    dd type = GetTypeOfRequest(request);
+    dd type_len = getStringLen(type);
+    dd len = getStringLen(request);
+    dd res = GetUntilByteAndCopy(request + type_len, len, x20);
+    return res;
 }
