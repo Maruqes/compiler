@@ -9,5 +9,5 @@
 #include <stdlib.h>
 
 void parse_CreateString(FILE *file, uint8_t reg);
-
+void parse_create_string(FILE *file, uint8_t reg);
 #endif

@@ -127,18 +127,23 @@ func openHtlmFile(dd filename){
     dd html = readFromFile(filename);
     dd html_len = getStringLen(html);
     dd nString = allocMemPage(1);
+    dd htmlLenString = allocMemPage(1);
+    convertNumberToString(html_len, htmlLenString);
 
     //  11\r\n\r\n
     dd http_response2 = CString("HTTP/1.1 200 OK\r\nContent-Length:");
-    dd http_response3 = concat(http_response2, nString);
+    dd http_response2_comLen = concat(http_response2, htmlLenString);
+    dd http_response3 = concat(http_response2_comLen, nString);
     dd http_response4 = concat(http_response3, CString("\r\n\r\n"));
 
     dd http_response = concat(http_response4, html);
+    freeMemPage(html, 1);
+    freeMemPage(htmlLenString, 1);
+    freeMemPage(nString, 1);
+   
     return http_response;
 }
 
-//0-> 0->get, 1->post, 2->put, 3->delete
-//1-> endpoint
 func GetTypeOfRequest(dd request){
     dd len = getStringLen(request);
     dd res = GetUntilByteAndCopy(request, len, x20);

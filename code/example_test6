@@ -1,9 +1,37 @@
-include "includes/strings"
-include "includes/floats"
-include "includes/arrays"
-include "includes/web"
-include "includes/files"
+func getStringLen(dd addr){
+    dd len = 0;
 
+    while 1 = 1{
+
+        db letter = 0;
+
+        asm(mov32 ebx 0);
+        asm(mov32 ecx addr);
+        asm(mov32 eax len);
+        asm(mov8_r_mr bl ecx eax);
+        asm(mov8 letter bl);
+
+        if letter = 0 {
+            return len;
+        }
+        len = len + 1;
+    }
+
+    return len;
+}
+
+
+func printString(dd addr){
+
+    dd len = getStringLen(addr);
+
+    asm(mov32 ecx addr);
+    asm(mov32 ebx 1);
+    asm(mov32 edx len);
+    asm(mov32 eax 4);
+    asm(syscall);
+    return 0;
+}
 
 func main(){
 
@@ -36,5 +64,5 @@ func main(){
         printString(notresultString);
     }
 
-    return 0;
+    return 350;
 }   

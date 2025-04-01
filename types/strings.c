@@ -20,7 +20,7 @@ void create_constant_string(char *var_name, char *var_value, uint32_t var_addres
     constant_strings[constant_string_count].var_value = var_value;
     constant_strings[constant_string_count].var_address = var_address;
     constant_string_count++;
-    data_size += strlen(var_value); // ver o caralho do +1
+    data_size += strlen(var_value) + 1; // ver o caralho do +1
     printf("Data size: %zu\n", data_size);
 }
 
@@ -29,7 +29,7 @@ void write_all_string_constants(int __fd)
     for (size_t i = 0; i < constant_string_count; i++)
     {
         printf("Writing %s\n", constant_strings[i].var_value);
-        ssize_t bytes_written = write(__fd, constant_strings[i].var_value, strlen(constant_strings[i].var_value));
+        ssize_t bytes_written = write(__fd, constant_strings[i].var_value, strlen(constant_strings[i].var_value) + 1);
         if (bytes_written == -1)
         {
             perror("Error writing string constant");
@@ -44,7 +44,7 @@ uint32_t get_string_len(char *str)
     {
         if (strcmp(constant_strings[i].var_value, str) == 0)
         {
-            return strlen(constant_strings[i].var_value);
+            return strlen(constant_strings[i].var_value) + 1; // +1 for null terminator
         }
     }
 }
@@ -53,6 +53,25 @@ Constant_string *constant_strings_before = 0;
 uint32_t constant_string_count_before = 0;
 void create_constant_string_before(char *var_name, char *var_value)
 {
+    // Check if the variable name already exists
+    for (size_t i = 0; i < constant_string_count_before; i++)
+    {
+        if (strcmp(constant_strings_before[i].var_name, var_name) == 0)
+        {
+            printf("Variable name already exists: %s\n", var_name);
+            printf("Variable name already exists: %s\n", var_name);
+            exit(1);
+        }
+    }
+
+    // create copies of varname and str
+    char *varname_copy = strdup(var_name);
+    char *str_copy = strdup(var_value);
+    if (varname_copy == NULL || str_copy == NULL)
+    {
+        printf("Error: Could not allocate memory for varname_copy or str_copy\n");
+        exit(1);
+    }
 
     constant_strings_before = realloc(constant_strings_before, sizeof(Constant_string) * (constant_string_count_before + 1));
     if (constant_strings_before == NULL)
@@ -60,8 +79,8 @@ void create_constant_string_before(char *var_name, char *var_value)
         printf("Error: Could not allocate memory for constant_strings_before\n");
         exit(1);
     }
-    constant_strings_before[constant_string_count_before].var_name = var_name;
-    constant_strings_before[constant_string_count_before].var_value = var_value;
+    constant_strings_before[constant_string_count_before].var_name = varname_copy;
+    constant_strings_before[constant_string_count_before].var_value = str_copy;
     constant_string_count_before++;
 }
 
@@ -69,7 +88,7 @@ void fix_before_strings(uint32_t var_address)
 {
     for (size_t i = 0; i < constant_string_count_before; i++)
     {
-        create_constant_string(constant_strings_before[i].var_name, constant_strings_before[i].var_value, var_address);
+        create_constant_string(constant_strings_before[i].var_name, constant_strings_before[i].var_value, var_address + data_size);
     }
 }
 

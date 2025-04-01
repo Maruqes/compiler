@@ -48,3 +48,37 @@ void parse_CreateString(FILE *file, uint8_t reg)
 
     free(str);
 }
+
+char *create_random_var_name(char *prefix)
+{
+    char *var_name = malloc(20);
+    snprintf(var_name, 20, "%s_%d", prefix, rand() % 10000);
+    return var_name;
+}
+
+void parse_create_string(FILE *file, uint8_t reg)
+{
+    char *left_bracket = get_token(file);
+    if (left_bracket[0] != '(')
+    {
+        printf("Error: Expected '('\n");
+        exit(1);
+    }
+    free(left_bracket);
+
+    char *str = get_token(file); // T= "
+
+    char *varname_copy = create_random_var_name("string");
+    create_constant_string_before(varname_copy, str);
+    mov_reg32_symbol_address(reg, varname_copy, 0);
+
+    char *right_bracket = get_token(file);
+    if (right_bracket[0] != ')')
+    {
+        printf("Error: Expected ')'\n");
+        exit(1);
+    }
+    free(right_bracket);
+
+    free(str);
+}

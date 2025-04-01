@@ -48,8 +48,6 @@ func getStatSize(dd buffer){
 
 
 func readFromFile(dd filename){
-    dd print1 = CString("\n");
-
     dd statbuf = allocMemPage(1);
 
     dd fd = open(filename, 0, 0);

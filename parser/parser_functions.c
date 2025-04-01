@@ -342,9 +342,14 @@ void parse_not(FILE *file, uint8_t reg)
 // fix better functions inputs
 int parse_inside_functions(FILE *file, char *token, uint8_t reg)
 {
-    if (strcmp(token, "CString") == 0)
+    if (strcmp(token, "String") == 0)
     {
         parse_CreateString(file, reg);
+        return 1;
+    }
+    else if (strcmp(token, "CString") == 0)
+    {
+        parse_create_string(file, reg);
         return 1;
     }
     else if (strcmp(token, "CFloat") == 0)

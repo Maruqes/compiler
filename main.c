@@ -186,10 +186,10 @@ int main(int argc, char *argv[])
     init_program_header(&phdr, code_offset, custom_code_size, data_size);
 
     // All strings
-    create_constant_string("msg", "FUNCIONA\n", phdr.p_vaddr + custom_code_size + data_size);
     create_constant_string("msg2", "SALTO\n", phdr.p_vaddr + custom_code_size + data_size);
+    create_constant_string("msg", "FUNCIONA\n", phdr.p_vaddr + custom_code_size + data_size);
     create_constant_string("msg3", "diff\n", phdr.p_vaddr + custom_code_size + data_size);
-    fix_before_strings(phdr.p_vaddr + custom_code_size + data_size);
+    fix_before_strings(phdr.p_vaddr + custom_code_size);
 
     fix_label_addresses(phdr.p_vaddr);
 
