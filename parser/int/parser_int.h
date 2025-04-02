@@ -20,7 +20,6 @@ typedef enum Value
     DB = 1,
     DW = 2,
     DD = 4,
-    FF = 5,
 } Value;
 
 

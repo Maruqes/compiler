@@ -16,6 +16,7 @@
 #include "variables/variables.h"
 #include "parser/parser.h"
 #include "parser/parser_help.h"
+#include "parser/structs/structs.h"
 
 #define BASE_ADDRESS 0x08048000 // Common base address for 32-bit executables
 #define ELF_MAGIC "\x7f" \
@@ -152,6 +153,7 @@ int main(int argc, char *argv[])
     char *filename = argv[1];
     char *filenameOutput = strdup(argv[2]); // duplicar se pretendes alterar
     char *last_filename = set_base_compile_folder(filename, &filenameOutput);
+    init_structs();
 
     create_new_stack();
 
