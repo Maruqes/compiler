@@ -257,6 +257,10 @@ void get_params(FILE *file)
 
     for (int i = 0; i < params_count; i++)
     {
+        // wtf is -8 - (i * 4)
+        // -8 is the offset for the first param
+        // - (i * 4) is the offset for the next params
+        // 4 bytes for each param even if the type is different
         Paramtemp param = params[params_count - i - 1];
         add_var_to_array_with_offset(param.name, get_type_length(param.type), get_current_scope(), get_type_length(param.type), -8 - (i * 4), param.type);
     }
