@@ -17,6 +17,7 @@
 #include "../asm_parser/asm_parser.h"
 #include "../functions/bFunctions32/bFunctions32.h"
 #include "../functions/bFunctions8/bFunctions8.h"
+#include "structs/structs.h"
 /*
 extra dar acesso a umas funcs ai do assembly mm
 function params
@@ -514,6 +515,12 @@ int parse_it(char *token, FILE *file)
     if (strcmp(token, "asm") == 0)
     {
         parse_asm_function(file);
+        return 1;
+    }
+
+    if (strcmp(token, "struct") == 0)
+    {
+        parse_struct(file);
         return 1;
     }
 

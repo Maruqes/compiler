@@ -7,11 +7,12 @@ SOURCES = main.c functions/functions.c types/strings.c \
 		  functions/bFunctions32/bFunc32Floats.c \
 		  functions/bFunctions32/bFunctions32.c \
 		  functions/bFunctions8/bFunctions8.c \
+		  parser/structs/structs.c \
 
 
 run:
 	gcc $(SOURCES) -lm -Og -g -o a.out
-	./a.out code/example_test5 hello_elf_32
+	./a.out code/example_test6 hello_elf_32
 	./code/hello_elf_32	
 
 
