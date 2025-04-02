@@ -39,13 +39,7 @@ func main(){
     bind(socket, addr, addrlen);
     listen(socket, 5);
 
-    dd filename = CString("index.html");
-    printString(filename);
-    printString(filename);
-    printString(filename);
-    printString(filename);
-    printString(filename);
-    dd http_response = openHtlmFile(filename);
+    dd http_response = openHtlmFile(CString("index.html"));
     dd http_response_len = getStringLen(http_response);
     printString(http_response);
     // Loop do servidor: aceita ligações e envia a resposta HTTP
@@ -53,16 +47,14 @@ func main(){
         dd req = accept(socket);
 
         dd reqString = readFromSocket(req); // Lê os dados do socket do cliente
-        printString(reqString);
-        dd type = GetTypeOfRequest(reqString);
-        printString(type);
-        printString(type);
-        printString(type);
+        printLine(reqString);
         
+        dd type = GetTypeOfRequest(reqString);
+        printLine(type);
+
         dd endpoint = GetEndPointOfRequest(reqString);
-        printString(endpoint);
-        printString(endpoint);
-        printString(endpoint);
+        printLine(endpoint);
+        
         socketcall(req, http_response, http_response_len);
 
         freeMemPage(reqString, 1);

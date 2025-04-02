@@ -94,6 +94,17 @@ func getStringLen(dd addr){
     return len;
 }
 
+func newline(dd addr){
+    dd nl = CString("\n");
+
+    asm(mov32 ecx nl);
+    asm(mov32 ebx 1);
+    asm(mov32 edx 1);
+    asm(mov32 eax 4);
+    asm(syscall);
+    return 0;
+}
+
 func printString(dd addr){
 
     dd len = getStringLen(addr);
@@ -103,6 +114,12 @@ func printString(dd addr){
     asm(mov32 edx len);
     asm(mov32 eax 4);
     asm(syscall);
+    return 0;
+}
+
+func printLine(dd addr){
+    printString(addr);
+    newline(addr);
     return 0;
 }
 
@@ -192,9 +209,7 @@ func convertNumberToString(dd number, dd addr){
 func printNumber(dd number){
     dd addr = allocMemPage(1);
     convertNumberToString(number, addr);
-    printString(addr);
-    dd nl = CString("\n");
-    printString(nl);   
+    printLine(addr);
     freeMemPage(addr, 1);
     return 0;
 }
@@ -303,27 +318,25 @@ func concat(dd addr1, dd addr2){
 }
 
 func printAllBytesAsHex(dd addr, dd len){
-    dd newLine = CString("\n");
     dd space = CString(" ");
  
     for dd i = 0; i < len; i++;{
         printHex(i);
         printString(space);
         printHex(getLetter(addr, i));
-        printString(newLine);
+        newline();
     }
     return 0;
 }
 
 func printHexByLength(dd addr, dd len){
-    dd newLine = CString("\n");
     dd space = CString(" ");
  
     for dd i = 0; i < len; i++;{
         printHex(getLetter(addr, i));
         printString(space);
     }
-    printString(newLine);
+    newline();
     return 0;
 }
 
@@ -352,8 +365,6 @@ func GetUntilByte(dd addr, dd len, db byte){
 
 func GetUntilByteAndCopy(dd addr, dd len, db byte){
     dd count = GetUntilByte(addr, len, byte);
-
-    printNumber(count);
 
     dd newPageAlloc = count + 1;
     newPageAlloc = newPageAlloc / 4096 + 1;
