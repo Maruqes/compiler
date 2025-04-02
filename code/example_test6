@@ -6,22 +6,49 @@ include "includes/web"
 
 struct myOwn{
     dd a;
-    dd b;
-    dd c;
-    dd d;
-    dd e;
-    dw f;
-    dw g;
-    db h;
-    db i;
+    
 }
 
 func main(){
 
     // //do test and example for all codes
+    dd s3 = x41414141;
+    dd s2 = x41414141;
+    dd s1 = myOwn;
 
-    // dd s1 = myOwn(1,2,3,4,5);
+    asm(mov32 eax s1);
+    asm(mov8_mi_i eax 0 65);
+    asm(mov8_mi_i eax 1 66);
+    asm(mov8_mi_i eax 2 67);
+    asm(mov8_mi_i eax 3 68);
 
+    // asm(mov8_mi_i eax 4 69);
+    // asm(mov8_mi_i eax 5 70);
+    // asm(mov8_mi_i eax 6 71);
+    // asm(mov8_mi_i eax 7 72);
+
+    asm(mov8_mi_i eax 8 73);
+    asm(mov8_mi_i eax 9 74);
+    asm(mov8_mi_i eax 10 75);
+    asm(mov8_mi_i eax 11 76);
+
+    asm(mov8_mi_i eax 12 77);
+    asm(mov8_mi_i eax 13 78);
+    asm(mov8_mi_i eax 14 79);
+    asm(mov8_mi_i eax 15 80);
+ 
+    
+    printChar(getDBArrayValue(s1, 0));
+    printChar(getDBArrayValue(s1, 1));
+    printChar(getDBArrayValue(s1, 2));
+    printChar(getDBArrayValue(s1, 3));
+    newline();
+    printHex(s2);
+    newline();
+    printHex(s3);
+    newline();
+
+    return 0;
     // s1.a = 5;
     // s1.b = 4;
     // s1.c = 3;

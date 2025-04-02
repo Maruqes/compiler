@@ -1,6 +1,9 @@
 #include "structs.h"
 #include "../parser.h"
 #include "../int/parser_int.h"
+#include "../../variables/variables.h"
+#include "../../functions/bFunctions32/bFunctions32.h"
+#include "../../functions/functions.h"
 
 typedef struct struct_variables
 {
@@ -14,7 +17,8 @@ typedef struct struct_var
 {
     char *name;
     struct_variables *vars;
-    uint32_t vars_size;
+    uint32_t vars_size;      // vars array size
+    uint32_t vars_real_size; // vars size in memory 2 dds is 8
 } struct_var;
 
 struct_var *struct_vars;
@@ -71,6 +75,7 @@ void parse_struct(FILE *file)
     struct_variables *vars = NULL;
     uint32_t vars_size = 0;
     uint32_t vars_offset = 0;
+    uint32_t vars_real_size = 0;
 
     // Loop para ler todas as variáveis
     while (1)
@@ -90,18 +95,21 @@ void parse_struct(FILE *file)
             printf("Var type: %s\n", var_type);
             type_enum = DD;
             size = 4;
+            vars_real_size += size;
         }
         else if (strcmp(var_type, "db") == 0)
         {
             printf("Var type: %s\n", var_type);
             type_enum = DB;
             size = 1;
+            vars_real_size += size;
         }
         else if (strcmp(var_type, "dw") == 0)
         {
             printf("Var type: %s\n", var_type);
             type_enum = DW;
             size = 2;
+            vars_real_size += size;
         }
         else
         {
@@ -146,5 +154,60 @@ void parse_struct(FILE *file)
     struct_vars[struct_vars_size].name = name;
     struct_vars[struct_vars_size].vars = vars;
     struct_vars[struct_vars_size].vars_size = vars_size;
+    struct_vars[struct_vars_size].vars_real_size = vars_real_size;
     struct_vars_size++;
+
+    // Imprimir todas as structs
+    for (uint32_t i = 0; i < struct_vars_size; i++)
+    {
+        printf("Struct name: %s, vars size: %d, vars real size: %d\n",
+               struct_vars[i].name, struct_vars[i].vars_size, struct_vars[i].vars_real_size);
+    }
+}
+
+char *get_random_struct_name()
+{
+    static int seeded = 0;
+    if (!seeded)
+    {
+        srand(time(NULL));
+        seeded = 1;
+    }
+
+    const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    int random_letters = 10;
+    char *name = malloc(strlen("struct") + random_letters + 1);
+    if (!name)
+    {
+        perror("Failed to allocate memory for struct name");
+        exit(EXIT_FAILURE);
+    }
+    strcpy(name, "struct");
+    int prefix_len = strlen("struct");
+    for (int i = 0; i < random_letters; i++)
+    {
+        name[prefix_len + i] = charset[rand() % (sizeof(charset) - 1)];
+    }
+    name[prefix_len + random_letters] = '\0';
+    return name;
+}
+
+int parse_struct_contructors(FILE *file, char *token, int reg)
+{
+    for (uint32_t i = 0; i < struct_vars_size; i++)
+    {
+        if (strcmp(struct_vars[i].name, token) == 0)
+        {
+            char *name = get_random_struct_name();
+
+            create_var(name, struct_vars[i].vars_real_size, struct_vars[i].vars_real_size, DD);
+            mov32_16_r_r(REG_EAX, REG_ESP, 0);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int parse_struct_variables(FILE *file, char *token, int reg)
+{
 }
