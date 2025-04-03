@@ -546,6 +546,12 @@ int parse_it(char *token, FILE *file)
         return 1;
     }
 
+    if(parse_struct_constructor(file, token) == 1)
+    {
+        return 1;
+    }
+    
+
     // assumed that the token is a variable
     // needs to be after all the initializers of variables
     int ident_question = does_var_exist(token);

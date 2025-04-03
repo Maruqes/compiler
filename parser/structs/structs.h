@@ -11,6 +11,6 @@
 
 void parse_struct(FILE *file);
 void init_structs();
-int parse_struct_contructors(FILE *file, char *token, int reg);
+int parse_struct_constructor(FILE *file, char *token);
 int parse_struct_variables(FILE *file, char *token, int reg);
 #endif

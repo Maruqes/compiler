@@ -142,10 +142,6 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
     {
         return;
     }
-    else if (parse_struct_variables(file, token, reg) == 1)
-    {
-        return;
-    }
     else
     {
 
@@ -195,13 +191,6 @@ char *parse_until_charset(FILE *file, char *charset)
     {
         printf("End of parsing\n");
         return next_token;
-    }
-
-    //check if is a struct constructor
-    if(parse_struct_contructors(file, next_token, REG_EAX) == 1)
-    {
-        free(next_token);
-        return NULL;
     }
 
     parse_data_types(file, next_token, REG_EBX);

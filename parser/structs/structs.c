@@ -3,7 +3,9 @@
 #include "../int/parser_int.h"
 #include "../../variables/variables.h"
 #include "../../functions/bFunctions32/bFunctions32.h"
+#include "../../functions/bFunctions8/bFunctions8.h"
 #include "../../functions/functions.h"
+#include "../parser_help.h"
 
 typedef struct struct_variables
 {
@@ -192,19 +194,96 @@ char *get_random_struct_name()
     return name;
 }
 
-int parse_struct_contructors(FILE *file, char *token, int reg)
+void set_vars_from_type(char *var_name, int *current_offset, int index, int i)
 {
+    get_var(REG_EBX, var_name);
+    if (struct_vars[index].vars[i].size == DD)
+    {
+        mov32_16_mi_r(REG_EBX, *current_offset, REG_EAX, 0);
+        *current_offset += struct_vars[index].vars[i].size;
+    }
+    else if (struct_vars[index].vars[i].size == DW)
+    {
+        mov32_16_mi_r(REG_EBX, *current_offset, REG_EAX, 1);
+        *current_offset += struct_vars[index].vars[i].size;
+    }
+    else if (struct_vars[index].vars[i].size == DB)
+    {
+        mov8_mi_r(REG_EBX, *current_offset, REG_EAX);
+        *current_offset += struct_vars[index].vars[i].size;
+    }
+    else
+    {
+        fprintf(stderr, "Error: Unknown type %d\n", struct_vars[index].vars[i].size);
+        exit(1);
+    }
+}
+
+int set_struct_vars(FILE *file, char *var_name, int index, char *firstParam)
+{
+    if (strcmp(firstParam, "(") != 0)
+    {
+        fprintf(stderr, "Error: Expected '(' after struct name\n");
+        exit(1);
+    }
+    int current_offset = 0;
+    int i = 0;
+    char *ret_from_parse = parse_until_charset(file, ",)");
+    set_vars_from_type(var_name, &current_offset, index, i);
+    while (ret_from_parse[0] != ')')
+    {
+        if (strcmp(ret_from_parse, ",") == 0)
+        {
+            free(ret_from_parse);
+            ret_from_parse = parse_until_charset(file, ",)");
+            i++;
+            if (i >= struct_vars[index].vars_size)
+            {
+                fprintf(stderr, "Error: Too many parameters for struct %s\n", var_name);
+                exit(1);
+            }
+        }
+        else
+        {
+            fprintf(stderr, "Error: Expected ',' or ')'\n");
+            exit(1);
+        }
+
+        set_vars_from_type(var_name, &current_offset, index, i);
+    }
+}
+
+int parse_struct_constructor(FILE *file, char *token)
+{
+    char *struct_name = get_token(file);
+
     for (uint32_t i = 0; i < struct_vars_size; i++)
     {
         if (strcmp(struct_vars[i].name, token) == 0)
         {
-            char *name = get_random_struct_name();
+            create_var(struct_name, 4, 4, DD); // 4 bytes becouse addresses are 4
 
-            create_var(name, struct_vars[i].vars_real_size, struct_vars[i].vars_real_size, DD);
-            mov32_16_r_r(REG_EAX, REG_ESP, 0);
+            // Create a random name for the struct
+            char *random_name = get_random_struct_name();
+            create_var(random_name, struct_vars[i].vars_real_size, struct_vars[i].vars_real_size, DD);
+
+            set_var_with_reg(struct_name, REG_ESP);
+
+            char *semi_colon = get_token(file);
+            if (semi_colon[0] != ';')
+            {
+                // first param becouse ITS not a semicolon
+                if (set_struct_vars(file, struct_name, i, semi_colon) == 0)
+                {
+                    fprintf(stderr, "Error: Expected ';' or '}' after struct name\n");
+                    exit(1);
+                }
+            }
+            free(semi_colon);
             return 1;
         }
     }
+    go_back_x_char(strlen(struct_name), file);
     return 0;
 }
 

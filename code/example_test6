@@ -6,7 +6,7 @@ include "includes/web"
 
 struct myOwn{
     dd a;
-    
+    dd b;
 }
 
 func main(){
@@ -14,7 +14,7 @@ func main(){
     // //do test and example for all codes
     dd s3 = x41414141;
     dd s2 = x41414141;
-    dd s1 = myOwn;
+    myOwn s1(x41414141, x42424242);
 
     asm(mov32 eax s1);
     asm(mov8_mi_i eax 0 65);
@@ -22,15 +22,15 @@ func main(){
     asm(mov8_mi_i eax 2 67);
     asm(mov8_mi_i eax 3 68);
 
-    // asm(mov8_mi_i eax 4 69);
-    // asm(mov8_mi_i eax 5 70);
-    // asm(mov8_mi_i eax 6 71);
-    // asm(mov8_mi_i eax 7 72);
+    asm(mov8_mi_i eax 4 69);
+    asm(mov8_mi_i eax 5 70);
+    asm(mov8_mi_i eax 6 71);
+    asm(mov8_mi_i eax 7 72);
 
-    asm(mov8_mi_i eax 8 73);
-    asm(mov8_mi_i eax 9 74);
-    asm(mov8_mi_i eax 10 75);
-    asm(mov8_mi_i eax 11 76);
+    // asm(mov8_mi_i eax 8 73);
+    // asm(mov8_mi_i eax 9 74);
+    // asm(mov8_mi_i eax 10 75);
+    // asm(mov8_mi_i eax 11 76);
 
     asm(mov8_mi_i eax 12 77);
     asm(mov8_mi_i eax 13 78);
@@ -42,6 +42,10 @@ func main(){
     printChar(getDBArrayValue(s1, 1));
     printChar(getDBArrayValue(s1, 2));
     printChar(getDBArrayValue(s1, 3));
+    printChar(getDBArrayValue(s1, 4));
+    printChar(getDBArrayValue(s1, 5));
+    printChar(getDBArrayValue(s1, 6));
+    printChar(getDBArrayValue(s1, 7));
     newline();
     printHex(s2);
     newline();
