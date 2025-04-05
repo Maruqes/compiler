@@ -52,6 +52,14 @@ func main(){
     printHex(s3);
     newline();
 
+
+    //what should work in the future
+    s1.a = 5;
+    s1.b = 4;
+
+    dd test = s1.a;
+    dd test2 = s1.b + 1 * 3;
+
     return 0;
     // s1.a = 5;
     // s1.b = 4;
