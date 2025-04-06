@@ -546,17 +546,33 @@ int parse_it(char *token, FILE *file)
         return 1;
     }
 
-    if(parse_struct_constructor(file, token) == 1)
+    if (parse_struct_constructor(file, token) == 1)
     {
         return 1;
     }
-    
 
     // assumed that the token is a variable
     // needs to be after all the initializers of variables
     int ident_question = does_var_exist(token);
     if (ident_question == 1)
     {
+        // check if has a .
+        char *next_token = get_token(file);
+        if (next_token == NULL)
+        {
+            printf("Error: Expected a symbol after %s\n", token);
+            exit(1);
+        }
+        if (strcmp(next_token, ".") == 0)
+        {
+            parse_struct_variables(file, token);
+            free(next_token);
+            return 1;
+        }
+        else
+        {
+            go_back_x_char(strlen(next_token), file);
+        }
 
         parse_int_setter(file, token);
         return 1;

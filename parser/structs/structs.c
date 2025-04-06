@@ -7,6 +7,14 @@
 #include "../../functions/functions.h"
 #include "../parser_help.h"
 
+
+//FOR STRUCT DECLARATION ONLY
+/*
+    struct myOwn{
+        dd a;
+        dd b;
+    }
+*/
 typedef struct struct_variables
 {
     char *name;
@@ -167,6 +175,9 @@ void parse_struct(FILE *file)
     }
 }
 
+
+// STRUCT VAR CREATION
+// myOwn s1(x41414141, x42424242);
 char *get_random_struct_name()
 {
     static int seeded = 0;
@@ -253,8 +264,25 @@ int set_struct_vars(FILE *file, char *var_name, int index, char *firstParam)
     }
 }
 
+
+typedef struct
+{
+    char *var_name;
+    int struct_index;
+} struct_var_type;
+
+struct_var_type *struct_var_types;
+uint32_t struct_var_types_size;
+void init_struct_var_types()
+{
+    struct_var_types = NULL;
+    struct_var_types_size = 0;
+}
+
 int parse_struct_constructor(FILE *file, char *token)
 {
+    //there are 2 vars becouse its a struct
+    // we have struct_name var pointing to the random name
     char *struct_name = get_token(file);
 
     for (uint32_t i = 0; i < struct_vars_size; i++)
@@ -280,6 +308,11 @@ int parse_struct_constructor(FILE *file, char *token)
                 }
             }
             free(semi_colon);
+
+            // set the struct var type
+            struct_var_types = realloc(struct_var_types, sizeof(struct_var_type) * (struct_var_types_size + 1));
+            struct_var_types[struct_var_types_size].var_name = strdup(struct_name);
+            struct_var_types[struct_var_types_size].struct_index = i;
             return 1;
         }
     }
@@ -287,6 +320,26 @@ int parse_struct_constructor(FILE *file, char *token)
     return 0;
 }
 
-int parse_struct_variables(FILE *file, char *token, int reg)
+// set var
+// s1.a = 10;
+int parse_struct_variables(FILE *file, char *token)
 {
+    // token is struct var name and dot is gone
+    char *offset_var = get_token(file);
+    if (offset_var == NULL)
+    {
+        fprintf(stderr, "Error: Expected a variable name after '.'\n");
+        exit(1);
+    }
+
+    for(uint32_t i = 0; i < struct_var_types_size; i++)
+    {
+        if (strcmp(struct_var_types[i].var_name, token) == 0)
+        {
+            
+        }
+    }
+    
+
+
 }

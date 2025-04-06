@@ -57,8 +57,11 @@ func main(){
     s1.a = 5;
     s1.b = 4;
 
-    dd test = s1.a;
-    dd test2 = s1.b + 1 * 3;
+    //s1-a = addr(s1) + offset(a);
+    //s1.a = valor(addr(s1) + offset(a));
+
+    // dd test = s1.a;
+    // dd test2 = s1.b + 1 * 3;
 
     return 0;
     // s1.a = 5;

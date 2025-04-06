@@ -154,6 +154,7 @@ int main(int argc, char *argv[])
     char *filenameOutput = strdup(argv[2]); // duplicar se pretendes alterar
     char *last_filename = set_base_compile_folder(filename, &filenameOutput);
     init_structs();
+    init_struct_var_types();
 
     create_new_stack();
 
