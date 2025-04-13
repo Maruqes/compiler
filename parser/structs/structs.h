@@ -13,5 +13,7 @@ void parse_struct(FILE *file);
 void init_structs();
 void init_struct_var_types();
 int parse_struct_constructor(FILE *file, char *token);
-int parse_struct_variables(FILE *file, char *token);
+int parse_set_struct_variables(FILE *file, char *token);
+int parse_get_struct_variables(FILE *file, char *token, uint8_t reg);
+int parse_getADDR_struct_variables(FILE *file, char *token, uint8_t reg);
 #endif

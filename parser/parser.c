@@ -565,7 +565,7 @@ int parse_it(char *token, FILE *file)
         }
         if (strcmp(next_token, ".") == 0)
         {
-            parse_struct_variables(file, token);
+            parse_set_struct_variables(file, token);
             free(next_token);
             return 1;
         }

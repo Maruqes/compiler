@@ -12,31 +12,19 @@ struct myOwn{
 func main(){
 
     // //do test and example for all codes
-    dd s3 = x41414141;
-    dd s2 = x41414141;
+    dd s3 = x42424242;
+    dd s2 = x4242424;
     myOwn s1(x41414141, x42424242);
 
     asm(mov32 eax s1);
-    asm(mov8_mi_i eax 0 65);
-    asm(mov8_mi_i eax 1 66);
-    asm(mov8_mi_i eax 2 67);
-    asm(mov8_mi_i eax 3 68);
 
     asm(mov8_mi_i eax 4 69);
     asm(mov8_mi_i eax 5 70);
     asm(mov8_mi_i eax 6 71);
     asm(mov8_mi_i eax 7 72);
 
-    // asm(mov8_mi_i eax 8 73);
-    // asm(mov8_mi_i eax 9 74);
-    // asm(mov8_mi_i eax 10 75);
-    // asm(mov8_mi_i eax 11 76);
 
-    asm(mov8_mi_i eax 12 77);
-    asm(mov8_mi_i eax 13 78);
-    asm(mov8_mi_i eax 14 79);
-    asm(mov8_mi_i eax 15 80);
- 
+
     
     printChar(getDBArrayValue(s1, 0));
     printChar(getDBArrayValue(s1, 1));
@@ -52,11 +40,32 @@ func main(){
     printHex(s3);
     newline();
 
+    if s2 ! x42424242 | s3 ! x42424242 {
+        printString(CString("Does Not Work\n"));
+    } else {
+        printString(CString("Works\n"));
+    }
+
+    s1.a = xFFFFFFFF;
+
+    dd s1a = 1 + s1.a;
+
+    if s1a = 0 {
+        printString(CString("Works\n"));
+    } else {
+        printString(CString("Does Not Work\n"));
+    }
+
+    dd pls = s1-b - s1-a;
+
+    if pls = 4 {
+        printString(CString("Works\n"));
+    } else {
+        printString(CString("Does Not Work\n"));
+    }
 
     //what should work in the future
-    s1.a = 5;
-    s1.b = 4;
-
+    
     //s1-a = addr(s1) + offset(a);
     //s1.a = valor(addr(s1) + offset(a));
 

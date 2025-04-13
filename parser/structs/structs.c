@@ -6,9 +6,9 @@
 #include "../../functions/bFunctions8/bFunctions8.h"
 #include "../../functions/functions.h"
 #include "../parser_help.h"
+#include "../../arithmetic/arithmetic.h"
 
-
-//FOR STRUCT DECLARATION ONLY
+// FOR STRUCT DECLARATION ONLY
 /*
     struct myOwn{
         dd a;
@@ -175,7 +175,6 @@ void parse_struct(FILE *file)
     }
 }
 
-
 // STRUCT VAR CREATION
 // myOwn s1(x41414141, x42424242);
 char *get_random_struct_name()
@@ -264,7 +263,6 @@ int set_struct_vars(FILE *file, char *var_name, int index, char *firstParam)
     }
 }
 
-
 typedef struct
 {
     char *var_name;
@@ -281,8 +279,8 @@ void init_struct_var_types()
 
 int parse_struct_constructor(FILE *file, char *token)
 {
-    //there are 2 vars becouse its a struct
-    // we have struct_name var pointing to the random name
+    // there are 2 vars becouse its a struct
+    //  we have struct_name var pointing to the random name
     char *struct_name = get_token(file);
 
     for (uint32_t i = 0; i < struct_vars_size; i++)
@@ -313,6 +311,7 @@ int parse_struct_constructor(FILE *file, char *token)
             struct_var_types = realloc(struct_var_types, sizeof(struct_var_type) * (struct_var_types_size + 1));
             struct_var_types[struct_var_types_size].var_name = strdup(struct_name);
             struct_var_types[struct_var_types_size].struct_index = i;
+            struct_var_types_size++;
             return 1;
         }
     }
@@ -322,7 +321,7 @@ int parse_struct_constructor(FILE *file, char *token)
 
 // set var
 // s1.a = 10;
-int parse_struct_variables(FILE *file, char *token)
+int parse_set_struct_variables(FILE *file, char *token)
 {
     // token is struct var name and dot is gone
     char *offset_var = get_token(file);
@@ -331,15 +330,139 @@ int parse_struct_variables(FILE *file, char *token)
         fprintf(stderr, "Error: Expected a variable name after '.'\n");
         exit(1);
     }
+    // token -> s1
+    // offset_var -> a
 
-    for(uint32_t i = 0; i < struct_var_types_size; i++)
+    for (uint32_t i = 0; i < struct_var_types_size; i++)
     {
         if (strcmp(struct_var_types[i].var_name, token) == 0)
         {
-            
+            // get the struct index
+            int struct_index = struct_var_types[i].struct_index;
+
+            // check if the offset var is in the struct
+            // Struct in itself
+            for (uint32_t j = 0; j < struct_vars[struct_index].vars_size; j++)
+            {
+                if (strcmp(struct_vars[struct_index].vars[j].name, offset_var) == 0)
+                {
+                    char *equal = get_token(file);
+                    if (equal[0] != '=')
+                    {
+                        fprintf(stderr, "Error: Expected '=' after struct variable name\n");
+                        exit(1);
+                    }
+                    free(equal);
+
+                    parse_until_charset(file, ";");
+                    get_var(REG_EBX, token);
+
+                    if (struct_vars[struct_index].vars[j].size == DD)
+                    {
+                        mov32_16_mi_r(REG_EBX, struct_vars[struct_index].vars[j].offset, REG_EAX, 0);
+                    }
+                    else if (struct_vars[struct_index].vars[j].size == DW)
+                    {
+                        mov32_16_mi_r(REG_EBX, struct_vars[struct_index].vars[j].offset, REG_EAX, 1);
+                    }
+                    else if (struct_vars[struct_index].vars[j].size == DB)
+                    {
+                        mov8_mi_r(REG_EBX, struct_vars[struct_index].vars[j].offset, REG_EAX);
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Error: Unknown type %d\n", struct_vars[struct_index].vars[j].size);
+                        exit(1);
+                    }
+                }
+            }
         }
     }
-    
+}
+
+// get var
+// var = s1.a;
+int parse_get_struct_variables(FILE *file, char *token, uint8_t reg)
+{
+    // token is struct var name and dot is gone
+    char *offset_var = get_token(file);
+    if (offset_var == NULL)
+    {
+        fprintf(stderr, "Error: Expected a variable name after '.'\n");
+        exit(1);
+    }
+    // token -> s1
+    // offset_var -> a
+
+    for (uint32_t i = 0; i < struct_var_types_size; i++)
+    {
+        if (strcmp(struct_var_types[i].var_name, token) == 0)
+        {
+            // get the struct index
+            int struct_index = struct_var_types[i].struct_index;
+
+            // check if the offset var is in the struct
+            // Struct in itself
+            for (uint32_t j = 0; j < struct_vars[struct_index].vars_size; j++)
+            {
+                if (strcmp(struct_vars[struct_index].vars[j].name, offset_var) == 0)
+                {
+                    get_var(REG_EBX, token);
+                    if (struct_vars[struct_index].vars[j].size == DD)
+                    {
+                        mov32_16_r_mi(reg, REG_EBX, struct_vars[struct_index].vars[j].offset, 0);
+                    }
+                    else if (struct_vars[struct_index].vars[j].size == DW)
+                    {
+                        mov32_16_r_mi(reg, REG_EBX, struct_vars[struct_index].vars[j].offset, 1);
+                    }
+                    else if (struct_vars[struct_index].vars[j].size == DB)
+                    {
+                        mov8_r_mi(reg, REG_EBX, struct_vars[struct_index].vars[j].offset);
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Error: Unknown type %d\n", struct_vars[struct_index].vars[j].size);
+                        exit(1);
+                    }
+                }
+            }
+        }
+    }
+}
 
 
+// get addr var
+// var = s1-a;
+int parse_getADDR_struct_variables(FILE *file, char *token, uint8_t reg)
+{
+    // token is struct var name and dot is gone
+    char *offset_var = get_token(file);
+    if (offset_var == NULL)
+    {
+        fprintf(stderr, "Error: Expected a variable name after '.'\n");
+        exit(1);
+    }
+    // token -> s1
+    // offset_var -> a
+
+    for (uint32_t i = 0; i < struct_var_types_size; i++)
+    {
+        if (strcmp(struct_var_types[i].var_name, token) == 0)
+        {
+            // get the struct index
+            int struct_index = struct_var_types[i].struct_index;
+
+            // check if the offset var is in the struct
+            // Struct in itself
+            for (uint32_t j = 0; j < struct_vars[struct_index].vars_size; j++)
+            {
+                if (strcmp(struct_vars[struct_index].vars[j].name, offset_var) == 0)
+                {
+                    get_var(REG_EBX, token);
+                    add(REG_EBX, struct_vars[struct_index].vars[j].offset);
+                }
+            }
+        }
+    }
 }

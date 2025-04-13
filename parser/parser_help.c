@@ -94,7 +94,29 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
 
     if (does_var_exist(token))
     {
-        get_var(reg, token);
+        // check if has a .
+        char *next_token = get_token(file);
+        if (next_token == NULL)
+        {
+            printf("Error: Expected a symbol after %s\n", token);
+            exit(1);
+        }
+
+        if (next_token[0] == '.')
+        {
+            parse_get_struct_variables(file, token, reg);
+            free(next_token);
+        }
+        else if (next_token[0] == '-')
+        {
+            parse_getADDR_struct_variables(file, token, reg);
+            free(next_token);
+        }
+        else
+        {
+            go_back_x_char(strlen(next_token), file);
+            get_var(reg, token);
+        }
     }
     else if (token[0] == '*')
     {
