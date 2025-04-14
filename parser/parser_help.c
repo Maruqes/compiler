@@ -107,7 +107,7 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
             parse_get_struct_variables(file, token, reg);
             free(next_token);
         }
-        else if (next_token[0] == '-')
+        else if (next_token[0] == '$')
         {
             parse_getADDR_struct_variables(file, token, reg);
             free(next_token);

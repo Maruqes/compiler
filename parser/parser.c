@@ -36,6 +36,7 @@ char *vars_tokens[] = {"int"};
 char *symbol_tokens[] = {
     ";",
     "~",
+    "$",
     "=",
     "<",
     "(",

@@ -13,7 +13,7 @@ func main(){
 
     // //do test and example for all codes
     dd s3 = x42424242;
-    dd s2 = x4242424;
+    dd s2 = x42424242;
     myOwn s1(x41414141, x42424242);
 
     asm(mov32 eax s1);
@@ -56,7 +56,7 @@ func main(){
         printString(CString("Does Not Work\n"));
     }
 
-    dd pls = s1-b - s1-a;
+    dd pls = s1$b - s1$a;
 
     if pls = 4 {
         printString(CString("Works\n"));
