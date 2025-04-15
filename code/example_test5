@@ -23,6 +23,15 @@ func create_sockaddr_in(db sin_family, dw sin_port, dd sin_addr){
     return addr;
 }
 
+func createIpHex(dd a, dd b, dd c, dd d){
+    dd res = 0;
+    res = res | a;
+    res = res | b [ 8;
+    res = res | c [ 16;
+    res = res | d [ 24;
+    return res;
+}
+
 func main(){
     dd socket = createSocket();
 

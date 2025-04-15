@@ -9,6 +9,14 @@ struct myOwn{
     dd b;
 }
 
+
+func a(dd s1add){
+
+    s1.a = 10;
+    s1.b = 20;
+    return;
+}
+
 func main(){
 
     // //do test and example for all codes
@@ -23,7 +31,7 @@ func main(){
     asm(mov8_mi_i eax 6 71);
     asm(mov8_mi_i eax 7 72);
 
-
+    a(s1);
 
     
     printChar(getDBArrayValue(s1, 0));

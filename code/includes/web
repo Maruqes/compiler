@@ -1,3 +1,26 @@
+struct GetStruct{
+    dd url;
+    dd host;
+    dd user_agent;
+    dd accept;
+    dd accept_encoding;
+    dd accept_language;
+    dd connection;
+    dd cookies;
+    dd authorization;
+    dd referer;
+    dd upgrade_insecure_requests;
+    dd cache_control;
+    dd if_none_match;
+    dd if_modified_since;
+    dd range;
+    dd origin;
+    dd dnt;
+    dd x_requested_with;
+    dd x_forwarded_for;
+    dd custom_header;
+}
+
 func createSocket(){
     dd res = 0;
     // Prepara os argumentos para socket(AF_INET, SOCK_STREAM, 0)
