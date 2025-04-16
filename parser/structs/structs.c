@@ -267,6 +267,7 @@ typedef struct
 {
     char *var_name;
     int struct_index;
+    char *var_scope;
 } struct_var_type;
 
 struct_var_type *struct_var_types;
@@ -311,6 +312,7 @@ int parse_struct_constructor(FILE *file, char *token)
             struct_var_types = realloc(struct_var_types, sizeof(struct_var_type) * (struct_var_types_size + 1));
             struct_var_types[struct_var_types_size].var_name = strdup(struct_name);
             struct_var_types[struct_var_types_size].struct_index = i;
+            struct_var_types[struct_var_types_size].var_scope = strdup(get_current_scope());
             struct_var_types_size++;
             return 1;
         }
@@ -335,7 +337,9 @@ int parse_set_struct_variables(FILE *file, char *token)
 
     for (uint32_t i = 0; i < struct_var_types_size; i++)
     {
-        if (strcmp(struct_var_types[i].var_name, token) == 0)
+        if (strcmp(struct_var_types[i].var_name, token) == 0 &&
+            strcmp(struct_var_types[i].var_scope, get_current_scope()) == 0)
+
         {
             // get the struct index
             int struct_index = struct_var_types[i].struct_index;
@@ -430,7 +434,6 @@ int parse_get_struct_variables(FILE *file, char *token, uint8_t reg)
         }
     }
 }
-
 
 // get addr var
 // var = s1-a;

@@ -11,9 +11,10 @@ struct myOwn{
 
 
 func a(dd s1add){
-
-    s1.a = 10;
-    s1.b = 20;
+    myOwn s1(0, 0);
+    s1 = s1add;
+    s1.a = x42424242;
+    s1.b = x42424242;
     return;
 }
 
