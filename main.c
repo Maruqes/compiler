@@ -30,6 +30,26 @@
 #define ELF_FLAGS_RWX 7
 #define ELF_ALIGN_PAGE 0x1000
 
+//BUG IN POINTERS->
+/*
+func create_new_string_index(dd index){
+
+    printNumber(*index);
+
+    return 0;
+}
+
+func main(){
+    dd current_array_count = 6;
+    create_new_string_index(&current_array_count);
+
+    return 0;
+}
+
+does not print 6, but 0
+
+*/
+
 // ELF header structure for 32-bit executable
 struct Elf32_Ehdr
 {
