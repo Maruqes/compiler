@@ -29,7 +29,7 @@ void multiple_dereference(FILE *file, char *var, uint8_t reg)
         exit(1);
     }
 
-    int number_of_dereferences = 0; // only the extra
+    int number_of_dereferences = 0; // there is always one dereference at least
     // var = *
     while (var[0] == '*')
     {
@@ -45,28 +45,27 @@ void multiple_dereference(FILE *file, char *var, uint8_t reg)
     get_var(REG_ECX, var);
     for (int i = 0; i < number_of_dereferences; i++)
     {
-        // ebp + ecx = value da var, entao edx = value da var
-        // valor esse que tambem é um address, repetir o processo
-        mov32_16_r_mr(REG_EDX, REG_EBP, REG_ECX, 0);
+        mov32_16_r_mi(REG_EDX, REG_ECX, 0, 0);
         mov_reg32_reg32(REG_ECX, REG_EDX);
     }
 
     // get the value of the last address
-    mov32_16_r_i(reg, 0, 0);
+    mov32_16_r_i(reg, 0, 0); // clear the reg totally
     if (get_type_length(type) == 4)
     {
-        mov32_16_r_mr(reg, REG_EBP, REG_ECX, 0);
+        mov32_16_r_mi(reg, REG_ECX, 0, 0);
     }
     else if (get_type_length(type) == 2)
     {
-        mov32_16_r_mr(reg, REG_EBP, REG_ECX, 1);
+        mov32_16_r_mi(reg, REG_ECX, 0, 1);
     }
     else if (get_type_length(type) == 1)
     {
-        mov8_r_mr(reg, REG_EBP, REG_ECX);
+        mov8_r_mi(reg, REG_ECX, 0);
     }
     free(var);
 }
+
 
 // will parse normal ints/poinetrs functions and vars
 void parse_data_types(FILE *file, char *token, uint8_t reg)
@@ -135,6 +134,7 @@ void parse_data_types(FILE *file, char *token, uint8_t reg)
 
         Variable var_struct = return_var_struct(var);
         mov_reg32(reg, -var_struct.offset);
+        add_reg32(reg, REG_EBP);
         free(var);
     }
     else if (token[0] == '\'')
