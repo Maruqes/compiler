@@ -149,9 +149,13 @@ int write_to_file(int fd, const void *buf, size_t count)
 }
 
 void write_code()
-{   
+{
+    mov64_r_i(REG_R8, 0x3c);
+    mov64_r_i(REG_R15, 0x3c);
     mov64_r_i(REG_RBX, 0x3c);
     mov64_r_r(REG_RAX, REG_RBX);
+    mov64_r_r(REG_RAX, REG_R8);
+    mov64_r_r(REG_RAX, REG_R15);
     mov64_r_i(REG_RDI, 21);
     syscall_instruction();
 }

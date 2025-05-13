@@ -86,6 +86,7 @@ uint64_t add_custom_code_size()
     {
         custom_code_size += op_codes_array[i].size;
     }
+    return custom_code_size;
 }
 
 void write_all_custom_code(int __fd)

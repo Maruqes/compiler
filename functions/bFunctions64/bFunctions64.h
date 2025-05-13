@@ -8,6 +8,31 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+// General Purpose Registers (0-7)
+#define REG_RAX 0x0
+#define REG_RCX 0x1
+#define REG_RDX 0x2
+#define REG_RBX 0x3
+#define REG_RSP 0x4
+#define REG_RBP 0x5
+#define REG_RSI 0x6
+#define REG_RDI 0x7
+
+// Extended Registers (8-15)
+#define REG_R8 0x8
+#define REG_R9 0x9
+#define REG_R10 0xA
+#define REG_R11 0xB
+#define REG_R12 0xC
+#define REG_R13 0xD
+#define REG_R14 0xE
+#define REG_R15 0xF
+
+
+// Special Registers (Use with caution, not for general mov instructions)
+#define REG_RIP 0x10
+#define REG_RFLAGS 0x11
+
 // Move to/from registers
 void mov64_r_i(uint8_t reg_code, uint64_t value);
 void mov64_r_m(uint8_t reg, uint8_t mem_reg);

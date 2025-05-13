@@ -8,32 +8,14 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#define REG_EAX 0x0 // 32-bit register defs kept for compatibility
-#define REG_ECX 0x1
-#define REG_EDX 0x2
-#define REG_EBX 0x3
-#define REG_ESP 0x4
-#define REG_EBP 0x5
-#define REG_ESI 0x6
-#define REG_EDI 0x7
+#define MOD_NO_DISP 0b00 << 6    // 0b00000000
+#define MOD_1BYTE_DISP 0b01 << 6 // 0b01000000
+#define MOD_4BYTE_DISP 0b10 << 6 // 0b10000000
+#define MOD_REG_DIRECT 0b11 << 6 // 0b11000000
 
-// 64-bit register definitions
-#define REG_RAX 0x0
-#define REG_RCX 0x1
-#define REG_RDX 0x2
-#define REG_RBX 0x3
-#define REG_RSP 0x4
-#define REG_RBP 0x5
-#define REG_RSI 0x6
-#define REG_RDI 0x7
-#define REG_R8 0x8
-#define REG_R9 0x9
-#define REG_R10 0xA
-#define REG_R11 0xB
-#define REG_R12 0xC
-#define REG_R13 0xD
-#define REG_R14 0xE
-#define REG_R15 0xF
+// Macros para extrair os bits corretos
+#define REG_FIELD(x) ((x & 0b111) << 3) // bits 3 a 5 0b111000
+#define RM_FIELD(x) (x & 0b111)         // bits 0 a 2 0b111
 
 extern size_t custom_code_size;
 extern size_t data_size;
