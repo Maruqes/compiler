@@ -4,9 +4,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "functions/functions.h"
-#include "16_code/functions_16.h"
-#include "8low_code/functions_8low.h"
-#include "8high_code/functions_8high.h"
 #include "functions/bFunctions64/bFunctions64.h"
 
 #define BASE_ADDRESS 0x400000 // Common base address for 64-bit executables

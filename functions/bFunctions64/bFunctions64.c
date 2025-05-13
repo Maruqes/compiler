@@ -95,7 +95,7 @@ void mov64_r_r(uint8_t reg1, uint8_t reg2)
 
     // Set REX prefix, handle high registers correctly
     set_rex_prefix(opcode_bytes, 0, (reg2 >= REG_R8) ? 1 : 0, 0, (reg1 >= REG_R8) ? 1 : 0);
-    opcode_bytes[1] = 0x89; // Opcode for 'mov r/m64, r64'
+    opcode_bytes[1] = 0x89;                                      // Opcode for 'mov r/m64, r64'
     opcode_bytes[2] = 0xC0 + (reg1 & 0x7) + ((reg2 & 0x7) << 3); // ModR/M byte
 
     // Create the OpCode object
@@ -113,99 +113,6 @@ void mov64_r_r(uint8_t reg1, uint8_t reg2)
     }
 
     op_codes_array[op_codes_array_size++] = new_opcode;
-}
-
-void mov64_r_m(uint8_t reg, uint8_t mem_reg)
-{
-    // undeveloped
-}
-
-void mov64_r_mi(uint8_t reg_dest, uint8_t reg_base, int32_t offset)
-{
-    // undeveloped
-}
-
-void mov64_r_mr(uint8_t reg, uint8_t reg_base, uint8_t reg_offset)
-{
-    // undeveloped
-}
-
-// m (memory) as left side
-void mov64_m_i(uint8_t reg1, uint64_t value)
-{
-    // undeveloped
-}
-
-void mov64_m_r(uint8_t reg1, uint8_t reg2)
-{
-    // undeveloped
-}
-
-void mov64_m_m(uint8_t reg_base1, uint8_t reg_base2)
-{
-    // undeveloped
-}
-
-void mov64_m_mi(uint8_t reg_base, int32_t offset, uint8_t reg2)
-{
-    // undeveloped
-}
-
-void mov64_m_mr(uint8_t reg_base1, uint8_t reg_base2, uint8_t reg_offset)
-{
-    // undeveloped
-}
-
-// mi (memory with immediate offset) as left side
-void mov64_mi_i(uint8_t reg, int32_t offset, uint64_t value)
-{
-    // undeveloped
-}
-
-void mov64_mi_r(uint8_t reg, int32_t offset, uint8_t reg2)
-{
-    // undeveloped
-}
-
-void mov64_mi_m(uint8_t reg_base, int32_t offset1, uint8_t reg_base2)
-{
-    // undeveloped
-}
-
-void mov64_mi_mi(uint8_t reg_base1, int32_t offset1, uint8_t reg_base2, int32_t offset2)
-{
-    // undeveloped
-}
-
-void mov64_mi_mr(uint8_t reg_base1, int32_t offset1, uint8_t reg_base2, uint8_t reg_offset)
-{
-    // undeveloped
-}
-
-// mr (memory with register offset) as left side
-void mov64_mr_i(uint8_t reg, uint8_t reg2, uint64_t value)
-{
-    // undeveloped
-}
-
-void mov64_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3)
-{
-    // undeveloped
-}
-
-void mov64_mr_m(uint8_t reg_base1, uint8_t reg_base2, uint8_t reg3)
-{
-    // undeveloped
-}
-
-void mov64_mr_mi(uint8_t reg_base1, uint8_t reg_base2, int32_t offset, uint8_t reg3)
-{
-    // undeveloped
-}
-
-void mov64_mr_mr(uint8_t reg_base1, uint8_t reg_base2, uint8_t reg_offset1, uint8_t reg3)
-{
-    // undeveloped
 }
 
 // Function for the SYSCALL instruction (64-bit)
@@ -233,4 +140,58 @@ void syscall_instruction()
         exit(EXIT_FAILURE);
     }
     op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+// Function to move from memory to a 64-bit register
+void mov64_r_m(uint8_t reg, uint8_t mem_reg)
+{
+    // Under development
+}
+
+// Function to move from memory with immediate offset to a 64-bit register
+void mov64_r_mi(uint8_t reg_dest, uint8_t reg_base, int32_t offset)
+{
+    // Under development
+}
+
+// Function to move from memory with register offset to a 64-bit register
+void mov64_r_mr(uint8_t reg, uint8_t reg_base, uint8_t reg_offset)
+{
+    // Under development
+}
+
+// Function to move immediate to memory
+void mov64_m_i(uint8_t reg1, uint64_t value)
+{
+    // Under development
+}
+
+// Function to move register to memory
+void mov64_m_r(uint8_t reg1, uint8_t reg2)
+{
+    // Under development
+}
+
+// Function to move immediate to memory with immediate offset
+void mov64_mi_i(uint8_t reg, int32_t offset, uint64_t value)
+{
+    // Under development
+}
+
+// Function to move register to memory with immediate offset
+void mov64_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2)
+{
+    // Under development
+}
+
+// Function to move immediate to memory with register offset
+void mov64_mr_i(uint8_t reg, uint8_t reg2, uint64_t value)
+{
+    // Under development
+}
+
+// Function to move register to memory with register offset
+void mov64_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3)
+{
+    // Under development
 }

@@ -1,6 +1,4 @@
 SOURCES = main.c functions/functions.c \
-		  16_code/functions_16.c \
-		  8high_code/functions_8high.c 8low_code/functions_8low.c \
 		  functions/bFunctions32/bFunctions32.c \
 		  functions/bFunctions8/bFunctions8.c \
 		  functions/bFunctions64/bFunctions64.c
