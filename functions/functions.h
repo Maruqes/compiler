@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#define REG_EAX 0x0
+#define REG_EAX 0x0 // 32-bit register defs kept for compatibility
 #define REG_ECX 0x1
 #define REG_EDX 0x2
 #define REG_EBX 0x3
@@ -17,7 +17,26 @@
 #define REG_ESI 0x6
 #define REG_EDI 0x7
 
+// 64-bit register definitions
+#define REG_RAX 0x0
+#define REG_RCX 0x1
+#define REG_RDX 0x2
+#define REG_RBX 0x3
+#define REG_RSP 0x4
+#define REG_RBP 0x5
+#define REG_RSI 0x6
+#define REG_RDI 0x7
+#define REG_R8 0x8
+#define REG_R9 0x9
+#define REG_R10 0xA
+#define REG_R11 0xB
+#define REG_R12 0xC
+#define REG_R13 0xD
+#define REG_R14 0xE
+#define REG_R15 0xF
+
 extern size_t custom_code_size;
+extern size_t data_size;
 
 typedef struct
 {
@@ -61,10 +80,12 @@ void mov_edi(uint32_t code);
 void mov_reg32(uint8_t reg_code, uint32_t value);
 void our_syscall();
 
-void add_custom_code_size();
+uint64_t add_custom_code_size();
 void write_all_custom_code(int __fd);
 
 void free_fixups();
+
+void fixup_addresses();
 
 // ALL OF VARS HERE ARE REALLY CONSTANTS IN THE DATA SECTION (that can be actually changed using mov_var_from_reg32)
 
@@ -111,7 +132,6 @@ void add_fixup(int index, char *symbol_name, int offset, uint32_t var_offset, ui
 void cmp_reg32(uint8_t reg1, uint8_t reg2);
 
 void create_label(char *name);
-void fix_label_addresses(uint32_t fix_size);
 void ret();
 void nop();
 
