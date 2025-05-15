@@ -19,15 +19,15 @@
 #define REG_RDI 0x7
 
 // Extended Registers (8-15)
-#define REG_R8 0x8
-#define REG_R9 0x9
-#define REG_R10 0xA
-#define REG_R11 0xB
-#define REG_R12 0xC
-#define REG_R13 0xD
-#define REG_R14 0xE
-#define REG_R15 0xF
-
+#define REG_R8 0x8  // o que importa sao os ultimos 3 bits ou seja continua a ser 000
+#define REG_R9 0x9  // o que importa sao os ultimos 3 bits ou seja continua a ser 001
+#define REG_R10 0xA // o que importa sao os ultimos 3 bits ou seja continua a ser 010
+#define REG_R11 0xB // o que importa sao os ultimos 3 bits ou seja continua a ser 011
+#define REG_R12 0xC // o que importa sao os ultimos 3 bits ou seja continua a ser 100
+#define REG_R13 0xD // o que importa sao os ultimos 3 bits ou seja continua a ser 101
+#define REG_R14 0xE // o que importa sao os ultimos 3 bits ou seja continua a ser 110
+#define REG_R15 0xF // o que importa sao os ultimos 3 bits ou seja continua a ser 111
+// esta assim so para saber que 8-15 sao difentes do a,c,d,b,s,b,s,d
 
 // Special Registers (Use with caution, not for general mov instructions)
 #define REG_RIP 0x10
@@ -41,7 +41,7 @@ void mov64_r_mr(uint8_t reg, uint8_t reg_base, uint8_t reg_offset);
 void mov64_r_r(uint8_t reg1, uint8_t reg2);
 
 // Move to memory
-void mov64_m_i(uint8_t reg1, uint64_t value);
+void mov64_m_i32(uint8_t reg1, uint32_t value);
 void mov64_m_r(uint8_t reg1, uint8_t reg2);
 void mov64_mi_i(uint8_t reg, int32_t offset, uint64_t value);
 void mov64_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2);

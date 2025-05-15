@@ -13,9 +13,19 @@
 #define MOD_4BYTE_DISP 0b10 << 6 // 0b10000000
 #define MOD_REG_DIRECT 0b11 << 6 // 0b11000000
 
+
 // Macros para extrair os bits corretos
 #define REG_FIELD(x) ((x & 0b111) << 3) // bits 3 a 5 0b111000
 #define RM_FIELD(x) (x & 0b111)         // bits 0 a 2 0b111
+
+#define RM_SIB 0b100 
+#define SCALE_1   (0b00 << 6)
+#define SCALE_2   (0b01 << 6)
+#define SCALE_4   (0b10 << 6)
+#define SCALE_8   (0b11 << 6)
+
+#define INDEX_FIELD(x) ((x & 0b111) << 3)   /* bits 5-3 */
+#define BASE_FIELD(x)   (x & 0b111)         /* bits 2-0  */
 
 extern size_t custom_code_size;
 extern size_t data_size;

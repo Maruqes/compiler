@@ -150,12 +150,71 @@ int write_to_file(int fd, const void *buf, size_t count)
 
 void write_code()
 {
-    mov64_r_i(REG_R8, 0x3c);
-    mov64_r_i(REG_R15, 0x3c);
-    mov64_r_i(REG_RBX, 0x3c);
-    mov64_r_r(REG_RAX, REG_RBX);
-    mov64_r_r(REG_RAX, REG_R8);
-    mov64_r_r(REG_RAX, REG_R15);
+    mov64_r_i(REG_RAX, 0x1111111111111111ULL);
+    mov64_r_i(REG_RBX, 0x2222222222222222ULL);
+    mov64_r_i(REG_RCX, 0x3333333333333333ULL);
+    mov64_r_i(REG_RDX, 0x4444444444444444ULL);
+    mov64_r_i(REG_RSI, 0x5555555555555555ULL);
+    mov64_r_i(REG_RDI, 0x6666666666666666ULL);
+    mov64_r_i(REG_RSP, 0x7777777777777777ULL);
+    mov64_r_i(REG_RBP, 0x8888888888888888ULL);
+    mov64_r_i(REG_R8, 0x9999999999999999ULL);
+    mov64_r_i(REG_R9, 0xAAAAAAAAAAAAAAAAULL);
+    mov64_r_i(REG_R10, 0xBBBBBBBBBBBBBBBBULL);
+    mov64_r_i(REG_R11, 0xCCCCCCCCCCCCCCCCULL);
+    mov64_r_i(REG_R12, 0xDDDDDDDDDDDDDDDDULL);
+    mov64_r_i(REG_R13, 0xEEEEEEEEEEEEEEEEULL);
+    mov64_r_i(REG_R14, 0xFFFFFFFFFFFFFFFFULL);
+    mov64_r_i(REG_R15, 0xABCDEFABCDEFABCDULL);
+
+    mov64_r_r(REG_RAX, REG_R12);
+    mov64_r_r(REG_R13, REG_RBX);
+    mov64_r_r(REG_R14, REG_RSI);
+    mov64_r_r(REG_RDX, REG_R15);
+    mov64_r_r(REG_R8, REG_RSP);
+    mov64_r_r(REG_R9, REG_RBP);
+    mov64_r_r(REG_R10, REG_RDI);
+    mov64_r_r(REG_R11, REG_RAX);
+    mov64_r_r(REG_R12, REG_RCX);
+    mov64_r_r(REG_R15, REG_R8);
+
+    mov64_r_m(REG_RAX, REG_RSP); // base = rsp → SIB obrigatório
+    mov64_r_m(REG_R12, REG_R12); // base = r12 → SIB obrigatório
+    mov64_r_m(REG_RBX, REG_RBP); // base = rbp → mod=01 + disp8
+    mov64_r_m(REG_R14, REG_R13); // base = r13 → mod=01 + disp8
+    mov64_r_m(REG_R10, REG_R8);  // high regs
+    mov64_r_m(REG_R9, REG_R9);   // high regs
+    mov64_r_m(REG_R13, REG_R14);
+    mov64_r_m(REG_R15, REG_R15);
+
+    mov64_r_mi(REG_RAX, REG_RSP, 0x10);   // base = rsp → SIB + disp
+    mov64_r_mi(REG_R12, REG_RBP, 0x00);   // base = rbp → mod=01 + disp8 = 0
+    mov64_r_mi(REG_R9, REG_R13, 0x00);    // base = r13 → igual ao de cima
+    mov64_r_mi(REG_R14, REG_R12, 0x40);   // SIB + high regs
+    mov64_r_mi(REG_R8, REG_R14, -0x8);    // disp negativo
+    mov64_r_mi(REG_R10, REG_R11, 0x1000); // disp32 longo
+
+    mov64_r_mr(REG_RAX, REG_RBX, REG_RCX); // low+low
+    mov64_r_mr(REG_R8, REG_R12, REG_R13);  // high+high → REX completo
+    mov64_r_mr(REG_R9, REG_RSP, REG_RAX);  // base = rsp → obriga SIB
+    mov64_r_mr(REG_R10, REG_R12, REG_RSP); // index = rsp (interpreta como sem index)
+    mov64_r_mr(REG_R11, REG_RAX, REG_RSP); // index = rsp → ignora
+    mov64_r_mr(REG_R11, REG_RAX, REG_R12); // index = rsp → ignora
+    mov64_r_mr(REG_R15, REG_R13, REG_R14); // REX.R, REX.X, REX.B todos ativos
+    mov64_r_mr(REG_RAX, REG_RBX, REG_RBX); // base = index
+
+    mov64_m_i32(REG_RAX, 0x11223344);
+    mov64_m_i32(REG_RBX, 0x55667788);
+    mov64_m_i32(REG_RSP, 0x99AABBCC); // SIB obrigatório
+    mov64_m_i32(REG_RBP, 0xDDDDDDDD); // obriga disp8
+    mov64_m_i32(REG_R13, 0xEEEEEEEE); // obriga disp8
+    mov64_m_i32(REG_R8, 0x12345678);  // high reg
+    mov64_m_i32(REG_R9, 0x89ABCDEF);
+    mov64_m_i32(REG_R12, 0xDEADBEEF); // SIB obrigatório
+    mov64_m_i32(REG_R14, 0xCAFEBABE);
+    mov64_m_i32(REG_R15, 0xFACEFACE);
+
+    mov64_r_i(REG_RAX, 0x3c);
     mov64_r_i(REG_RDI, 21);
     syscall_instruction();
 }
