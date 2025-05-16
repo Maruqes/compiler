@@ -1,0 +1,31 @@
+Funcionalidade,8-bit,16-bit,32-bit,64-bit,Comentário
+mov,✅,✅,✅,✅,"r/m, i"
+push/pop,✅,✅,✅,✅,automático via esp/rsp
+jmp,✅,✅,✅,✅,curto/longo
+cmp/jXX,✅,✅,✅,✅,usa flags
+lógica (and/or/xor/not),✅,✅,✅,✅,and/or/xor/not
+aritmética (add/sub/mul),✅,✅,✅,✅,add/sub/mul
+shifts (shl/shr/sar),✅,✅,✅,✅,shl/shr/sar
+call/ret,✅,✅,✅,✅,com stack
+syscalls,—,—,✅,✅,syscall/int 0x80
+rodata (constantes),—,—,—,✅,secção extra
+lea,—,✅,✅,✅,cálculo de endereço
+extensão sinal/zero (movsx/movzx),—,✅,✅,✅,cast implícito
+aritmética com carry (adc/sbb),✅,✅,✅,✅,multi-palavra
+enter/leave,—,✅,✅,✅,stack frame
+cmovcc,—,—,✅,✅,branchless select
+test,✅,✅,✅,✅,and só flags
+rotações (rol/ror/rcl/rcr),✅,✅,✅,✅,bit ops
+scan bits (bsf/bsr/tzcnt/lzcnt),—,✅,✅,✅,primeiro/último bit
+xchg/lock,✅,✅,✅,✅,troca atómica
+divisão (div/idiv),✅,✅,✅,✅,div inteiro
+neg,✅,✅,✅,✅,negação rápida
+pushad/popad,—,—,✅,—,salva registos
+nop/pause,✅,✅,✅,✅,padding/spin
+instruções string (rep movs/stos/lods/cmps/scas),✅,✅,✅,✅,cópia/comparo blocos
+x87 FP básico,—,✅,✅,✅,float 80‑bit
+SSE2 SIMD,—,—,✅,✅,128‑bit vector
+secções .data/.bss,—,—,✅,✅,variáveis/zerados
+directivas de dados (align/db/dw/dd/dq),—,—,✅,✅,constantes/alinhamento
+instruções sistema (hlt/cli/sti/cld/std),—,✅,✅,✅,bare‑metal
+sysenter/sysexit,—,—,✅,—,chamada SO rápida

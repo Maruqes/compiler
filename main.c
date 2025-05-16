@@ -213,6 +213,74 @@ void write_code()
     mov64_m_i32(REG_R12, 0xDEADBEEF); // SIB obrigatório
     mov64_m_i32(REG_R14, 0xCAFEBABE);
     mov64_m_i32(REG_R15, 0xFACEFACE);
+    mov64_m_i32(REG_RAX, 0x00112233);
+    mov64_m_i32(REG_RBX, 0x00445566);
+    mov64_m_i32(REG_RSP, 0x00778899); // SIB obrigatório
+    mov64_m_i32(REG_RBP, 0x00AABBCC); // obriga disp8
+    mov64_m_i32(REG_R13, 0x00DDEEFF); // obriga disp8
+    mov64_m_i32(REG_R8, 0x01234567);  // high reg
+    mov64_m_i32(REG_R9, 0x02468ACE);
+    mov64_m_i32(REG_R12, 0x0FEDCBA9); // SIB obrigatório
+    mov64_m_i32(REG_R14, 0x03579BDF);
+    mov64_m_i32(REG_R15, 0x0A1B2C3D);
+
+    mov64_m_r(REG_RAX, REG_RBX); // low+low
+    mov64_m_r(REG_R8, REG_R12);  // high+high → REX completo
+    mov64_m_r(REG_R9, REG_RSP);  // base = rsp → SIB obrigatório
+    mov64_m_r(REG_R10, REG_R12); // index = rsp (interpreta como sem index)
+    mov64_m_r(REG_R11, REG_RAX); // index = rsp → ignora
+    mov64_m_r(REG_R11, REG_RAX); // index = rsp → ignora
+    mov64_m_r(REG_R15, REG_R13); // REX.R, REX.X, REX.B todos ativos
+
+    mov64_mi_i(REG_RAX, 90283, 0x11223344);
+    mov64_mi_i(REG_RBX, 0x812862, 0x55667788);
+    mov64_mi_i(REG_R8, 0xabf6252, 0x12345678);   // high reg
+    mov64_mi_i(REG_R9, 0x12345678, 0x12345678);  // high reg
+    mov64_mi_i(REG_R12, 0x12345678, 0xDEADBEEF); // SIB obrigatório
+    mov64_mi_i(REG_R13, 0x12345678, 0xCAFEBABE);
+    mov64_mi_i(REG_R14, 0x12345678, 0xCAFEBABE);
+    mov64_mi_i(REG_R15, 0x12345678, 0xFACEFACE);
+    mov64_mi_i(REG_RAX, 0x12345678, 0x11223344);
+
+
+    mov64_mi_r(REG_RAX, 0x12345678, REG_RBX); // low+low
+    mov64_mi_r(REG_R8, 0x12345678, REG_R12);  // high+high → REX completo
+    mov64_mi_r(REG_R9, 0x12345678, REG_RSP);  // base = rsp → SIB obrigatório
+    mov64_mi_r(REG_R10, 0x12345678, REG_R12); // index = rsp (interpreta como sem index)
+    mov64_mi_r(REG_R11, 0x12345678, REG_RAX); // index = rsp → ignora
+    mov64_mi_r(REG_R14, 0x12345678, REG_RAX); 
+    mov64_mi_r(REG_R12, 0x12345678, REG_RAX); 
+    mov64_mi_r(REG_R15, 0x12345678, REG_R13); // REX.R, REX.X, REX.B todos ativos
+    mov64_mi_r(REG_RAX, 0x12345678, REG_RAX); // base = index
+    mov64_mi_r(REG_RAX, 0x12345678, REG_RBX); // low+low
+    mov64_mi_r(REG_R8, 0x12345678, REG_R12);  // high+high → REX completo
+    mov64_mi_r(REG_R9, 0x12345678, REG_RSP);  // base = rsp → SIB obrigatório
+    mov64_mi_r(REG_R10, 0x12345678, REG_R12); // index = rsp (interpreta como sem index)
+
+
+    mov64_mr_i(REG_RAX, REG_RBX, 0x11223344);
+    mov64_mr_i(REG_R8, REG_R12, 0x12345678); // high reg
+    mov64_mr_i(REG_R9, REG_RSP, 0x12345678); // base = rsp → SIB obrigatório
+    mov64_mr_i(REG_R10, REG_R12, 0x12345678); // index = rsp (interpreta como sem index)
+    mov64_mr_i(REG_R11, REG_RAX, 0x12345678); // index = rsp → ignora
+    mov64_mr_i(REG_R11, REG_RAX, 0x12345678); // index = rsp → ignora
+    mov64_mr_i(REG_R15, REG_R13, 0x12345678); // REX.R, REX.X, REX.B todos ativos
+    mov64_mr_i(REG_RAX, REG_RBX, 0x11223344);
+    mov64_mr_i(REG_RAX, REG_RBX, 0x11223344);
+
+
+    mov64_mr_r(REG_RAX, REG_RBX, REG_RCX); // low+low
+    mov64_mr_r(REG_R8, REG_R12, REG_R13);  // high+high → REX completo
+    mov64_mr_r(REG_R9, REG_RSP, REG_RAX);  // base = rsp → SIB obrigatório
+    mov64_mr_r(REG_R10, REG_R12, REG_RSP); // index = rsp (interpreta como sem index)
+    mov64_mr_r(REG_R11, REG_RAX, REG_RSP); // index = rsp → ignora
+    mov64_mr_r(REG_R11, REG_RAX, REG_RAX); // index = rsp → ignora
+    mov64_mr_r(REG_R15, REG_R13, REG_R14); // REX.R, REX.X, REX.B todos ativos
+    mov64_mr_r(REG_RAX, REG_RBX, REG_RBX); // base = index
+    mov64_mr_r(REG_RAX, REG_RBX, REG_RBX); // low+low
+    mov64_mr_r(REG_R8, REG_R12, REG_R12);  // high+high → REX completo
+    mov64_mr_r(REG_R9, REG_RSP, REG_RSP);  // base = rsp → SIB obrigatório
+    mov64_mr_r(REG_R10, REG_R12, REG_R12); // index = rsp (interpreta como sem index)
 
     mov64_r_i(REG_RAX, 0x3c);
     mov64_r_i(REG_RDI, 21);
@@ -223,13 +291,14 @@ int main(int argc, char *argv[])
 {
     // proximos passos:
     /*
+    desenvolver 64/32/16/8 r/m/i
     criar labels e jumps
     conditionais em 64/32/16/8
     criar readonly parts
-    desenvolver 64/32/16/8 r/m/i
     desenvolver 64/32/16/8 push/pop
     desenvolver 64/32/16/8 arithmetic
     desenvolver 64/32/16/8 logic(ands/ors/xors)
+    desenvolver 64/32/16/8 shifts
 
     ter cuidado com sp/bp
     */

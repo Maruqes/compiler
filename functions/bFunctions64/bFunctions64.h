@@ -43,9 +43,9 @@ void mov64_r_r(uint8_t reg1, uint8_t reg2);
 // Move to memory
 void mov64_m_i32(uint8_t reg1, uint32_t value);
 void mov64_m_r(uint8_t reg1, uint8_t reg2);
-void mov64_mi_i(uint8_t reg, int32_t offset, uint64_t value);
+void mov64_mi_i(uint8_t reg, int32_t offset, int32_t value);
 void mov64_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2);
-void mov64_mr_i(uint8_t reg, uint8_t reg2, uint64_t value);
+void mov64_mr_i(uint8_t reg, uint8_t reg2, int32_t value);
 void mov64_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3);
 
 // Function prototypes for system calls

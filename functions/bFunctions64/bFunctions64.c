@@ -318,29 +318,171 @@ void mov64_m_i32(uint8_t reg1, uint32_t value)
 // Function to move register to memory
 void mov64_m_r(uint8_t reg1, uint8_t reg2)
 {
-    // Under development
+    int usa_sib = precisa_sib(MOD_1BYTE_DISP, reg1, 0);
+
+    char *opcode_bytes = malloc(4 + usa_sib);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    set_rex_prefix(opcode_bytes, 1, (reg2 >= REG_R8) ? 1 : 0, 0, (reg1 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x89;
+
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, reg2, reg1);
+    set_sib(&opcode_bytes[3], SCALE_1, RM_SIB, reg1);
+    opcode_bytes[3 + usa_sib] = 0x00; // Displacement byte
+
+    OpCode new_opcode;
+    new_opcode.size = 4 + usa_sib;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
 // Function to move immediate to memory with immediate offset
-void mov64_mi_i(uint8_t reg, int32_t offset, uint64_t value)
+void mov64_mi_i(uint8_t reg, int32_t offset, int32_t value)
 {
-    // Under development
+    int usa_sib = precisa_sib(MOD_4BYTE_DISP, reg, 0);
+
+    char *opcode_bytes = malloc(11 + usa_sib);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    set_rex_prefix(opcode_bytes, 1, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xC7;
+
+    set_modrm(&opcode_bytes[2], MOD_4BYTE_DISP, 0, reg);
+    set_sib(&opcode_bytes[3], SCALE_1, RM_SIB, reg);
+    memcpy(&opcode_bytes[3 + usa_sib], &offset, sizeof(offset)); // Copy the 4-byte immediate offset
+    memcpy(&opcode_bytes[7 + usa_sib], &value, sizeof(value));   // Copy the 4-byte immediate value
+
+    OpCode new_opcode;
+    new_opcode.size = 11 + usa_sib;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
 // Function to move register to memory with immediate offset
 void mov64_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2)
 {
-    // Under development
+    int usa_sib = precisa_sib(MOD_4BYTE_DISP, reg, 0);
+
+    char *opcode_bytes = malloc(7 + usa_sib);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    set_rex_prefix(opcode_bytes, 1, (reg2 >= REG_R8) ? 1 : 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x89;
+
+    set_modrm(&opcode_bytes[2], MOD_4BYTE_DISP, reg2, reg);
+    set_sib(&opcode_bytes[3], SCALE_1, RM_SIB, reg);
+    memcpy(&opcode_bytes[3 + usa_sib], &offset, sizeof(offset)); // Copy the 4-byte immediate offset
+
+    OpCode new_opcode;
+    new_opcode.size = 7 + usa_sib;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
 // Function to move immediate to memory with register offset
-void mov64_mr_i(uint8_t reg, uint8_t reg2, uint64_t value)
+void mov64_mr_i(uint8_t reg, uint8_t reg2, int32_t value)
 {
-    // Under development
+    int usa_sib = 1; // usa sib obrigatorio porque usa index
+
+    char *opcode_bytes = malloc(9);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    set_rex_prefix(opcode_bytes, 1, 0, (reg2 >= REG_R8) ? 1 : 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xC7;
+
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, 0, RM_SIB);
+    set_sib(&opcode_bytes[3], SCALE_1, reg2, reg);
+    opcode_bytes[4] = 0x00;                          // Displacement byte
+    memcpy(&opcode_bytes[5], &value, sizeof(value)); // Copy the 4-byte immediate value
+
+    OpCode new_opcode;
+    new_opcode.size = 9;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
 // Function to move register to memory with register offset
 void mov64_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3)
 {
-    // Under development
+    int usa_sib = precisa_sib(MOD_1BYTE_DISP, reg_base, 1);
+
+    char *opcode_bytes = malloc(4 + usa_sib);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    set_rex_prefix(opcode_bytes, 1, (reg3 >= REG_R8) ? 1 : 0, (reg2 >= REG_R8) ? 1 : 0, (reg_base >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x89;
+
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, reg3, RM_SIB);
+    set_sib(&opcode_bytes[3], SCALE_1, reg2, reg_base);
+    opcode_bytes[3 + usa_sib] = 0x00; // Displacement byte
+
+    OpCode new_opcode;
+    new_opcode.size = 4 + usa_sib;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
 }
