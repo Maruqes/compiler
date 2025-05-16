@@ -247,6 +247,12 @@ void mov64_r_mi(uint8_t reg_dest, uint8_t reg_base, int32_t offset)
 // mov    rax,QWORD PTR [reg_dest+reg_base*1]
 void mov64_r_mr(uint8_t reg_dest, uint8_t reg_base, uint8_t reg_offset)
 {
+    if (reg_offset == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as an index register.\n");
+        return;
+    }
+
     // int usa_index = precisa_sib(MOD_1BYTE_DISP, reg_base, 1);
     int usa_index = 1; // usa index obrigatorio porque usa index
 
@@ -421,6 +427,12 @@ void mov64_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2)
 // Function to move immediate to memory with register offset
 void mov64_mr_i(uint8_t reg, uint8_t reg2, int32_t value)
 {
+    if(reg2 == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as an index register.\n");
+        return;
+    }
+
     int usa_sib = 1; // usa sib obrigatorio porque usa index
 
     char *opcode_bytes = malloc(9);
@@ -456,6 +468,11 @@ void mov64_mr_i(uint8_t reg, uint8_t reg2, int32_t value)
 // Function to move register to memory with register offset
 void mov64_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3)
 {
+    if(reg2 == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as an index register.\n");
+        return;
+    }
     int usa_sib = precisa_sib(MOD_1BYTE_DISP, reg_base, 1);
 
     char *opcode_bytes = malloc(4 + usa_sib);
