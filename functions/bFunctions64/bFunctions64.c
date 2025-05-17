@@ -21,58 +21,7 @@ void set_rex_prefix(char *opcode_bytes, uint8_t w, uint8_t r, uint8_t x, uint8_t
     // Constroi o byte REX com os bits W, R, X e B
     opcode_bytes[0] = 0x40 | (w << 3) | (r << 2) | (x << 1) | b;
 }
-/*
-mod = tipo de modo MOD_NO_DISP, MOD_1BYTE_DISP, MOD_4BYTE_DISP, MOD_REG_DIRECT
-reg = registo de destino
-rm = registo de origem ou registo de base
-*/
-void set_modrm(uint8_t *dst,
-               uint8_t mod,
-               uint8_t reg,
-               uint8_t rm)
-{
-    *dst = mod | REG_FIELD(reg) | RM_FIELD(rm);
-}
 
-/*
-scale = 0b00, 0b01, 0b10, 0b11  multiplicador de 1, 2, 4 ou 8
-index = registo de indexação   [r12 + index * scale]
-base = registo de base    registo base caso acima é o r12
-*/
-void set_sib(uint8_t *dst,
-             uint8_t scale,
-             uint8_t index,
-             uint8_t base)
-{
-    *dst = scale | INDEX_FIELD(index) | BASE_FIELD(base);
-}
-
-/*
-vais precisar de SIB base = RSP ou R12, ha mais casos mas acho que so vamos usar este
-
-mod = tipo de modo MOD_NO_DISP, MOD_1BYTE_DISP, MOD_4BYTE_DISP, MOD_REG_DIRECT
-reg_base = registo de base
-usa_index = se o campo index vive no SIB ou não, (se usa o SIB que esta na funcao set_sib)
-*/
-int precisa_sib(uint8_t mod,
-                uint8_t reg_base,
-                int usa_index)
-{
-    /* Mod == 0b11 → endereçamento reg-reg, nunca há SIB */
-    if (mod == MOD_REG_DIRECT)
-        return 0;
-
-    /* Se há índice, SIB é obrigatório (o campo index vive lá) */
-    if (usa_index)
-        return 1;
-
-    /* Se o campo rm (3 bits baixos) vale 100b → SIB obrigatório */
-    if ((reg_base & 0x7) == 0x4)
-        return 1;
-
-    /* Nenhuma condição apanhou → não precisas de SIB */
-    return 0;
-}
 
 void mov64_r_i(uint8_t reg_code, uint64_t value)
 {

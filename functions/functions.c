@@ -133,29 +133,55 @@ void nop()
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
-void interrupt_call(int interrupt)
+/*
+mod = tipo de modo MOD_NO_DISP, MOD_1BYTE_DISP, MOD_4BYTE_DISP, MOD_REG_DIRECT
+reg = registo de destino
+rm = registo de origem ou registo de base
+*/
+void set_modrm(uint8_t *dst,
+               uint8_t mod,
+               uint8_t reg,
+               uint8_t rm)
 {
-    char *opcode_bytes = malloc(2);
-    if (!opcode_bytes)
-    {
-        perror("Failed to allocate memory for opcode_bytes");
-        exit(EXIT_FAILURE);
-    }
+    *dst = mod | REG_FIELD(reg) | RM_FIELD(rm);
+}
 
-    opcode_bytes[0] = 0xCD;
-    opcode_bytes[1] = interrupt;
+/*
+scale = 0b00, 0b01, 0b10, 0b11  multiplicador de 1, 2, 4 ou 8
+index = registo de indexação   [r12 + index * scale]
+base = registo de base    registo base caso acima é o r12
+*/
+void set_sib(uint8_t *dst,
+             uint8_t scale,
+             uint8_t index,
+             uint8_t base)
+{
+    *dst = scale | INDEX_FIELD(index) | BASE_FIELD(base);
+}
 
-    OpCode new_opcode;
-    new_opcode.size = 2; // Total instruction size
-    new_opcode.code = opcode_bytes;
+/*
+vais precisar de SIB base = RSP ou R12, ha mais casos mas acho que so vamos usar este
 
-    // Add the opcode to the array
-    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
-    if (!op_codes_array)
-    {
-        perror("Failed to reallocate memory for op_codes_array");
-        exit(EXIT_FAILURE);
-    }
-    op_codes_array[op_codes_array_size] = new_opcode;
-    op_codes_array_size++;
+mod = tipo de modo MOD_NO_DISP, MOD_1BYTE_DISP, MOD_4BYTE_DISP, MOD_REG_DIRECT
+reg_base = registo de base
+usa_index = se o campo index vive no SIB ou não, (se usa o SIB que esta na funcao set_sib)
+*/
+int precisa_sib(uint8_t mod,
+                uint8_t reg_base,
+                int usa_index)
+{
+    /* Mod == 0b11 → endereçamento reg-reg, nunca há SIB */
+    if (mod == MOD_REG_DIRECT)
+        return 0;
+
+    /* Se há índice, SIB é obrigatório (o campo index vive lá) */
+    if (usa_index)
+        return 1;
+
+    /* Se o campo rm (3 bits baixos) vale 100b → SIB obrigatório */
+    if ((reg_base & 0x7) == 0x4)
+        return 1;
+
+    /* Nenhuma condição apanhou → não precisas de SIB */
+    return 0;
 }

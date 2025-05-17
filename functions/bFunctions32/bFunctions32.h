@@ -26,17 +26,17 @@
 #define XMM6 0x6
 #define XMM7 0x7
 
-void mov32_16_r_i(uint8_t reg_code, uint32_t value, uint8_t sixteen);
-void mov32_16_r_m(uint8_t reg, uint8_t mem_reg, uint8_t sixteen);
-void mov32_16_r_mi(uint8_t reg_dest, uint8_t reg_base, int32_t offset, uint8_t sixteen);
-void mov32_16_r_mr(uint8_t reg_base, uint8_t reg2, uint8_t reg3, uint8_t sixteen);
-void mov32_16_r_r(uint8_t reg1, uint8_t reg2, uint8_t sixteen);
-void mov32_16_m_i(uint8_t reg1, uint32_t value, uint8_t sixteen);
-void mov32_16_m_r(uint8_t reg1, uint8_t reg2, uint8_t sixteen);
-void mov32_16_mi_i(uint8_t reg, int32_t offset, uint32_t value, uint8_t sixteen);
-void mov32_16_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2, uint8_t sixteen);
-void mov32_16_mr_i(uint8_t reg, uint8_t reg2, uint32_t value, uint8_t sixteen);
-void mov32_16_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3, uint8_t sixteen);
+void mov32_r_i(uint8_t reg_code, uint32_t value);
+void mov32_r_m(uint8_t reg, uint8_t mem_reg);
+void mov32_r_mi(uint8_t reg_dest, uint8_t reg_base, int32_t offset);
+void mov32_r_mr(uint8_t reg_base, uint8_t reg2, uint8_t reg3);
+void mov32_r_r(uint8_t reg1, uint8_t reg2);
+void mov32_m_i(uint8_t reg1, uint32_t value);
+void mov32_m_r(uint8_t reg1, uint8_t reg2);
+void mov32_mi_i(uint8_t reg, int32_t offset, uint32_t value);
+void mov32_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2);
+void mov32_mr_i(uint8_t reg, uint8_t reg2, uint32_t value);
+void mov32_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3);
 
 // xmm
 void mov_x_r(uint8_t xmmReg, uint8_t reg);
@@ -50,11 +50,11 @@ void mulss(uint8_t xmm1, uint8_t xmm2);
 void divss(uint8_t xmm1, uint8_t xmm2);
 void sqrtss(uint8_t xmm1, uint8_t xmm2);
 
-void sete_r(uint8_t reg, uint8_t sixteen);
-void setne_r(uint8_t reg, uint8_t sixteen);
-void setl_r(uint8_t reg, uint8_t sixteen);
-void setg_r(uint8_t reg, uint8_t sixteen);
+void sete_r(uint8_t reg);
+void setne_r(uint8_t reg);
+void setl_r(uint8_t reg);
+void setg_r(uint8_t reg);
 
-void shl_reg_imm(uint8_t reg, uint8_t imm, uint8_t sixteen);
-void shr_reg_imm(uint8_t reg, uint8_t imm, uint8_t sixteen);
+void shl_reg_imm(uint8_t reg, uint8_t imm);
+void shr_reg_imm(uint8_t reg, uint8_t imm);
 #endif // BFUNCTIONS32_H

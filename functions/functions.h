@@ -13,19 +13,18 @@
 #define MOD_4BYTE_DISP 0b10 << 6 // 0b10000000
 #define MOD_REG_DIRECT 0b11 << 6 // 0b11000000
 
-
 // Macros para extrair os bits corretos
 #define REG_FIELD(x) ((x & 0b111) << 3) // bits 3 a 5 0b111000
 #define RM_FIELD(x) (x & 0b111)         // bits 0 a 2 0b111
 
-#define RM_SIB 0b100 
-#define SCALE_1   (0b00 << 6)
-#define SCALE_2   (0b01 << 6)
-#define SCALE_4   (0b10 << 6)
-#define SCALE_8   (0b11 << 6)
+#define RM_SIB 0b100
+#define SCALE_1 (0b00 << 6)
+#define SCALE_2 (0b01 << 6)
+#define SCALE_4 (0b10 << 6)
+#define SCALE_8 (0b11 << 6)
 
-#define INDEX_FIELD(x) ((x & 0b111) << 3)   /* bits 5-3 */
-#define BASE_FIELD(x)   (x & 0b111)         /* bits 2-0  */
+#define INDEX_FIELD(x) ((x & 0b111) << 3) /* bits 5-3 */
+#define BASE_FIELD(x) (x & 0b111)         /* bits 2-0  */
 
 extern size_t custom_code_size;
 extern size_t data_size;
@@ -79,55 +78,14 @@ void free_fixups();
 
 void fixup_addresses();
 
-// ALL OF VARS HERE ARE REALLY CONSTANTS IN THE DATA SECTION (that can be actually changed using mov_var_from_reg32)
-
-// mov reg, var        //the actual address of the variable
-void mov_reg32_symbol_address(uint8_t reg_code, char *symbol_name, int var_offset);
-void mov_eax_symbol_address(char *symbol_name, int var_offset);
-void mov_ebx_symbol_address(char *symbol_name, int var_offset);
-void mov_ecx_symbol_address(char *symbol_name, int var_offset);
-void mov_edx_symbol_address(char *symbol_name, int var_offset);
-void mov_esi_symbol_address(char *symbol_name, int var_offset);
-void mov_edi_symbol_address(char *symbol_name, int var_offset);
-
-// mov [var + var_offset], reg
-void mov_var_from_reg32(uint8_t reg_code, char *symbol, int var_offset);
-void mov_var_from_eax(char *symbol, int var_offset);
-void mov_var_from_ebx(char *symbol, int var_offset);
-void mov_var_from_ecx(char *symbol, int var_offset);
-void mov_var_from_edx(char *symbol, int var_offset);
-void mov_var_from_esi(char *symbol, int var_offset);
-void mov_var_from_edi(char *symbol, int var_offset);
-
-// mov reg, [var + var_offset]
-void mov_reg32_from_var(uint8_t reg_code, char *symbol, int var_offset);
-void mov_eax_from_var(char *symbol, int var_offset);
-void mov_ebx_from_var(char *symbol, int var_offset);
-void mov_ecx_from_var(char *symbol, int var_offset);
-void mov_edx_from_var(char *symbol, int var_offset);
-void mov_esi_from_var(char *symbol, int var_offset);
-void mov_edi_from_var(char *symbol, int var_offset);
-
-// extra
-
-void inc_eax();
-void inc_ebx();
-void inc_ecx();
-void inc_edx();
-void inc_esi();
-void inc_edi();
-
 void cleanup();
 
 void add_fixup(int index, char *symbol_name, int offset, uint32_t var_offset, uint32_t jump_offset);
 
-void cmp_reg32(uint8_t reg1, uint8_t reg2);
-
-void create_label(char *name);
-void ret();
 void nop();
 
-void interrupt_call(int interrupt);
-void freeMemoryASM(int pageNumber, uint8_t reg_with_address);
-void allocMemoryASM(int numberOfPages);
+void set_modrm(uint8_t *dst, uint8_t mod, uint8_t reg, uint8_t rm);
+void set_sib(uint8_t *dst, uint8_t scale, uint8_t index, uint8_t base);
+int precisa_sib(uint8_t mod, uint8_t reg_base, int usa_index);
+
 #endif // FUNCTIONS_H

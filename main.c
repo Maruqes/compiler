@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include "functions/functions.h"
 #include "functions/bFunctions64/bFunctions64.h"
+#include "functions/bFunctions32/bFunctions32.h"
 
 #define BASE_ADDRESS 0x400000 // Common base address for 64-bit executables
 #define ELF_MAGIC "\x7f" \
@@ -150,136 +151,13 @@ int write_to_file(int fd, const void *buf, size_t count)
 
 void write_code()
 {
-    // mov64_r_i(REG_RAX, 0x1111111111111111ULL);
-    // mov64_r_i(REG_RBX, 0x2222222222222222ULL);
-    // mov64_r_i(REG_RCX, 0x3333333333333333ULL);
-    // mov64_r_i(REG_RDX, 0x4444444444444444ULL);
-    // mov64_r_i(REG_RSI, 0x5555555555555555ULL);
-    // mov64_r_i(REG_RDI, 0x6666666666666666ULL);
-    // mov64_r_i(REG_RSP, 0x7777777777777777ULL);
-    // mov64_r_i(REG_RBP, 0x8888888888888888ULL);
-    // mov64_r_i(REG_R8, 0x9999999999999999ULL);
-    // mov64_r_i(REG_R9, 0xAAAAAAAAAAAAAAAAULL);
-    // mov64_r_i(REG_R10, 0xBBBBBBBBBBBBBBBBULL);
-    // mov64_r_i(REG_R11, 0xCCCCCCCCCCCCCCCCULL);
-    // mov64_r_i(REG_R12, 0xDDDDDDDDDDDDDDDDULL);
-    // mov64_r_i(REG_R13, 0xEEEEEEEEEEEEEEEEULL);
-    // mov64_r_i(REG_R14, 0xFFFFFFFFFFFFFFFFULL);
-    // mov64_r_i(REG_R15, 0xABCDEFABCDEFABCDULL);
-
-    // mov64_r_r(REG_RAX, REG_R12);
-    // mov64_r_r(REG_R13, REG_RBX);
-    // mov64_r_r(REG_R14, REG_RSI);
-    // mov64_r_r(REG_RDX, REG_R15);
-    // mov64_r_r(REG_R8, REG_RSP);
-    // mov64_r_r(REG_R9, REG_RBP);
-    // mov64_r_r(REG_R10, REG_RDI);
-    // mov64_r_r(REG_R11, REG_RAX);
-    // mov64_r_r(REG_R12, REG_RCX);
-    // mov64_r_r(REG_R15, REG_R8);
-
-    // mov64_r_m(REG_RAX, REG_RSP); // base = rsp → SIB obrigatório
-    // mov64_r_m(REG_R12, REG_R12); // base = r12 → SIB obrigatório
-    // mov64_r_m(REG_RBX, REG_RBP); // base = rbp → mod=01 + disp8
-    // mov64_r_m(REG_R14, REG_R13); // base = r13 → mod=01 + disp8
-    // mov64_r_m(REG_R10, REG_R8);  // high regs
-    // mov64_r_m(REG_R9, REG_R9);   // high regs
-    // mov64_r_m(REG_R13, REG_R14);
-    // mov64_r_m(REG_R15, REG_R15);
-
-    // mov64_r_mi(REG_RAX, REG_RSP, 0x10);   // base = rsp → SIB + disp
-    // mov64_r_mi(REG_R12, REG_RBP, 0x00);   // base = rbp → mod=01 + disp8 = 0
-    // mov64_r_mi(REG_R9, REG_R13, 0x00);    // base = r13 → igual ao de cima
-    // mov64_r_mi(REG_R14, REG_R12, 0x40);   // SIB + high regs
-    // mov64_r_mi(REG_R8, REG_R14, -0x8);    // disp negativo
-    // mov64_r_mi(REG_R10, REG_R11, 0x1000); // disp32 longo
-
-    // mov64_r_mr(REG_RAX, REG_RBX, REG_RCX); // low+low
-    // mov64_r_mr(REG_R8, REG_R12, REG_R13);  // high+high → REX completo
-    // mov64_r_mr(REG_R9, REG_RSP, REG_RAX);  // base = rsp → obriga SIB
-    // mov64_r_mr(REG_R10, REG_R12, REG_RSP); // index = rsp (interpreta como sem index)
-    // mov64_r_mr(REG_R11, REG_RAX, REG_RSP); // index = rsp → ignora
-    // mov64_r_mr(REG_R11, REG_RAX, REG_R12); // index = rsp → ignora
-    // mov64_r_mr(REG_R15, REG_R13, REG_R14); // REX.R, REX.X, REX.B todos ativos
-    // mov64_r_mr(REG_RAX, REG_RBX, REG_RBX); // base = index
-
-    // mov64_m_i32(REG_RAX, 0x11223344);
-    // mov64_m_i32(REG_RBX, 0x55667788);
-    // mov64_m_i32(REG_RSP, 0x99AABBCC); // SIB obrigatório
-    // mov64_m_i32(REG_RBP, 0xDDDDDDDD); // obriga disp8
-    // mov64_m_i32(REG_R13, 0xEEEEEEEE); // obriga disp8
-    // mov64_m_i32(REG_R8, 0x12345678);  // high reg
-    // mov64_m_i32(REG_R9, 0x89ABCDEF);
-    // mov64_m_i32(REG_R12, 0xDEADBEEF); // SIB obrigatório
-    // mov64_m_i32(REG_R14, 0xCAFEBABE);
-    // mov64_m_i32(REG_R15, 0xFACEFACE);
-    // mov64_m_i32(REG_RAX, 0x00112233);
-    // mov64_m_i32(REG_RBX, 0x00445566);
-    // mov64_m_i32(REG_RSP, 0x00778899); // SIB obrigatório
-    // mov64_m_i32(REG_RBP, 0x00AABBCC); // obriga disp8
-    // mov64_m_i32(REG_R13, 0x00DDEEFF); // obriga disp8
-    // mov64_m_i32(REG_R8, 0x01234567);  // high reg
-    // mov64_m_i32(REG_R9, 0x02468ACE);
-    // mov64_m_i32(REG_R12, 0x0FEDCBA9); // SIB obrigatório
-    // mov64_m_i32(REG_R14, 0x03579BDF);
-    // mov64_m_i32(REG_R15, 0x0A1B2C3D);
-
-    // mov64_m_r(REG_RAX, REG_RBX); // low+low
-    // mov64_m_r(REG_R8, REG_R12);  // high+high → REX completo
-    // mov64_m_r(REG_R9, REG_RSP);  // base = rsp → SIB obrigatório
-    // mov64_m_r(REG_R10, REG_R12); // index = rsp (interpreta como sem index)
-    // mov64_m_r(REG_R11, REG_RAX); // index = rsp → ignora
-    // mov64_m_r(REG_R11, REG_RAX); // index = rsp → ignora
-    // mov64_m_r(REG_R15, REG_R13); // REX.R, REX.X, REX.B todos ativos
-
-    // mov64_mi_i(REG_RAX, 90283, 0x11223344);
-    // mov64_mi_i(REG_RBX, 0x812862, 0x55667788);
-    // mov64_mi_i(REG_R8, 0xabf6252, 0x12345678);   // high reg
-    // mov64_mi_i(REG_R9, 0x12345678, 0x12345678);  // high reg
-    // mov64_mi_i(REG_R12, 0x12345678, 0xDEADBEEF); // SIB obrigatório
-    // mov64_mi_i(REG_R13, 0x12345678, 0xCAFEBABE);
-    // mov64_mi_i(REG_R14, 0x12345678, 0xCAFEBABE);
-    // mov64_mi_i(REG_R15, 0x12345678, 0xFACEFACE);
-    // mov64_mi_i(REG_RAX, 0x12345678, 0x11223344);
-
-    // mov64_mi_r(REG_RAX, 0x12345678, REG_RBX); // low+low
-    // mov64_mi_r(REG_R8, 0x12345678, REG_R12);  // high+high → REX completo
-    // mov64_mi_r(REG_R9, 0x12345678, REG_RSP);  // base = rsp → SIB obrigatório
-    // mov64_mi_r(REG_R10, 0x12345678, REG_R12); // index = rsp (interpreta como sem index)
-    // mov64_mi_r(REG_R11, 0x12345678, REG_RAX); // index = rsp → ignora
-    // mov64_mi_r(REG_R14, 0x12345678, REG_RAX);
-    // mov64_mi_r(REG_R12, 0x12345678, REG_RAX);
-    // mov64_mi_r(REG_R15, 0x12345678, REG_R13); // REX.R, REX.X, REX.B todos ativos
-    // mov64_mi_r(REG_RAX, 0x12345678, REG_RAX); // base = index
-    // mov64_mi_r(REG_RAX, 0x12345678, REG_RBX); // low+low
-    // mov64_mi_r(REG_R8, 0x12345678, REG_R12);  // high+high → REX completo
-    // mov64_mi_r(REG_R9, 0x12345678, REG_RSP);  // base = rsp → SIB obrigatório
-    // mov64_mi_r(REG_R10, 0x12345678, REG_R12); // index = rsp (interpreta como sem index)
-
-    // mov64_mr_i(REG_RAX, REG_RBX, 0x11223344);
-    // mov64_mr_i(REG_R8, REG_R12, 0x12345678); // high reg
-    // mov64_mr_i(REG_R9, REG_RSP, 0x12345678); // base = rsp → SIB obrigatório
-    // mov64_mr_i(REG_R10, REG_R12, 0x12345678); // index = rsp (interpreta como sem index)
-    // mov64_mr_i(REG_R11, REG_RAX, 0x12345678); // index = rsp → ignora
-    // mov64_mr_i(REG_R11, REG_RAX, 0x12345678); // index = rsp → ignora
-    // mov64_mr_i(REG_R15, REG_R13, 0x12345678); // REX.R, REX.X, REX.B todos ativos
-    // mov64_mr_i(REG_RAX, REG_RBX, 0x11223344);
-    // mov64_mr_i(REG_RAX, REG_RBX, 0x11223344);
-
-    // mov64_mr_r(REG_RAX, REG_RBX, REG_RCX); // low+low
-    // mov64_mr_r(REG_R8, REG_R12, REG_R13);  // high+high → REX completo
-    // mov64_mr_r(REG_R9, REG_RSP, REG_RAX);  // base = rsp → SIB obrigatório
-    // mov64_mr_r(REG_R10, REG_R12, REG_RSP); // index = rsp (interpreta como sem index)
-    // mov64_mr_r(REG_R11, REG_RAX, REG_RSP); // index = rsp → ignora
-    // mov64_mr_r(REG_R11, REG_RAX, REG_RAX); // index = rsp → ignora
-    // mov64_mr_r(REG_R15, REG_R13, REG_R14); // REX.R, REX.X, REX.B todos ativos
-    // mov64_mr_r(REG_RAX, REG_RBX, REG_RBX); // base = index
-    // mov64_mr_r(REG_RAX, REG_RBX, REG_RBX); // low+low
-    // mov64_mr_r(REG_R8, REG_R12, REG_R12);  // high+high → REX completo
-    // mov64_mr_r(REG_R9, REG_RSP, REG_RSP);  // base = rsp → SIB obrigatório
-    // mov64_mr_r(REG_R10, REG_R12, REG_R12); // index = rsp (interpreta como sem index)
-
-    funcao_teste_mov64_mr_r();
+    mov32_r_m(REG_EAX, REG_ECX);
+    mov32_r_m(REG_ECX, REG_EDX);
+    mov32_r_m(REG_EDX, REG_EBX);
+    mov32_r_m(REG_EBX, REG_ESP);
+    mov32_r_m(REG_ESP, REG_EBP);
+    mov32_r_m(REG_EBP, REG_ESI);
+    mov32_r_m(REG_ESI, REG_EDI);
 
     mov64_r_i(REG_RAX, 0x3c);
     mov64_r_i(REG_RDI, 21);
