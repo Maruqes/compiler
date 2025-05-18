@@ -146,6 +146,8 @@ void set_modrm(uint8_t *dst,
     *dst = mod | REG_FIELD(reg) | RM_FIELD(rm);
 }
 
+
+
 /*
 scale = 0b00, 0b01, 0b10, 0b11  multiplicador de 1, 2, 4 ou 8
 index = registo de indexação   [r12 + index * scale]
