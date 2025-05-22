@@ -1,5 +1,6 @@
 SOURCES = main.c functions/functions.c \
 		  functions/bFunctions32/bFunctions32.c \
+		  functions/bFunctions16/bFunctions16.c \
 		  functions/bFunctions8/bFunctions8.c \
 		  functions/bFunctions64/bFunctions64.c \
 		  functions/bFunctions64/bTestes64.c

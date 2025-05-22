@@ -6,6 +6,8 @@
 #include "functions/functions.h"
 #include "functions/bFunctions64/bFunctions64.h"
 #include "functions/bFunctions32/bFunctions32.h"
+#include "functions/bFunctions16/bFunctions16.h"
+#include "functions/bFunctions8/bFunctions8.h"
 
 #define BASE_ADDRESS 0x400000 // Common base address for 64-bit executables
 #define ELF_MAGIC "\x7f" \
@@ -151,15 +153,16 @@ int write_to_file(int fd, const void *buf, size_t count)
 
 void write_code()
 {
-    mov32_mr_r(REG_EAX, REG_ECX, REG_EAX);
-    mov32_mr_r(REG_ECX, REG_EDX, REG_ECX);
-    mov32_mr_r(REG_EDX, REG_EBX, REG_ESP);
-    mov32_mr_r(REG_EBX, REG_ESI, REG_EBP);
-    mov32_mr_r(REG_ESI, REG_EDI, REG_EDI);
-    mov32_mr_r(REG_EDI, REG_EAX, REG_ESI);
-    mov32_mr_r(REG_ESP, REG_EAX, REG_EBX);
-    mov32_mr_r(REG_EBP, REG_EAX, REG_ECX);
 
+    mov32_m_i(REG_RAX, 0x3c);
+    mov32_m_i(REG_RDI, 21);
+    mov32_m_i(REG_RSI, 0x400000);
+    mov32_m_i(REG_RDX, 0x0);
+    mov32_m_i(REG_R10, 0x0);
+    mov32_m_i(REG_R8, 0x0);
+    mov32_m_i(REG_R9, 0x0);
+
+    // exit
     mov64_r_i(REG_RAX, 0x3c);
     mov64_r_i(REG_RDI, 21);
     syscall_instruction();

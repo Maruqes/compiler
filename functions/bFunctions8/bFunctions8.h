@@ -8,6 +8,16 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+//define al bl regs... ah bl
+#define AL 0
+#define CL 1
+#define DL 2
+#define BL 3
+#define AH 4
+#define CH 5
+#define DH 6
+#define BH 7
+
 void mov8_r_i(uint8_t reg_code, uint8_t value);
 void mov8_r_m(uint8_t reg, uint8_t mem_reg);
 void mov8_r_mi(uint8_t reg_dest, uint8_t reg_base, int32_t offset);

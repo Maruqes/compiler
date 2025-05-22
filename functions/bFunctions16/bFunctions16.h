@@ -8,6 +8,15 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#define REG_AX 0
+#define REG_CX 1
+#define REG_DX 2
+#define REG_BX 3
+#define REG_SP 4
+#define REG_BP 5
+#define REG_SI 6
+#define REG_DI 7
+
 void mov16_r_i(uint8_t reg_code, uint16_t value);
 void mov16_r_m(uint8_t reg, uint8_t mem_reg);
 void mov16_r_mi(uint8_t reg_dest, uint8_t reg_base, int32_t offset);

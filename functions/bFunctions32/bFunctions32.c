@@ -69,7 +69,7 @@ void mov32_r_m(uint8_t reg, uint8_t mem_reg)
         exit(EXIT_FAILURE);
     }
 
-    set_67_prefix(opcode_bytes); // Set the 66 prefix for 32-bit operand size
+    set_67_prefix(opcode_bytes); 
     opcode_bytes[1] = 0x8B;
 
     set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, reg, mem_reg);
@@ -103,7 +103,7 @@ void mov32_r_mi(uint8_t reg_dest, uint8_t reg_base, int32_t offset)
         exit(EXIT_FAILURE);
     }
 
-    set_67_prefix(opcode_bytes); // Set the 66 prefix for 32-bit operand size
+    set_67_prefix(opcode_bytes); 
     opcode_bytes[1] = 0x8B;
 
     set_modrm(&opcode_bytes[2], MOD_4BYTE_DISP, reg_dest, reg_base);
@@ -131,7 +131,7 @@ void mov32_r_mr(uint8_t reg, uint8_t reg_base, uint8_t reg_offset)
     if (reg_offset == REG_ESP)
     {
         fprintf(stderr, "Error: Cannot use ESP as an index register.\n");
-        return;
+        exit(EXIT_FAILURE);
     }
 
     int sib_needed = precisa_sib(MOD_1BYTE_DISP, reg_base, 1);
@@ -143,7 +143,7 @@ void mov32_r_mr(uint8_t reg, uint8_t reg_base, uint8_t reg_offset)
         exit(EXIT_FAILURE);
     }
 
-    set_67_prefix(opcode_bytes); // Set the 66 prefix for 32-bit operand size
+    set_67_prefix(opcode_bytes); 
     opcode_bytes[1] = 0x8B;
 
     set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, reg, RM_SIB);
@@ -205,7 +205,7 @@ void mov32_m_i(uint8_t reg1, uint32_t value)
         exit(EXIT_FAILURE);
     }
 
-    set_67_prefix(opcode_bytes); // Set the 66 prefix for 32-bit operand size
+    set_67_prefix(opcode_bytes); 
     opcode_bytes[1] = 0xC7;
 
     set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, 0, reg1);
@@ -241,7 +241,7 @@ void mov32_m_r(uint8_t reg1, uint8_t reg2)
         exit(EXIT_FAILURE);
     }
 
-    set_67_prefix(opcode_bytes); // Set the 66 prefix for 32-bit operand size
+    set_67_prefix(opcode_bytes); 
     opcode_bytes[1] = 0x89;
 
     set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, reg2, reg1);
@@ -275,7 +275,7 @@ void mov32_mi_i(uint8_t reg, int32_t offset, uint32_t value)
         exit(EXIT_FAILURE);
     }
 
-    set_67_prefix(opcode_bytes); // Set the 66 prefix for 32-bit operand size
+    set_67_prefix(opcode_bytes);
     opcode_bytes[1] = 0xC7;
 
     set_modrm(&opcode_bytes[2], MOD_4BYTE_DISP, 0, reg);
@@ -311,7 +311,7 @@ void mov32_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2)
         exit(EXIT_FAILURE);
     }
 
-    set_67_prefix(opcode_bytes); // Set the 66 prefix for 32-bit operand size
+    set_67_prefix(opcode_bytes);
     opcode_bytes[1] = 0x89;
 
     set_modrm(&opcode_bytes[2], MOD_4BYTE_DISP, reg2, reg);
@@ -339,7 +339,7 @@ void mov32_mr_i(uint8_t reg, uint8_t reg2, uint32_t value)
     if (reg2 == REG_ESP)
     {
         fprintf(stderr, "Error: Cannot use ESP as an index register.\n");
-        return;
+        exit(EXIT_FAILURE);
     }
 
     int sib_needed = 1;
@@ -351,7 +351,7 @@ void mov32_mr_i(uint8_t reg, uint8_t reg2, uint32_t value)
         exit(EXIT_FAILURE);
     }
 
-    set_67_prefix(opcode_bytes); // Set the 66 prefix for 32-bit operand size
+    set_67_prefix(opcode_bytes); 
     opcode_bytes[1] = 0xC7;
 
     set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, 0, RM_SIB);
@@ -380,9 +380,9 @@ void mov32_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3)
     if (reg2 == REG_ESP)
     {
         fprintf(stderr, "Error: Cannot use ESP as an index register.\n");
-        return;
+        exit(EXIT_FAILURE);
     }
- 
+
     int sib_needed = 1;
 
     char *opcode_bytes = malloc(5);
@@ -392,7 +392,7 @@ void mov32_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3)
         exit(EXIT_FAILURE);
     }
 
-    set_67_prefix(opcode_bytes); // Set the 66 prefix for 32-bit operand size
+    set_67_prefix(opcode_bytes); 
     opcode_bytes[1] = 0x89;
 
     set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, reg3, RM_SIB);

@@ -22,7 +22,6 @@ void set_rex_prefix(char *opcode_bytes, uint8_t w, uint8_t r, uint8_t x, uint8_t
     opcode_bytes[0] = 0x40 | (w << 3) | (r << 2) | (x << 1) | b;
 }
 
-
 void mov64_r_i(uint8_t reg_code, uint64_t value)
 {
     // Allocate 10 bytes for REX + opcode + immediate (1 + 1 + 8)
@@ -199,7 +198,7 @@ void mov64_r_mr(uint8_t reg_dest, uint8_t reg_base, uint8_t reg_offset)
     if (reg_offset == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use RSP as an index register.\n");
-        return;
+        exit(EXIT_FAILURE);
     }
 
     // int usa_index = precisa_sib(MOD_1BYTE_DISP, reg_base, 1);
@@ -376,10 +375,10 @@ void mov64_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2)
 // Function to move immediate to memory with register offset
 void mov64_mr_i(uint8_t reg, uint8_t reg2, int32_t value)
 {
-    if(reg2 == REG_RSP)
+    if (reg2 == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use RSP as an index register.\n");
-        return;
+        exit(EXIT_FAILURE);
     }
 
     int usa_sib = 1; // usa sib obrigatorio porque usa index
@@ -417,10 +416,10 @@ void mov64_mr_i(uint8_t reg, uint8_t reg2, int32_t value)
 // Function to move register to memory with register offset
 void mov64_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3)
 {
-    if(reg2 == REG_RSP)
+    if (reg2 == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use RSP as an index register.\n");
-        return;
+        exit(EXIT_FAILURE);
     }
     int usa_sib = precisa_sib(MOD_1BYTE_DISP, reg_base, 1);
 
