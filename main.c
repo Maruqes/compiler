@@ -154,13 +154,14 @@ int write_to_file(int fd, const void *buf, size_t count)
 void write_code()
 {
 
-    mov32_m_i(REG_RAX, 0x3c);
-    mov32_m_i(REG_RDI, 21);
-    mov32_m_i(REG_RSI, 0x400000);
-    mov32_m_i(REG_RDX, 0x0);
-    mov32_m_i(REG_R10, 0x0);
-    mov32_m_i(REG_R8, 0x0);
-    mov32_m_i(REG_R9, 0x0);
+    mov8_r_i(AL, 0x48); // mov al, 0x48
+    mov8_r_i(BL, 0x65); // mov bl, 0x65
+    mov8_r_i(CL, 0x6c); // mov cl, 0x6c
+    mov8_r_i(DL, 0x6c); // mov dl, 0x6c
+    mov8_r_i(AH, 0x6f); // mov bh, 0x6f
+    mov8_r_i(BH, 0x20); // mov ah, 0x20
+    mov8_r_i(CH, 0x77); // mov ch, 0x77
+    mov8_r_i(DH, 0x6f); // mov dh, 0x6f
 
     // exit
     mov64_r_i(REG_RAX, 0x3c);

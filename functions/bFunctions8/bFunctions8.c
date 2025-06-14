@@ -1,6 +1,6 @@
 #include "bFunctions8.h"
 #include "../functions.h"
-
+#include "../bFunctions64/bFunctions64.h"
 /*
 i-immediate
 r-register
@@ -26,6 +26,30 @@ mov8 mr, r
 
 void mov8_r_i(uint8_t reg_code, uint8_t value)
 {
+    char *opcode_bytes = malloc(2);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xb0 + (reg_code);
+    opcode_bytes[1] = value; // Immediate value
+
+    OpCode new_opcode;
+    new_opcode.size = 2;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes); // Free the just allocated memory to prevent leaks
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
 void mov8_r_m(uint8_t reg, uint8_t mem_reg)

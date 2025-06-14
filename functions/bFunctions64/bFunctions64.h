@@ -51,8 +51,7 @@ void mov64_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3);
 // Function prototypes for system calls
 void syscall_instruction();
 
-
-//testes
+// testes
 void funcao_teste_mov64_r_i(void);
 void funcao_teste_mov64_r_m(void);
 void funcao_teste_mov64_r_mi(void);
@@ -64,5 +63,7 @@ void funcao_teste_mov64_mi_i(void);
 void funcao_teste_mov64_mi_r(void);
 void funcao_teste_mov64_mr_i(void);
 void funcao_teste_mov64_mr_r(void);
+
+void set_rex_prefix(char *opcode_bytes, uint8_t w, uint8_t r, uint8_t x, uint8_t b);
 
 #endif
