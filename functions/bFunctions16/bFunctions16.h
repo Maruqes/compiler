@@ -29,4 +29,17 @@ void mov16_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2);
 void mov16_mr_i(uint8_t reg, uint8_t reg2, uint16_t value);
 void mov16_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3);
 
+// Test functions declarations
+void funcao_teste_mov16_r_i(void);
+void funcao_teste_mov16_r_m(void);
+void funcao_teste_mov16_r_mi(void);
+void funcao_teste_mov16_r_mr(void);
+void funcao_teste_mov16_r_r(void);
+void funcao_teste_mov16_m_i(void);
+void funcao_teste_mov16_m_r(void);
+void funcao_teste_mov16_mi_i(void);
+void funcao_teste_mov16_mi_r(void);
+void funcao_teste_mov16_mr_i(void);
+void funcao_teste_mov16_mr_r(void);
+
 #endif // BFUNCTIONS16_H

@@ -3,7 +3,10 @@ SOURCES = main.c functions/functions.c \
 		  functions/bFunctions16/bFunctions16.c \
 		  functions/bFunctions8/bFunctions8.c \
 		  functions/bFunctions64/bFunctions64.c \
-		  functions/bFunctions64/bTestes64.c
+		  functions/bFunctions64/bTestes64.c \
+		  functions/bFunctions32/bTestes32.c \
+		  functions/bFunctions16/bTestes16.c \
+		  functions/bFunctions8/bTestes8.c \
 
 run:
 	gcc $(SOURCES) -lm -Og -g -o a.out

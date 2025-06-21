@@ -58,6 +58,7 @@ void mov16_r_i(uint8_t reg_code, uint16_t value)
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
+// mov16 r [64r]
 void mov16_r_m(uint8_t reg, uint8_t mem_reg)
 {
     int sib_needed = precisa_sib(MOD_1BYTE_DISP, mem_reg, 0);
@@ -92,6 +93,7 @@ void mov16_r_m(uint8_t reg, uint8_t mem_reg)
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
+// mov16 r16 [64r + offset]
 void mov16_r_mi(uint8_t reg_dest, uint8_t reg_base, int32_t offset)
 {
     int sib_needed = precisa_sib(MOD_4BYTE_DISP, reg_base, 0);
@@ -126,6 +128,7 @@ void mov16_r_mi(uint8_t reg_dest, uint8_t reg_base, int32_t offset)
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
+// mov 16r [64r + 64r]
 void mov16_r_mr(uint8_t reg, uint8_t reg_base, uint8_t reg_offset)
 {
     if (reg_offset == REG_SP)
@@ -195,6 +198,7 @@ void mov16_r_r(uint8_t reg1, uint8_t reg2)
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
+// mov16 [64r], imm16
 void mov16_m_i(uint8_t reg1, uint16_t value)
 {
     int sib_needed = precisa_sib(MOD_1BYTE_DISP, reg1, 0);
@@ -231,6 +235,7 @@ void mov16_m_i(uint8_t reg1, uint16_t value)
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
+// mov16 [64r], reg16
 void mov16_m_r(uint8_t reg1, uint8_t reg2)
 {
     int sib_needed = precisa_sib(MOD_1BYTE_DISP, reg1, 0);
@@ -265,6 +270,7 @@ void mov16_m_r(uint8_t reg1, uint8_t reg2)
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
+// mov16 [64r + imm32], imm16
 void mov16_mi_i(uint8_t reg, int32_t offset, uint16_t value)
 {
     int sib_needed = precisa_sib(MOD_4BYTE_DISP, reg, 0);
@@ -300,6 +306,7 @@ void mov16_mi_i(uint8_t reg, int32_t offset, uint16_t value)
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
+// mov16 [64r + imm32], reg16
 void mov16_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2)
 {
     int sib_needed = precisa_sib(MOD_4BYTE_DISP, reg, 0);
@@ -334,6 +341,7 @@ void mov16_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2)
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
+// mov16 [64r + 64r], imm16
 void mov16_mr_i(uint8_t reg, uint8_t reg2, uint16_t value)
 {
     if (reg2 == REG_SP)
@@ -375,6 +383,7 @@ void mov16_mr_i(uint8_t reg, uint8_t reg2, uint16_t value)
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
+// mov [64r + 64r], reg16
 void mov16_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3)
 {
     if (reg2 == REG_SP)
