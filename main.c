@@ -153,7 +153,7 @@ int write_to_file(int fd, const void *buf, size_t count)
 
 void write_code()
 {
-    funcao_teste_mov8_mr_r();
+    funcao_teste_cmp64_r_i();
 
     // exit
     mov64_r_i(REG_RAX, 0x3c);

@@ -202,3 +202,45 @@ void funcao_teste_mov64_mr_r(void)
         nop();
     }
 }
+
+
+
+/*
+
+   TEST UTILS
+
+   TEST UTILS
+
+   TEST UTILS
+
+   TEST UTILS
+
+*/
+
+
+//test cmp64_r_r: cmp reg1, reg2
+void funcao_teste_cmp64_r_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            cmp64_r_r(all_regs[i], all_regs[j]);
+        }
+        nop();
+    }
+}
+
+
+//test cmp64_r_i: cmp reg, imm64
+void funcao_teste_cmp64_r_i(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(imm64_vals) / sizeof(*imm64_vals); ++j)
+        {
+            cmp64_r_i(all_regs[i], imm64_vals[j]);
+        }
+        nop();
+    }
+}

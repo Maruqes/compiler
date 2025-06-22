@@ -1,0 +1,69 @@
+#include "bFunctions64.h"
+#include "../functions.h"
+
+// file for cmp jumps push/pop logic(and/or/xor/not) shifts
+// irm
+
+/*
+cmp entre-> r,r  r,m r,i
+
+*/
+
+void cmp64_r_r(uint8_t reg1, uint8_t reg2)
+{
+    char *opcode_bytes = malloc(3);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    set_rex_prefix(opcode_bytes, 1, (reg1 >= REG_R8) ? 1 : 0, 0, (reg2 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x39;
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, reg1, reg2);
+
+    OpCode new_opcode;
+    new_opcode.size = 3;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes); // Free the just allocated memory to prevent leaks
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void cmp64_r_i(uint8_t reg1, uint32_t imm32)
+{
+    char *opcode_bytes = malloc(7);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    set_rex_prefix(opcode_bytes, 1, (reg1 >= REG_R8) ? 1 : 0, 0, 0);
+    opcode_bytes[1] = 0x81;
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 7, reg1);
+    memcpy(&opcode_bytes[3], &imm32, sizeof(uint32_t));
+
+    OpCode new_opcode;
+    new_opcode.size = 7;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes); // Free the just allocated memory to prevent leaks
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
