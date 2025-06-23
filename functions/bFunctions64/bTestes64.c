@@ -166,7 +166,7 @@ void funcao_teste_mov64_mr_i(void)
     {
         for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
         {
-            if(all_regs[j] == REG_RSP)
+            if (all_regs[j] == REG_RSP)
             {
                 continue;
             }
@@ -188,7 +188,7 @@ void funcao_teste_mov64_mr_r(void)
     {
         for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
         {
-            if(all_regs[j] == REG_RSP)
+            if (all_regs[j] == REG_RSP)
             {
                 continue;
             }
@@ -203,8 +203,6 @@ void funcao_teste_mov64_mr_r(void)
     }
 }
 
-
-
 /*
 
    TEST UTILS
@@ -217,8 +215,7 @@ void funcao_teste_mov64_mr_r(void)
 
 */
 
-
-//test cmp64_r_r: cmp reg1, reg2
+// test cmp64_r_r: cmp reg1, reg2
 void funcao_teste_cmp64_r_r(void)
 {
     for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
@@ -231,8 +228,7 @@ void funcao_teste_cmp64_r_r(void)
     }
 }
 
-
-//test cmp64_r_i: cmp reg, imm64
+// test cmp64_r_i: cmp reg, imm64
 void funcao_teste_cmp64_r_i(void)
 {
     for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
@@ -240,6 +236,41 @@ void funcao_teste_cmp64_r_i(void)
         for (unsigned j = 0; j < sizeof(imm64_vals) / sizeof(*imm64_vals); ++j)
         {
             cmp64_r_i(all_regs[i], imm64_vals[j]);
+        }
+        nop();
+    }
+}
+
+// test cmp64_r_m: cmp reg, mem[reg]
+void funcao_teste_cmp64_r_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            if (all_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as it cannot be used as a memory operand
+            }
+            cmp64_r_m(all_regs[i], all_regs[j]);
+        }
+        nop();
+    }
+}
+void funcao_teste_cmp64_r_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            if (all_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as it cannot be used as a memory operand
+            }
+            for (unsigned k = 0; k < sizeof(off_vals) / sizeof(*off_vals); ++k)
+            {
+                cmp64_r_mi(all_regs[i], all_regs[j], off_vals[k]);
+            }
         }
         nop();
     }

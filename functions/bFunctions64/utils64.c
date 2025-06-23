@@ -67,3 +67,81 @@ void cmp64_r_i(uint8_t reg1, uint32_t imm32)
 
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
+
+void cmp64_r_m(uint8_t reg1, uint8_t reg2)
+{
+    int usa_sib = precisa_sib(MOD_1BYTE_DISP, reg2, 0);
+    if (reg2 == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as a memory register.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char *opcode_bytes = malloc(4 + usa_sib);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    set_rex_prefix(opcode_bytes, 1, (reg1 >= REG_R8) ? 1 : 0, 0, (reg2 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x3b;
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, reg1, reg2);
+
+    set_sib(&opcode_bytes[3], SCALE_1, RM_SIB, reg2);
+    opcode_bytes[3 + usa_sib] = 0x00;
+
+    OpCode new_opcode;
+    new_opcode.size = 4 + usa_sib;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes); // Free the just allocated memory to prevent leaks
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void cmp64_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset)
+{
+    int usa_sib = precisa_sib(MOD_4BYTE_DISP, reg2, 0);
+    if (reg2 == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as a memory register.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char *opcode_bytes = malloc(7 + usa_sib);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    set_rex_prefix(opcode_bytes, 1, (reg1 >= REG_R8) ? 1 : 0, 0, (reg2 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x3b;
+    set_modrm(&opcode_bytes[2], MOD_4BYTE_DISP, reg1, reg2);
+
+    set_sib(&opcode_bytes[3], SCALE_1, RM_SIB, reg2);
+    memcpy(&opcode_bytes[3 + usa_sib], &offset, sizeof(offset)); 
+
+    OpCode new_opcode;
+    new_opcode.size = 7 + usa_sib;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes); // Free the just allocated memory to prevent leaks
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}

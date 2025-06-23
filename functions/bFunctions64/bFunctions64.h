@@ -66,10 +66,14 @@ void funcao_teste_mov64_mr_r(void);
 
 void funcao_teste_cmp64_r_r(void);
 void funcao_teste_cmp64_r_i(void);
+void funcao_teste_cmp64_r_m(void);
+void funcao_teste_cmp64_r_mi(void);
 
 // Utility functions
 void cmp64_r_r(uint8_t reg1, uint8_t reg2);
 void cmp64_r_i(uint8_t reg1, uint32_t imm32);
+void cmp64_r_m(uint8_t reg1, uint8_t reg2);
+void cmp64_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
 
 void set_rex_prefix(char *opcode_bytes, uint8_t w, uint8_t r, uint8_t x, uint8_t b);
 
