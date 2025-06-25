@@ -275,3 +275,27 @@ void funcao_teste_cmp64_r_mi(void)
         nop();
     }
 }
+
+void funcao_teste_lshfit64(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < 64; ++j) // Shift from 0 to 63
+        {
+            lshfit64(all_regs[i], j);
+        }
+        nop();
+    }
+}
+
+void funcao_teste_rshfit64(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < 64; ++j) // Shift from 0 to 63
+        {
+            rshfit64(all_regs[i], j);
+        }
+        nop();
+    }
+}

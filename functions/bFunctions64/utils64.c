@@ -1,7 +1,7 @@
 #include "bFunctions64.h"
 #include "../functions.h"
 
-// file for cmp jumps push/pop logic(and/or/xor/not) shifts
+// file for cmp shifts push/pop jumps  logic(and/or/xor/not)
 // irm
 
 /*
@@ -128,7 +128,7 @@ void cmp64_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset)
     set_modrm(&opcode_bytes[2], MOD_4BYTE_DISP, reg1, reg2);
 
     set_sib(&opcode_bytes[3], SCALE_1, RM_SIB, reg2);
-    memcpy(&opcode_bytes[3 + usa_sib], &offset, sizeof(offset)); 
+    memcpy(&opcode_bytes[3 + usa_sib], &offset, sizeof(offset));
 
     OpCode new_opcode;
     new_opcode.size = 7 + usa_sib;
@@ -144,4 +144,72 @@ void cmp64_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset)
     }
 
     op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void lshfit64(uint8_t reg, uint8_t imm)
+{
+    char *opcode_bytes = malloc(4);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    set_rex_prefix(opcode_bytes, 1, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xC1;
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 4, reg);
+    opcode_bytes[3] = imm;
+
+    OpCode new_opcode;
+    new_opcode.size = 4;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes); // Free the just allocated memory to prevent leaks
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void rshfit64(uint8_t reg, uint8_t imm)
+{
+    char *opcode_bytes = malloc(4);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    set_rex_prefix(opcode_bytes, 1, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xC1;
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 5, reg);
+    opcode_bytes[3] = imm;
+
+    OpCode new_opcode;
+    new_opcode.size = 4;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes); // Free the just allocated memory to prevent leaks
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void push64(uint8_t reg)
+{
+}
+
+void pop64(uint8_t reg)
+{
 }

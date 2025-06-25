@@ -135,8 +135,12 @@ void nop()
 
 /*
 mod = tipo de modo MOD_NO_DISP, MOD_1BYTE_DISP, MOD_4BYTE_DISP, MOD_REG_DIRECT
-reg = registo de destino
+reg = registo de destino(hint /)
 rm = registo de origem ou registo de base
+
+examplo1: C7 /0 id// mov r/m32, imm32   mod->1byte ou no disp     reg->0 (por causa do /0)     rm->o registo de destino
+exmplo2: REX.W + 8B /r//  mov r/m64, r64  mod->4byte disp ou reg direct (dependo do que queres) reg-> reg de destino  rm-> reg de origem
+pu seja se for /x o reg é fixo, se for /r (reg/reg ou reg/mem) confuso mas confirmar sempre
 */
 void set_modrm(uint8_t *dst,
                uint8_t mod,
