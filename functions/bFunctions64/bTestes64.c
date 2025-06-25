@@ -299,3 +299,77 @@ void funcao_teste_rshfit64(void)
         nop();
     }
 }
+
+void funcao_teste_push64(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        push64(all_regs[i]);
+        nop();
+    }
+}
+
+void funcao_teste_pop64(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        pop64(all_regs[i]);
+        nop();
+    }
+}
+
+void funcao_teste_push64_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        if (all_regs[i] == REG_RSP)
+        {
+            continue;
+        }
+        push64_m(all_regs[i]);
+        nop();
+    }
+}
+
+void funcao_teste_push64_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        if (all_regs[i] == REG_RSP)
+        {
+            continue;
+        }
+        for (unsigned j = 0; j < sizeof(off_vals) / sizeof(*off_vals); ++j)
+        {
+            push64_mi(all_regs[i], off_vals[j]);
+        }
+    }
+}
+
+void funcao_teste_pop64_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        if (all_regs[i] == REG_RSP)
+        {
+            continue;
+        }
+        pop64_m(all_regs[i]);
+        nop();
+    }
+}
+
+void funcao_teste_pop64_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        if (all_regs[i] == REG_RSP)
+        {
+            continue;
+        }
+        for (unsigned j = 0; j < sizeof(off_vals) / sizeof(*off_vals); ++j)
+        {
+            pop64_mi(all_regs[i], off_vals[j]);
+        }
+    }
+}

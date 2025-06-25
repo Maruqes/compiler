@@ -70,6 +70,12 @@ void funcao_teste_cmp64_r_m(void);
 void funcao_teste_cmp64_r_mi(void);
 void funcao_teste_lshfit64(void);
 void funcao_teste_rshfit64(void);
+void funcao_teste_push64(void);
+void funcao_teste_pop64(void);
+void funcao_teste_push64_m(void);
+void funcao_teste_push64_mi(void);
+void funcao_teste_pop64_m(void);
+void funcao_teste_pop64_mi(void);
 
 // Utility functions
 void cmp64_r_r(uint8_t reg1, uint8_t reg2);
@@ -78,6 +84,12 @@ void cmp64_r_m(uint8_t reg1, uint8_t reg2);
 void cmp64_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
 void rshfit64(uint8_t reg, uint8_t imm);
 void lshfit64(uint8_t reg, uint8_t imm);
+void push64(uint8_t reg);
+void pop64(uint8_t reg);
+void push64_m(uint8_t reg);
+void push64_mi(uint8_t reg, uint32_t offset);
+void pop64_m(uint8_t reg);
+void pop64_mi(uint8_t reg, uint32_t offset);
 
 void set_rex_prefix(char *opcode_bytes, uint8_t w, uint8_t r, uint8_t x, uint8_t b);
 
