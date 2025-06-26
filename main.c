@@ -8,6 +8,7 @@
 #include "functions/bFunctions32/bFunctions32.h"
 #include "functions/bFunctions16/bFunctions16.h"
 #include "functions/bFunctions8/bFunctions8.h"
+#include "functions/jumps/jumps.h"
 
 #define BASE_ADDRESS 0x400000 // Common base address for 64-bit executables
 #define ELF_MAGIC "\x7f" \
@@ -153,7 +154,8 @@ int write_to_file(int fd, const void *buf, size_t count)
 
 void write_code()
 {
-    
+
+    funcao_teste_jump_reg();
 
     // exit
     mov64_r_i(REG_RAX, 0x3c);

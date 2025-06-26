@@ -1,7 +1,7 @@
 #include "bFunctions64.h"
 #include "../functions.h"
 
-// file for cmp shifts push/pop jumps  logic(and/or/xor/not)
+// file for cmp shifts push/pop logic(and/or/xor/not)
 // irm
 
 /*
