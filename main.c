@@ -195,7 +195,7 @@ int create_elf()
     return fd;
 }
 
-void printola()
+void printHello()
 {
     mov64_r_i(REG_RAX, 1); // syscall number for write
     mov64_r_i(REG_RDI, 1); // file descriptor 1 (stdout)
@@ -206,7 +206,7 @@ void printola()
 
 void write_code()
 {
-    printola();
+    printHello();
 
     mov64_r_i(REG_RAX, 0x3c);
     mov64_r_i(REG_RDI, 21);
