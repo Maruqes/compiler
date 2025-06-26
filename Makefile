@@ -9,7 +9,9 @@ SOURCES = main.c functions/functions.c \
 		  functions/bFunctions16/bTestes16.c \
 		  functions/bFunctions8/bTestes8.c \
 		  functions/jumps/jumps.c \
+		  functions/jumps/labels.c \
 		  functions/jumps/jumpTeste.c \
+		  raw_vars/raw_vars.c \
 		  
 run:
 	gcc $(SOURCES) -lm -Og -g -o a.out

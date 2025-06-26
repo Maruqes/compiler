@@ -9,6 +9,7 @@
 #include "functions/bFunctions16/bFunctions16.h"
 #include "functions/bFunctions8/bFunctions8.h"
 #include "functions/jumps/jumps.h"
+#include "raw_vars/raw_vars.h"
 
 #define BASE_ADDRESS 0x400000 // Common base address for 64-bit executables
 #define ELF_MAGIC "\x7f" \
@@ -140,7 +141,6 @@ void init_program_header(struct Elf64_Phdr *phdr, size_t code_offset, size_t cus
     phdr->p_memsz = custom_code_size + data_size;
     phdr->p_align = ELF_ALIGN_PAGE;
 }
-
 int write_to_file(int fd, const void *buf, size_t count)
 {
     if (write(fd, buf, count) != count)
@@ -152,35 +152,12 @@ int write_to_file(int fd, const void *buf, size_t count)
     return 0;
 }
 
-void write_code()
+// public Elf64_Phdr
+struct Elf64_Phdr phdrPublic;
+
+int create_elf()
 {
-
-    funcao_teste_jump_reg();
-
-    // exit
-    mov64_r_i(REG_RAX, 0x3c);
-    mov64_r_i(REG_RDI, 21);
-    syscall_instruction();
-}
-
-int main(int argc, char *argv[])
-{
-    // proximos passos:
-    /*
-    desenvolver 64/32/16/8 r/m/i
-    criar labels e jumps
-    conditionais em 64/32/16/8
-    criar readonly parts
-    desenvolver 64/32/16/8 push/pop
-    dese\nvolver 64/32/16/8 arithmetic
-    desenvolver 64/32/16/8 logic(ands/ors/xors)
-    desenvolver 64/32/16/8 shifts
-
-    ter cuidado com sp/bp
-    */
-
-    write_code();
-    uint64_t custom_code_size = add_custom_code_size();
+    uint64_t custom_code_size = get_current_code_size();
 
     // Read the custom code from the input file
     // ELF header
@@ -214,9 +191,56 @@ int main(int argc, char *argv[])
         return 1;
     }
     printf("Current seek position: %ld\n", (long)current_pos);
+    memcpy(&phdrPublic, &phdr, sizeof(phdr));
+    return fd;
+}
 
+void printola()
+{
+    mov64_r_i(REG_RAX, 1); // syscall number for write
+    mov64_r_i(REG_RDI, 1); // file descriptor 1 (stdout)
+    create_variable_reference("string1", REG_RSI);
+    mov64_r_i(REG_RDX, 15); // length of the string
+    syscall_instruction();  // invoke syscall
+}
+
+void write_code()
+{
+    printola();
+
+    mov64_r_i(REG_RAX, 0x3c);
+    mov64_r_i(REG_RDI, 21);
+    syscall_instruction();
+}
+
+int main(int argc, char *argv[])
+{
+    // proximos passos:
+    /*
+    desenvolver 64/32/16/8 r/m/i
+    criar labels e jumps
+    conditionais em 64/32/16/8
+    criar readonly parts
+    desenvolver 64/32/16/8 push/pop
+    desenvolver 64/32/16/8 arithmetic
+    desenvolver 64/32/16/8 logic(ands/ors/xors)
+    desenvolver 64/32/16/8 shifts
+
+    ter cuidado com sp/bp
+    */
+
+    write_code();
+
+    add_string_constant("string1", "Hello, World!\n");
+
+    int fd = create_elf();
+
+    fix_all_labels();
+    resolve_variable_addresses(phdrPublic.p_vaddr + get_current_code_size());
+
+    // needs to be this order
     write_all_custom_code(fd);
-
+    write_string_constants_to_file(fd);
     close(fd);
 
     cleanup();

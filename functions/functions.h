@@ -48,7 +48,7 @@ typedef struct
 typedef struct Jump_struct
 {
     char *var_name;
-    uint32_t var_address;
+    uint64_t var_address;
     uint32_t fix_addr;
 } Jump_struct;
 
@@ -56,19 +56,11 @@ extern Fixup *fixups_array;
 extern uint32_t fixups_array_size;
 
 extern OpCode *op_codes_array;
-extern uint32_t op_codes_array_size;
+extern uint64_t op_codes_array_size;
 
 extern Jump_struct *jump_array;
 extern uint32_t jump_array_size;
 
-// mov eax, val
-void mov_eax(uint32_t code);
-void mov_ebx(uint32_t code);
-void mov_ecx(uint32_t code);
-void mov_edx(uint32_t code);
-void mov_esi(uint32_t code);
-void mov_edi(uint32_t code);
-void mov_reg32(uint8_t reg_code, uint32_t value);
 void our_syscall();
 
 uint64_t add_custom_code_size();
@@ -87,5 +79,6 @@ void nop();
 void set_modrm(uint8_t *dst, uint8_t mod, uint8_t reg, uint8_t rm);
 void set_sib(uint8_t *dst, uint8_t scale, uint8_t index, uint8_t base);
 int precisa_sib(uint8_t mod, uint8_t reg_base, int usa_index);
+uint64_t get_current_code_size();
 
 #endif // FUNCTIONS_H

@@ -5,7 +5,7 @@
 size_t data_size = 0; // Size of data section
 
 OpCode *op_codes_array = NULL;    // Dynamic array of opcodes
-uint32_t op_codes_array_size = 0; // Number of opcodes stored
+uint64_t op_codes_array_size = 0; // Number of opcodes stored
 
 Fixup *fixups_array = NULL;
 uint32_t fixups_array_size = 0;
@@ -38,6 +38,16 @@ void add_fixup(int index, char *symbol_name, int offset, uint32_t var_offset, ui
     new_fixup.code_offset = addr;
     fixups_array[fixups_array_size] = new_fixup;
     fixups_array_size++;
+}
+
+uint64_t get_current_code_size()
+{
+    uint64_t size = 0;
+    for (uint32_t i = 0; i < op_codes_array_size; i++)
+    {
+        size += op_codes_array[i].size;
+    }
+    return size;
 }
 
 void fixup_addresses()
@@ -79,15 +89,6 @@ void fixup_addresses()
     }
 }
 
-uint64_t add_custom_code_size()
-{
-    uint64_t custom_code_size = 0;
-    for (uint32_t i = 0; i < op_codes_array_size; i++)
-    {
-        custom_code_size += op_codes_array[i].size;
-    }
-    return custom_code_size;
-}
 
 void write_all_custom_code(int __fd)
 {
@@ -149,8 +150,6 @@ void set_modrm(uint8_t *dst,
 {
     *dst = mod | REG_FIELD(reg) | RM_FIELD(rm);
 }
-
-
 
 /*
 scale = 0b00, 0b01, 0b10, 0b11  multiplicador de 1, 2, 4 ou 8

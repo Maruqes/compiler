@@ -101,3 +101,32 @@ void jump_reg(uint8_t reg)
 
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
+
+void jmp(char *name)
+{
+    char *opcode_bytes = malloc(5);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xE9;
+
+    memset(&opcode_bytes[1], 0, 4); // Placeholder for address
+    add_label_jump(name, &opcode_bytes[1]);
+
+    OpCode new_opcode;
+    new_opcode.size = 5; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
