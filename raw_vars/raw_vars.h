@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 // Function to add a string constant to the data section
 void add_string_constant(char *name, char *content);

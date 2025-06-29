@@ -37,8 +37,21 @@ void add_string_constant(char *name, char *content)
 
     string_constants[string_constants_count].offset = data_section_size;
     string_constants[string_constants_count].content = strdup(content);
+    if (!string_constants[string_constants_count].content)
+    {
+        perror("Failed to duplicate content string for string_constants");
+        exit(EXIT_FAILURE);
+    }
     string_constants_count++;
-    data_section_size += strlen(content);
+
+    // Check for potential overflow before adding
+    size_t content_length = strlen(content);
+    if (data_section_size > UINT64_MAX - content_length)
+    {
+        fprintf(stderr, "Error: Data section size would overflow\n");
+        exit(EXIT_FAILURE);
+    }
+    data_section_size += content_length;
 }
 
 void write_string_constants_to_file(int file_descriptor)
@@ -70,8 +83,8 @@ uint32_t variable_references_count = 0;
 
 void create_variable_reference(char *variable_name, uint8_t register_code)
 {
-    mov64_r_i(register_code, 64);
-    char *immediate_address = &op_codes_array[op_codes_array_size - 1].code[2]; // gets the address of the "64" written in the last opcode it will be substituted later
+    mov64_r_i(register_code, 0);
+    char *immediate_address = &op_codes_array[op_codes_array_size - 1].code[2]; // gets the address of the placeholder written in the last opcode it will be substituted later
 
     variable_references = realloc(variable_references, (variable_references_count + 1) * sizeof(VariableReference));
     if (!variable_references)
@@ -93,20 +106,25 @@ void resolve_variable_addresses(uint64_t data_section_start_address)
 {
     for (uint32_t i = 0; i < variable_references_count; i++)
     {
+        bool found = false;
         for (uint32_t j = 0; j < string_constants_count; j++)
         {
             if (strcmp(variable_references[i].variable_name, string_constants[j].name) == 0)
             {
                 // Calculate the absolute address: data section start + string offset
                 uint64_t absolute_address = data_section_start_address + string_constants[j].offset;
-                if (absolute_address > UINT64_MAX)
-                {
-                    fprintf(stderr, "Error: Address for string constant '%s' exceeds 64-bit limit\n", string_constants[j].name);
-                    exit(EXIT_FAILURE);
-                }
+
                 // Write the absolute address into the mov instruction's immediate field
                 memcpy(variable_references[i].instruction_address_ptr, &absolute_address, sizeof(uint64_t));
+                found = true;
+                break; // Found match, no need to continue searching
             }
+        }
+
+        if (!found)
+        {
+            fprintf(stderr, "Error: Undefined string constant '%s'\n", variable_references[i].variable_name);
+            exit(EXIT_FAILURE);
         }
     }
 }
