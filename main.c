@@ -199,15 +199,20 @@ void printHello()
 {
     mov64_r_i(REG_RAX, 1); // syscall number for write
     mov64_r_i(REG_RDI, 1); // file descriptor 1 (stdout)
-    create_variable_reference("string1", REG_RSI);
-    mov64_r_i(REG_RDX, 15); // length of the string
+    create_variable_reference("string3", REG_RSI);
+    mov64_r_i(REG_RDX, 23); // length of the string
     syscall_instruction();  // invoke syscall
 }
 
 void write_code()
 {
+    mov64_r_i(REG_RAX, 0x2);
+    mov64_r_i(REG_RBX, 0x1);
+    cmp64_r_r(REG_RAX, REG_RBX);
+    jcc("exit_label", JG_OPCODE);
     printHello();
 
+    create_label("exit_label");
     mov64_r_i(REG_RAX, 0x3c);
     mov64_r_i(REG_RDI, 21);
     syscall_instruction();
@@ -232,6 +237,8 @@ int main(int argc, char *argv[])
     write_code();
 
     add_string_constant("string1", "Hello, World!\n");
+    add_string_constant("string2", "AII, MEUU!\n");
+    add_string_constant("string3", "DEUSSS, JESUS CHRIST!\n");
 
     int fd = create_elf();
 

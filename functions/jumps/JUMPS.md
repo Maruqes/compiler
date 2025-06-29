@@ -40,7 +40,7 @@ typedef struct {
 ### Phase 1: Collection
 During code generation, the compiler:
 
-1. **Creates Labels**: When `createLabel(name)` is called:
+1. **Creates Labels**: When `create_label(name)` is called:
    ```c
    labels[labels_size].name = strdup(name);
    labels[labels_size].address = get_current_code_size();
@@ -109,7 +109,7 @@ displacement = 0x1050 - (0x1000 + 5) = 0x1050 - 0x1005 = 0x4B
 
 ```c
 // Create a label at the current position
-createLabel("loop_start");
+create_label("loop_start");
 
 // Generate some code...
 mov64_r_i(REG_RAX, 42);

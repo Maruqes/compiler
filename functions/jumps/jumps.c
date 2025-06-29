@@ -114,10 +114,43 @@ void jmp(char *name)
     opcode_bytes[0] = 0xE9;
 
     memset(&opcode_bytes[1], 0, 4); // Placeholder for address
-    add_label_jump(name, &opcode_bytes[1]);
+    add_label_jump(name, &opcode_bytes[1], 5);
 
     OpCode new_opcode;
     new_opcode.size = 5; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+// jmps to add -> je/jz  jne/jnz  jg/jnle  jl/jnge  jge/jnl  jle/jng ja/jnbe  jb/jnae  jae/jnb  jbe/jna
+
+// je = jump if equal
+void jcc(char *name, uint8_t condition)
+{
+    char *opcode_bytes = malloc(6);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0x0F;
+    opcode_bytes[1] = condition;
+
+    memset(&opcode_bytes[2], 0, 4); // Placeholder for address
+    add_label_jump(name, &opcode_bytes[2], 6);
+
+    OpCode new_opcode;
+    new_opcode.size = 6; // Total instruction size
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
