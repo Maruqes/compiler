@@ -206,11 +206,11 @@ void printHello()
 
 void write_code()
 {
-    mov64_r_i(REG_RAX, 0x2);
-    mov64_r_i(REG_RBX, 0x1);
-    cmp64_r_r(REG_RAX, REG_RBX);
-    jcc("exit_label", JG_OPCODE);
-    printHello();
+    and64_r_r(REG_RAX, REG_RBX);
+    and64_r_i(REG_RAX, 0x12345678);
+    and64_r_m(REG_RAX, REG_RBX);
+    and64_r_mi(REG_RAX, REG_RBX, 0x1000);
+    and64_r_mr(REG_RAX, REG_RBX, REG_RCX);
 
     create_label("exit_label");
     mov64_r_i(REG_RAX, 0x3c);
