@@ -77,6 +77,12 @@ void funcao_teste_push64_mi(void);
 void funcao_teste_pop64_m(void);
 void funcao_teste_pop64_mi(void);
 
+void funcao_teste_and64_r_r(void);
+void funcao_teste_and64_r_i(void);
+void funcao_teste_and64_r_m(void);
+void funcao_teste_and64_r_mi(void);
+void funcao_teste_and64_r_mr(void);
+
 // Utility functions
 void cmp64_r_r(uint8_t reg1, uint8_t reg2);
 void cmp64_r_i(uint8_t reg1, uint32_t imm32);

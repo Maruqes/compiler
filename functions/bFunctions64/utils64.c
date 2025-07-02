@@ -433,7 +433,7 @@ void and64_r_r(uint8_t reg1, uint8_t reg2)
         exit(EXIT_FAILURE);
     }
 
-    set_rex_prefix(opcode_bytes, 1, (reg1 >= REG_R8) ? 1 : 0, 0, (reg2 >= REG_R8) ? 1 : 0);
+    set_rex_prefix(opcode_bytes, 1, (reg2 >= REG_R8) ? 1 : 0, 0, (reg1 >= REG_R8) ? 1 : 0);
     opcode_bytes[1] = 0x21;
     set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, reg2, reg1);
 
@@ -461,7 +461,7 @@ void and64_r_i(uint8_t reg, uint32_t imm32)
         exit(EXIT_FAILURE);
     }
 
-    set_rex_prefix(opcode_bytes, 1, (reg >= REG_R8) ? 1 : 0, 0, 0);
+    set_rex_prefix(opcode_bytes, 1, 0, 0, (reg >= REG_R8) ? 1 : 0);
     opcode_bytes[1] = 0x81;
     set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 4, reg);
     memcpy(&opcode_bytes[3], &imm32, sizeof(uint32_t));

@@ -206,11 +206,11 @@ void printHello()
 
 void write_code()
 {
-    and64_r_r(REG_RAX, REG_RBX);
-    and64_r_i(REG_RAX, 0x12345678);
-    and64_r_m(REG_RAX, REG_RBX);
-    and64_r_mi(REG_RAX, REG_RBX, 0x1000);
-    and64_r_mr(REG_RAX, REG_RBX, REG_RCX);
+    funcao_teste_and64_r_r();
+    funcao_teste_and64_r_i();
+    funcao_teste_and64_r_m();
+    funcao_teste_and64_r_mi();
+    funcao_teste_and64_r_mr();
 
     create_label("exit_label");
     mov64_r_i(REG_RAX, 0x3c);

@@ -373,3 +373,103 @@ void funcao_teste_pop64_mi(void)
         }
     }
 }
+
+/*
+
+   TEST AND64 FUNCTIONS
+
+   TEST AND64 FUNCTIONS
+
+   TEST AND64 FUNCTIONS
+
+   TEST AND64 FUNCTIONS
+
+*/
+
+// test and64_r_r: and reg1, reg2
+void funcao_teste_and64_r_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            and64_r_r(all_regs[i], all_regs[j]);
+        }
+        nop();
+    }
+}
+
+// test and64_r_i: and reg, imm32
+void funcao_teste_and64_r_i(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(imm32_vals) / sizeof(*imm32_vals); ++j)
+        {
+            and64_r_i(all_regs[i], imm32_vals[j]);
+        }
+        nop();
+    }
+}
+
+// test and64_r_m: and reg, mem[reg]
+void funcao_teste_and64_r_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            if (all_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as it cannot be used as a memory operand
+            }
+            and64_r_m(all_regs[i], all_regs[j]);
+        }
+        nop();
+    }
+}
+
+// test and64_r_mi: and reg, mem[reg + offset]
+void funcao_teste_and64_r_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            if (all_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as it cannot be used as a memory operand
+            }
+            for (unsigned k = 0; k < sizeof(off_vals) / sizeof(*off_vals); ++k)
+            {
+                and64_r_mi(all_regs[i], all_regs[j], off_vals[k]);
+            }
+        }
+        nop();
+    }
+}
+
+// test and64_r_mr: and reg, mem[reg_base + reg_offset]
+void funcao_teste_and64_r_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            if (all_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as it cannot be used as a memory operand
+            }
+            for (unsigned k = 0; k < sizeof(all_regs) / sizeof(*all_regs); ++k)
+            {
+                if (all_regs[k] == REG_RSP)
+                {
+                    continue; // Skip RSP as index register
+                }
+                and64_r_mr(all_regs[i], all_regs[j], all_regs[k]);
+            }
+            nop();
+        }
+        nop();
+    }
+}
