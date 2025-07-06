@@ -563,3 +563,65 @@ void funcao_teste_or64_r_mr(void)
         nop();
     }
 }
+
+// NOT64 TESTS
+
+// test not64_r: not reg
+void funcao_teste_not64_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        not64_r(all_regs[i]);
+    }
+    nop();
+}
+
+// test not64_m: not [reg]
+void funcao_teste_not64_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        if (all_regs[i] == REG_RSP)
+        {
+            continue;
+        }
+        not64_m(all_regs[i]);
+    }
+    nop();
+}
+
+// test not64_mi: not [reg + offset]
+void funcao_teste_not64_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        if (all_regs[i] == REG_RSP)
+        {
+            continue;
+        }
+        for (unsigned j = 0; j < sizeof(off_vals) / sizeof(*off_vals); ++j)
+        {
+            not64_mi(all_regs[i], off_vals[j]);
+        }
+        nop();
+    }
+}
+
+// test not64_mr: not [reg_base + reg_index]
+void funcao_teste_not64_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            if (all_regs[i] == REG_RSP || all_regs[j] == REG_RSP)
+            {
+                continue;
+            }
+            not64_mr(all_regs[i], all_regs[j]);
+        }
+        nop();
+    }
+}
+
+// TEST AND64 FUNCTIONS

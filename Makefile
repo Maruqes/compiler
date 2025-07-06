@@ -6,6 +6,7 @@ SOURCES = main.c functions/functions.c \
 		  functions/bFunctions64/bTestes64.c \
 		  functions/bFunctions64/utils64.c \
 		  functions/bFunctions32/bTestes32.c \
+		  functions/bFunctions32/utils32.c \
 		  functions/bFunctions16/bTestes16.c \
 		  functions/bFunctions8/bTestes8.c \
 		  functions/jumps/jumps.c \
