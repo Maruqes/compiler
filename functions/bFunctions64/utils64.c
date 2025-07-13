@@ -206,6 +206,66 @@ void rshfit64(uint8_t reg, uint8_t imm)
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
+// Shift by CL register
+void lshfit64_reg(uint8_t reg)
+{
+    char *opcode_bytes = malloc(3);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    set_rex_prefix(opcode_bytes, 1, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xD3;
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 4, reg);
+
+    OpCode new_opcode;
+    new_opcode.size = 3;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+// Shift by CL register
+void rshfit64_reg(uint8_t reg)
+{
+    char *opcode_bytes = malloc(3);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    set_rex_prefix(opcode_bytes, 1, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xD3;
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 5, reg);
+
+    OpCode new_opcode;
+    new_opcode.size = 3;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
 void push64(uint8_t reg)
 {
     char *opcode_bytes = malloc(2);

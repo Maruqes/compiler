@@ -63,6 +63,10 @@ void cmp32_r_r(uint8_t reg1, uint8_t reg2);
 void cmp32_r_i(uint8_t reg1, uint32_t imm32);
 void cmp32_r_m(uint8_t reg1, uint8_t reg2);
 void cmp32_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
+void rshfit32(uint8_t reg, uint8_t imm);
+void lshfit32(uint8_t reg, uint8_t imm);
+void lshfit32_reg(uint8_t reg1);
+void rshfit32_reg(uint8_t reg1);
 
 // Test functions
 void funcao_teste_mov32_r_i(void);
@@ -81,5 +85,12 @@ void funcao_teste_cmp32_r_r(void);
 void funcao_teste_cmp32_r_i(void);
 void funcao_teste_cmp32_r_m(void);
 void funcao_teste_cmp32_r_mi(void);
+
+// Teste de funções shift 32-bit
+void funcao_teste_shl_reg_imm(void);
+void funcao_teste_shr_reg_imm(void);
+// Prototypes for register-based shift tests
+void funcao_teste_lshfit32_reg(void);
+void funcao_teste_rshfit32_reg(void);
 
 #endif // BFUNCTIONS32_H

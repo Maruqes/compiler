@@ -300,6 +300,24 @@ void funcao_teste_rshfit64(void)
     }
 }
 
+// test shift left by CL register (lshfit64_reg)
+void funcao_teste_lshfit64_reg(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        lshfit64_reg(all_regs[i]);
+    }
+}
+
+// test shift right by CL register (rshfit64_reg)
+void funcao_teste_rshfit64_reg(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        rshfit64_reg(all_regs[i]);
+    }
+}
+
 void funcao_teste_push64(void)
 {
     for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)

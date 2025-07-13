@@ -70,6 +70,9 @@ void funcao_teste_cmp64_r_m(void);
 void funcao_teste_cmp64_r_mi(void);
 void funcao_teste_lshfit64(void);
 void funcao_teste_rshfit64(void);
+// Test register-based shift by CL
+void funcao_teste_lshfit64_reg(void);
+void funcao_teste_rshfit64_reg(void);
 void funcao_teste_push64(void);
 void funcao_teste_pop64(void);
 void funcao_teste_push64_m(void);
@@ -103,6 +106,8 @@ void cmp64_r_m(uint8_t reg1, uint8_t reg2);
 void cmp64_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
 void rshfit64(uint8_t reg, uint8_t imm);
 void lshfit64(uint8_t reg, uint8_t imm);
+void rshfit64_reg(uint8_t reg1);
+void lshfit64_reg(uint8_t reg1);
 void push64(uint8_t reg);
 void pop64(uint8_t reg);
 void push64_m(uint8_t reg);
@@ -114,6 +119,7 @@ void and64_r_i(uint8_t reg, uint32_t imm32);
 void and64_r_m(uint8_t reg1, uint8_t reg2);
 void and64_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
 void and64_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
+
 
 // OR utility function prototypes
 void or64_r_r(uint8_t reg1, uint8_t reg2);

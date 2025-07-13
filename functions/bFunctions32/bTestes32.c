@@ -287,3 +287,49 @@ void funcao_teste_cmp32_r_mi(void)
         nop();
     }
 }
+
+// Test de shift left immediate (lshfit32)
+void funcao_teste_shl_reg_imm(void)
+{
+    static const uint8_t shift_counts[] = {0U, 1U, 7U, 31U};
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(shift_counts) / sizeof(*shift_counts); ++j)
+        {
+            lshfit32(all_regs[i], shift_counts[j]);
+        }
+        nop();
+    }
+}
+
+// Test de shift right immediate (rshfit32)
+void funcao_teste_shr_reg_imm(void)
+{
+    static const uint8_t shift_counts[] = {0U, 1U, 7U, 31U};
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(shift_counts) / sizeof(*shift_counts); ++j)
+        {
+            rshfit32(all_regs[i], shift_counts[j]);
+        }
+        nop();
+    }
+}
+
+// test shift left by CL register (lshfit32_reg)
+void funcao_teste_lshfit32_reg(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        lshfit32_reg(all_regs[i]);
+    }
+}
+
+// test shift right by CL register (rshfit32_reg)
+void funcao_teste_rshfit32_reg(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        rshfit32_reg(all_regs[i]);
+    }
+}
