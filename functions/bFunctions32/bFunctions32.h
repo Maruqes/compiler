@@ -58,6 +58,12 @@ void setg_r(uint8_t reg);
 void shl_reg_imm(uint8_t reg, uint8_t imm);
 void shr_reg_imm(uint8_t reg, uint8_t imm);
 
+// utils
+void cmp32_r_r(uint8_t reg1, uint8_t reg2);
+void cmp32_r_i(uint8_t reg1, uint32_t imm32);
+void cmp32_r_m(uint8_t reg1, uint8_t reg2);
+void cmp32_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
+
 // Test functions
 void funcao_teste_mov32_r_i(void);
 void funcao_teste_mov32_r_m(void);
@@ -70,5 +76,10 @@ void funcao_teste_mov32_mi_i(void);
 void funcao_teste_mov32_mi_r(void);
 void funcao_teste_mov32_mr_i(void);
 void funcao_teste_mov32_mr_r(void);
+
+void funcao_teste_cmp32_r_r(void);
+void funcao_teste_cmp32_r_i(void);
+void funcao_teste_cmp32_r_m(void);
+void funcao_teste_cmp32_r_mi(void);
 
 #endif // BFUNCTIONS32_H
