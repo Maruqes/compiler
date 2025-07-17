@@ -206,12 +206,7 @@ void printHello()
 
 void write_code()
 {
-    funcao_teste_lshfit64_reg();
-    funcao_teste_rshfit64_reg();
-    funcao_teste_lshfit32_reg();
-    funcao_teste_rshfit32_reg();
-    funcao_teste_shl_reg_imm();
-    funcao_teste_shr_reg_imm();
+    funcao_teste_and32_r_m();
 
     create_label("exit_label");
     mov64_r_i(REG_RAX, 0x3c);

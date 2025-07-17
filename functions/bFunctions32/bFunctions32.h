@@ -67,6 +67,9 @@ void rshfit32(uint8_t reg, uint8_t imm);
 void lshfit32(uint8_t reg, uint8_t imm);
 void lshfit32_reg(uint8_t reg1);
 void rshfit32_reg(uint8_t reg1);
+void and32_r_r(uint8_t reg1, uint8_t reg2);
+void and32_r_i(uint8_t reg, uint32_t imm32);
+void and32_r_m(uint8_t reg1, uint8_t reg2);
 
 // Test functions
 void funcao_teste_mov32_r_i(void);
@@ -92,5 +95,8 @@ void funcao_teste_shr_reg_imm(void);
 // Prototypes for register-based shift tests
 void funcao_teste_lshfit32_reg(void);
 void funcao_teste_rshfit32_reg(void);
+void funcao_test_and32_r_r(void);
+void funcao_teste_and32_r_i(void);
+void funcao_teste_and32_r_m(void);
 
 #endif // BFUNCTIONS32_H

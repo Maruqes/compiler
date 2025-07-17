@@ -333,3 +333,38 @@ void funcao_teste_rshfit32_reg(void)
         rshfit32_reg(all_regs[i]);
     }
 }
+
+void funcao_test_and32_r_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            and32_r_r(all_regs[i], all_regs[j]);
+        }
+        nop();
+    }
+}
+void funcao_teste_and32_r_i(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(imm32_vals) / sizeof(*imm32_vals); ++j)
+        {
+            and32_r_i(all_regs[i], imm32_vals[j]);
+        }
+        nop();
+    }
+}
+
+void funcao_teste_and32_r_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            and32_r_m(all_regs[i], all_mem_regs[j]);
+        }
+        nop();
+    }
+}
