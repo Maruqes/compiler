@@ -368,3 +368,39 @@ void funcao_teste_and32_r_m(void)
         nop();
     }
 }
+
+void funcao_teste_and32_r_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            for (unsigned k = 0; k < sizeof(off_vals) / sizeof(*off_vals); ++k)
+            {
+                and32_r_mi(all_regs[i], all_mem_regs[j], off_vals[k]);
+            }
+            nop();
+        }
+        nop();
+        nop();
+    }
+}
+
+void funcao_teste_and32_r_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            for (unsigned k = 0; k < sizeof(all_regs) / sizeof(*all_regs); ++k)
+            {
+                if (all_regs[k] == REG_ESP) // ESP cannot be used as an index register
+                    continue;
+                and32_r_mr(all_regs[i], all_mem_regs[j], all_regs[k]);
+            }
+            nop();
+        }
+        nop();
+        nop();
+    }
+}

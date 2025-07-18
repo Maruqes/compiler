@@ -1,5 +1,18 @@
 #include "bFunctions32.h"
 #include "../functions.h"
+#include "../bFunctions64/bFunctions64.h"
+
+void cant_use_rx(uint8_t reg[], size_t size)
+{
+    for (size_t i = 0; i < size; i++)
+    {
+        if (reg[i] >= REG_R8)
+        {
+            fprintf(stderr, "Error: Cannot use R8-R15 registers in 32/16/8-bit mode, didn't develop it\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+}
 
 void cmp32_r_r(uint8_t reg1, uint8_t reg2)
 {
@@ -56,6 +69,8 @@ void cmp32_r_i(uint8_t reg1, uint32_t imm32)
 
 void cmp32_r_m(uint8_t reg1, uint8_t reg2)
 {
+    cant_use_rx((uint8_t[]){reg1, reg2}, 2);
+
     int sib_needed = precisa_sib(MOD_1BYTE_DISP, reg2, 0);
     char *opcode_bytes = malloc(3 + sib_needed);
     if (!opcode_bytes)
@@ -85,6 +100,8 @@ void cmp32_r_m(uint8_t reg1, uint8_t reg2)
 
 void cmp32_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset)
 {
+    cant_use_rx((uint8_t[]){reg1, reg2}, 2);
+
     int sib_needed = precisa_sib(MOD_4BYTE_DISP, reg2, 0);
     char *opcode_bytes = malloc(6 + sib_needed);
     if (!opcode_bytes)
@@ -273,6 +290,8 @@ void and32_r_i(uint8_t reg, uint32_t imm32)
 
 void and32_r_m(uint8_t reg1, uint8_t reg2)
 {
+    cant_use_rx((uint8_t[]){reg1, reg2}, 2);
+
     int sib_needed = precisa_sib(MOD_1BYTE_DISP, reg2, 0);
     char *opcode_bytes = malloc(3 + sib_needed);
     if (!opcode_bytes)
@@ -302,10 +321,70 @@ void and32_r_m(uint8_t reg1, uint8_t reg2)
 
 void and32_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset)
 {
+    cant_use_rx((uint8_t[]){reg1, reg2}, 2);
+
+    int sib_needed = precisa_sib(MOD_4BYTE_DISP, reg2, 0);
+    char *opcode_bytes = malloc(2 + sib_needed + sizeof(uint32_t));
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0x23;
+    set_modrm(&opcode_bytes[1], MOD_4BYTE_DISP, reg1, reg2);
+    set_sib(&opcode_bytes[2], 0, RM_SIB, reg2);
+    memcpy(&opcode_bytes[2 + sib_needed], &offset, sizeof(uint32_t));
+
+    OpCode new_opcode;
+    new_opcode.size = 2 + sib_needed + sizeof(uint32_t);
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
 void and32_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3)
 {
+    cant_use_rx((uint8_t[]){reg1, reg2, reg3}, 3);
+
+    if (reg3 == REG_ESP) // ESP RSP ALL SAME SHIT ITS ALL "4"
+    {
+        fprintf(stderr, "Error: Cannot use ESP as an index register.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    int sib_needed = precisa_sib(MOD_1BYTE_DISP, reg2, 1);
+    char *opcode_bytes = malloc(3 + sib_needed);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0x23;
+    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, reg1, RM_SIB);
+    set_sib(&opcode_bytes[2], 0, reg3, reg2);
+    opcode_bytes[2 + sib_needed] = 0x00;
+
+    OpCode new_opcode;
+    new_opcode.size = 3 + sib_needed;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
 // OR operations: OR r,r r,m r,i r,mr
