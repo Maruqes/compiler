@@ -72,6 +72,11 @@ void and32_r_i(uint8_t reg, uint32_t imm32);
 void and32_r_m(uint8_t reg1, uint8_t reg2);
 void and32_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
 void and32_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
+void or32_r_r(uint8_t reg1, uint8_t reg2);
+void or32_r_i(uint8_t reg, uint32_t imm32);
+void or32_r_m(uint8_t reg1, uint8_t reg2);
+void or32_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
+void or32_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
 
 // Test functions
 void funcao_teste_mov32_r_i(void);
@@ -102,5 +107,11 @@ void funcao_teste_and32_r_i(void);
 void funcao_teste_and32_r_m(void);
 void funcao_teste_and32_r_mi(void);
 void funcao_teste_and32_r_mr(void);
+// OR 32-bit tests
+void funcao_test_or32_r_r(void);
+void funcao_teste_or32_r_i(void);
+void funcao_teste_or32_r_m(void);
+void funcao_teste_or32_r_mi(void);
+void funcao_teste_or32_r_mr(void);
 
 #endif // BFUNCTIONS32_H

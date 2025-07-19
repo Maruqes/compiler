@@ -206,7 +206,11 @@ void printHello()
 
 void write_code()
 {
-    funcao_teste_and32_r_mr();
+    funcao_test_or32_r_r();
+    funcao_teste_or32_r_i();
+    funcao_teste_or32_r_m();
+    funcao_teste_or32_r_mi();
+    funcao_teste_or32_r_mr();
 
     create_label("exit_label");
     mov64_r_i(REG_RAX, 0x3c);
