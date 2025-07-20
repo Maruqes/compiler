@@ -480,3 +480,53 @@ void funcao_teste_and32_r_mr(void)
         nop();
     }
 }
+
+// NOT tests: NOT r
+void funcao_teste_not32_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        not32_r(all_regs[i]);
+    }
+    nop();
+}
+
+// Test NOT [mem]
+void funcao_teste_not32_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        not32_m(all_mem_regs[i]);
+    }
+    nop();
+}
+
+// Test NOT [mem + offset]
+void funcao_teste_not32_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(off_vals) / sizeof(*off_vals); ++j)
+        {
+            not32_mi(all_mem_regs[i], off_vals[j]);
+        }
+        nop();
+    }
+    nop();
+}
+
+// Test NOT [mem + reg]
+void funcao_teste_not32_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            if (all_regs[j] == REG_ESP)
+                continue;
+            not32_mr(all_mem_regs[i], all_regs[j]);
+        }
+        nop();
+    }
+    nop();
+}

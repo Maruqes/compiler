@@ -547,16 +547,125 @@ void or32_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3)
 
 void not32_r(uint8_t reg)
 {
+    char *opcode_bytes = malloc(2);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xF7;
+    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, 2, reg);
+
+    OpCode new_opcode;
+    new_opcode.size = 2;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
 void not32_m(uint8_t reg)
 {
+    cant_use_rx((uint8_t[]){reg}, 1);
+
+    int sib_needed = precisa_sib(MOD_1BYTE_DISP, reg, 0);
+    char *opcode_bytes = malloc(3 + sib_needed);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xF7;
+    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, 2, reg);
+    set_sib(&opcode_bytes[2], 0, RM_SIB, reg);
+    opcode_bytes[2 + sib_needed] = 0x00;
+
+    OpCode new_opcode;
+    new_opcode.size = 3 + sib_needed;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
 void not32_mi(uint8_t reg, uint32_t offset)
 {
+    cant_use_rx((uint8_t[]){reg}, 1);
+
+    int sib_needed = precisa_sib(MOD_4BYTE_DISP, reg, 0);
+    char *opcode_bytes = malloc(2 + sib_needed + sizeof(uint32_t));
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xF7;
+    set_modrm(&opcode_bytes[1], MOD_4BYTE_DISP, 2, reg);
+    set_sib(&opcode_bytes[2], 0, RM_SIB, reg);
+    memcpy(&opcode_bytes[2 + sib_needed], &offset, sizeof(uint32_t));
+
+    OpCode new_opcode;
+    new_opcode.size = 2 + sib_needed + sizeof(uint32_t);
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
 void not32_mr(uint8_t reg_base, uint8_t reg_index)
 {
+    cant_use_rx((uint8_t[]){reg_base, reg_index}, 2);
+
+    if (reg_index == REG_ESP)
+    {
+        fprintf(stderr, "Error: Cannot use ESP as an index register.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    int sib_needed = precisa_sib(MOD_1BYTE_DISP, reg_base, 1);
+    char *opcode_bytes = malloc(3 + sib_needed);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xF7;
+    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, 2, RM_SIB);
+    set_sib(&opcode_bytes[2], 0, reg_index, reg_base);
+    opcode_bytes[2 + sib_needed] = 0x00;
+
+    OpCode new_opcode;
+    new_opcode.size = 3 + sib_needed;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
 }
