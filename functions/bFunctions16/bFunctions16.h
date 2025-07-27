@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include "../bFunctions64/bFunctions64.h"
 
 #define REG_AX 0
 #define REG_CX 1
@@ -28,6 +29,38 @@ void mov16_mi_i(uint8_t reg, int32_t offset, uint16_t value);
 void mov16_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2);
 void mov16_mr_i(uint8_t reg, uint8_t reg2, uint16_t value);
 void mov16_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3);
+
+// Compare functions
+void cmp16_r_r(uint8_t reg1, uint8_t reg2);
+void cmp16_r_i(uint8_t reg1, uint16_t imm16);
+void cmp16_r_m(uint8_t reg1, uint8_t reg2);
+void cmp16_r_mi(uint8_t reg1, uint8_t reg2, uint16_t offset);
+
+// Shift functions
+void lshfit16(uint8_t reg, uint8_t imm);
+void rshfit16(uint8_t reg, uint8_t imm);
+void lshfit16_reg(uint8_t reg1);
+void rshfit16_reg(uint8_t reg1);
+
+// Logical AND operations
+void and16_r_r(uint8_t reg1, uint8_t reg2);
+void and16_r_i(uint8_t reg, uint16_t imm16);
+void and16_r_m(uint8_t reg1, uint8_t reg2);
+void and16_r_mi(uint8_t reg1, uint8_t reg2, uint16_t offset);
+void and16_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
+
+// Logical OR operations
+void or16_r_r(uint8_t reg1, uint8_t reg2);
+void or16_r_i(uint8_t reg, uint16_t imm16);
+void or16_r_m(uint8_t reg1, uint8_t reg2);
+void or16_r_mi(uint8_t reg1, uint8_t reg2, uint16_t offset);
+void or16_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
+
+// Logical NOT operations
+void not16_r(uint8_t reg);
+void not16_m(uint8_t reg);
+void not16_mi(uint8_t reg, uint16_t offset);
+void not16_mr(uint8_t reg_base, uint8_t reg_index);
 
 // Test functions declarations
 void funcao_teste_mov16_r_i(void);

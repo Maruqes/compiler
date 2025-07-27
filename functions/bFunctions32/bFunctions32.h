@@ -26,6 +26,8 @@
 #define XMM6 0x6
 #define XMM7 0x7
 
+void cant_use_rx(uint8_t reg[], size_t size);
+
 void mov32_r_i(uint8_t reg_code, uint32_t value);
 void mov32_r_m(uint8_t reg, uint8_t mem_reg);
 void mov32_r_mi(uint8_t reg_dest, uint8_t reg_base, int32_t offset);
