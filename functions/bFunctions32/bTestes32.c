@@ -119,6 +119,84 @@ void funcao_teste_or32_r_mr(void)
     }
 }
 
+// XOR 32-bit tests
+
+// Test XOR r, r
+void funcao_teste_xor32_r_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            xor32_r_r(all_regs[i], all_regs[j]);
+        }
+        nop();
+    }
+}
+
+// Test XOR r, imm32
+void funcao_teste_xor32_r_i(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(imm32_vals) / sizeof(*imm32_vals); ++j)
+        {
+            xor32_r_i(all_regs[i], imm32_vals[j]);
+        }
+        nop();
+    }
+}
+
+// Test XOR r, [mem]
+void funcao_teste_xor32_r_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            xor32_r_m(all_regs[i], all_mem_regs[j]);
+        }
+        nop();
+    }
+}
+
+// Test XOR r, [mem + offset]
+void funcao_teste_xor32_r_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            for (unsigned k = 0; k < sizeof(off_vals) / sizeof(*off_vals); ++k)
+            {
+                xor32_r_mi(all_regs[i], all_mem_regs[j], off_vals[k]);
+            }
+            nop();
+        }
+        nop();
+    }
+}
+
+// Test XOR r, [mem + reg]
+void funcao_teste_xor32_r_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            for (unsigned k = 0; k < sizeof(all_regs) / sizeof(*all_regs); ++k)
+            {
+                if (all_regs[k] == REG_ESP)
+                    continue;
+                xor32_r_mr(all_regs[i], all_mem_regs[j], all_regs[k]);
+            }
+            nop();
+        }
+        nop();
+        nop();
+    }
+}
+
 // check 0
 //  Test de mov32_r_m: reg <- mem[reg]
 void funcao_teste_mov32_r_m(void)

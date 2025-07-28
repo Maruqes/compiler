@@ -80,6 +80,13 @@ void or32_r_m(uint8_t reg1, uint8_t reg2);
 void or32_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
 void or32_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
 
+// XOR 32-bit operations
+void xor32_r_r(uint8_t reg1, uint8_t reg2);
+void xor32_r_i(uint8_t reg, uint32_t imm32);
+void xor32_r_m(uint8_t reg1, uint8_t reg2);
+void xor32_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
+void xor32_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
+
 // NOT 32-bit operations
 void not32_r(uint8_t reg);
 void not32_m(uint8_t reg);
@@ -121,6 +128,14 @@ void funcao_teste_or32_r_i(void);
 void funcao_teste_or32_r_m(void);
 void funcao_teste_or32_r_mi(void);
 void funcao_teste_or32_r_mr(void);
+
+// XOR 32-bit tests
+void funcao_teste_xor32_r_r(void);
+void funcao_teste_xor32_r_i(void);
+void funcao_teste_xor32_r_m(void);
+void funcao_teste_xor32_r_mi(void);
+void funcao_teste_xor32_r_mr(void);
+
 // NOT 32-bit tests
 void funcao_teste_not32_r(void);
 void funcao_teste_not32_m(void);

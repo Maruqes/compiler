@@ -93,6 +93,13 @@ void funcao_teste_or64_r_m(void);
 void funcao_teste_or64_r_mi(void);
 void funcao_teste_or64_r_mr(void);
 
+// XOR test prototypes
+void funcao_teste_xor64_r_r(void);
+void funcao_teste_xor64_r_i(void);
+void funcao_teste_xor64_r_m(void);
+void funcao_teste_xor64_r_mi(void);
+void funcao_teste_xor64_r_mr(void);
+
 // NOT test prototypes
 void funcao_teste_not64_r(void);
 void funcao_teste_not64_m(void);
@@ -120,13 +127,19 @@ void and64_r_m(uint8_t reg1, uint8_t reg2);
 void and64_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
 void and64_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
 
-
 // OR utility function prototypes
 void or64_r_r(uint8_t reg1, uint8_t reg2);
 void or64_r_i(uint8_t reg, uint32_t imm32);
 void or64_r_m(uint8_t reg1, uint8_t reg2);
 void or64_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
 void or64_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
+
+// XOR utility function prototypes
+void xor64_r_r(uint8_t reg1, uint8_t reg2);
+void xor64_r_i(uint8_t reg, uint32_t imm32);
+void xor64_r_m(uint8_t reg1, uint8_t reg2);
+void xor64_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
+void xor64_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
 
 // NOT utility function prototypes
 void not64_r(uint8_t reg);

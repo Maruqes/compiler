@@ -1,13 +1,18 @@
 Funcionalidade,8-bit,16-bit,32-bit,64-bit,Comentário
+feito
 mov,✅,✅,✅,✅,"r/m, i"
 push/pop,✅,✅,✅,✅,automático via esp/rsp
 jmp,✅,✅,✅,✅,curto/longo
 cmp/jXX,✅,✅,✅,✅,usa flags
 lógica (and/or/xor/not),✅,✅,✅,✅,and/or/xor/not
-aritmética (add/sub/mul),✅,✅,✅,✅,add/sub/mul
-shifts (shl/shr/sar),✅,✅,✅,✅,shl/shr/sar
-call/ret,✅,✅,✅,✅,com stack
 syscalls,—,—,✅,✅,syscall/int 0x80
+shifts (shl/shr/sar),✅,✅,✅,✅,shl/shr/sar
+neg,✅,✅,✅,✅,negação rápida
+
+por fazer
+aritmética (add/sub/mul),✅,✅,✅,✅,add/sub/mul
+divisão (div/idiv),✅,✅,✅,✅,div inteiro
+call/ret,✅,✅,✅,✅,com stack
 rodata (constantes),—,—,—,✅,secção extra
 lea,—,✅,✅,✅,cálculo de endereço
 extensão sinal/zero (movsx/movzx),—,✅,✅,✅,cast implícito
@@ -18,8 +23,6 @@ test,✅,✅,✅,✅,and só flags
 rotações (rol/ror/rcl/rcr),✅,✅,✅,✅,bit ops
 scan bits (bsf/bsr/tzcnt/lzcnt),—,✅,✅,✅,primeiro/último bit
 xchg/lock,✅,✅,✅,✅,troca atómica
-divisão (div/idiv),✅,✅,✅,✅,div inteiro
-neg,✅,✅,✅,✅,negação rápida
 pushad/popad,—,—,✅,—,salva registos
 nop/pause,✅,✅,✅,✅,padding/spin
 instruções string (rep movs/stos/lods/cmps/scas),✅,✅,✅,✅,cópia/comparo blocos
