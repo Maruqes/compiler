@@ -30,6 +30,45 @@ void mov8_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2);
 void mov8_mr_i(uint8_t reg, uint8_t reg2, uint8_t value);
 void mov8_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3);
 
+// Compare functions declarations
+void cmp8_r_r(uint8_t reg1, uint8_t reg2);
+void cmp8_r_i(uint8_t reg1, uint8_t imm8);
+void cmp8_r_m(uint8_t reg1, uint8_t reg2);
+void cmp8_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
+
+// Shift functions declarations
+void lshfit8(uint8_t reg, uint8_t imm);
+void rshfit8(uint8_t reg, uint8_t imm);
+void lshfit8_reg(uint8_t reg1);
+void rshfit8_reg(uint8_t reg1);
+
+// AND functions declarations
+void and8_r_r(uint8_t reg1, uint8_t reg2);
+void and8_r_i(uint8_t reg, uint8_t imm8);
+void and8_r_m(uint8_t reg1, uint8_t reg2);
+void and8_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
+void and8_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
+
+// OR functions declarations
+void or8_r_r(uint8_t reg1, uint8_t reg2);
+void or8_r_i(uint8_t reg, uint8_t imm8);
+void or8_r_m(uint8_t reg1, uint8_t reg2);
+void or8_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
+void or8_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
+
+// NOT functions declarations
+void not8_r(uint8_t reg);
+void not8_m(uint8_t reg);
+void not8_mi(uint8_t reg, uint32_t offset);
+void not8_mr(uint8_t reg_base, uint8_t reg_index);
+
+// XOR functions declarations
+void xor8_r_r(uint8_t reg1, uint8_t reg2);
+void xor8_r_i(uint8_t reg, uint8_t imm8);
+void xor8_r_m(uint8_t reg1, uint8_t reg2);
+void xor8_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
+void xor8_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
+
 // Test functions declarations
 void funcao_teste_mov8_r_i(void);
 void funcao_teste_mov8_r_m(void);
@@ -42,5 +81,44 @@ void funcao_teste_mov8_mi_i(void);
 void funcao_teste_mov8_mi_r(void);
 void funcao_teste_mov8_mr_i(void);
 void funcao_teste_mov8_mr_r(void);
+
+// Compare test functions declarations
+void funcao_teste_cmp8_r_r(void);
+void funcao_teste_cmp8_r_i(void);
+void funcao_teste_cmp8_r_m(void);
+void funcao_teste_cmp8_r_mi(void);
+
+// Shift test functions declarations
+void funcao_teste_lshfit8(void);
+void funcao_teste_rshfit8(void);
+void funcao_teste_lshfit8_reg(void);
+void funcao_teste_rshfit8_reg(void);
+
+// AND test functions declarations
+void funcao_teste_and8_r_r(void);
+void funcao_teste_and8_r_i(void);
+void funcao_teste_and8_r_m(void);
+void funcao_teste_and8_r_mi(void);
+void funcao_teste_and8_r_mr(void);
+
+// OR test functions declarations
+void funcao_teste_or8_r_r(void);
+void funcao_teste_or8_r_i(void);
+void funcao_teste_or8_r_m(void);
+void funcao_teste_or8_r_mi(void);
+void funcao_teste_or8_r_mr(void);
+
+// NOT test functions declarations
+void funcao_teste_not8_r(void);
+void funcao_teste_not8_m(void);
+void funcao_teste_not8_mi(void);
+void funcao_teste_not8_mr(void);
+
+// XOR test functions declarations
+void funcao_teste_xor8_r_r(void);
+void funcao_teste_xor8_r_i(void);
+void funcao_teste_xor8_r_m(void);
+void funcao_teste_xor8_r_mi(void);
+void funcao_teste_xor8_r_mr(void);
 
 #endif // BFUNCTIONS8_H
