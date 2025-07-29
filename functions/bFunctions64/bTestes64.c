@@ -732,4 +732,277 @@ void funcao_teste_not64_mr(void)
     }
 }
 
-// TEST AND64 FUNCTIONS
+// TEST SUM64 FUNCTIONS
+
+// test sum64_r_r: add reg1, reg2
+void funcao_teste_sum64_r_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r1 = all_regs[i];
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            uint8_t r2 = all_regs[j];
+            sum64_r_r(r1, r2);
+        }
+        nop();
+    }
+}
+
+// test sum64_r_i: add reg, imm64
+void funcao_teste_sum64_r_i(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r = all_regs[i];
+        for (unsigned j = 0; j < sizeof(imm32_vals) / sizeof(*imm32_vals); ++j)
+        {
+            // Using 32-bit values since our implementation limits to 32-bit immediate
+            sum64_r_i(r, (uint64_t)imm32_vals[j]);
+        }
+        nop();
+    }
+}
+
+// test sum64_r_m: add reg, [reg]
+void funcao_teste_sum64_r_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r1 = all_regs[i];
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            uint8_t r2 = all_regs[j];
+            sum64_r_m(r1, r2);
+        }
+        nop();
+    }
+}
+
+// test sum64_r_mi: add reg, [reg + offset]
+void funcao_teste_sum64_r_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r1 = all_regs[i];
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            uint8_t r2 = all_regs[j];
+            for (unsigned k = 0; k < sizeof(off_vals) / sizeof(*off_vals); ++k)
+            {
+                // Convert signed to unsigned for the function call
+                uint64_t offset = (uint64_t)(uint32_t)off_vals[k];
+                sum64_r_mi(r1, r2, offset);
+            }
+        }
+        nop();
+    }
+}
+
+// test sum64_r_mr: add reg, [reg_base + reg_index]
+void funcao_teste_sum64_r_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r1 = all_regs[i];
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            uint8_t r2 = all_regs[j];
+            for (unsigned k = 0; k < sizeof(all_regs) / sizeof(*all_regs); ++k)
+            {
+                if (all_regs[k] == REG_RSP)
+                {
+                    continue; // Skip RSP as index register
+                }
+                uint8_t r3 = all_regs[k];
+                sum64_r_mr(r1, r2, r3);
+            }
+        }
+        nop();
+    }
+}
+
+// TEST SUB64 FUNCTIONS
+
+// test sub64_r_r: sub reg1, reg2
+void funcao_teste_sub64_r_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r1 = all_regs[i];
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            uint8_t r2 = all_regs[j];
+            sub64_r_r(r1, r2);
+        }
+        nop();
+    }
+}
+
+// test sub64_r_i: sub reg, imm64
+void funcao_teste_sub64_r_i(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r = all_regs[i];
+        for (unsigned j = 0; j < sizeof(imm32_vals) / sizeof(*imm32_vals); ++j)
+        {
+            // Using 32-bit values since our implementation limits to 32-bit immediate
+            sub64_r_i(r, (uint64_t)imm32_vals[j]);
+        }
+        nop();
+    }
+}
+
+// test sub64_r_m: sub reg, [reg]
+void funcao_teste_sub64_r_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r1 = all_regs[i];
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            uint8_t r2 = all_regs[j];
+            sub64_r_m(r1, r2);
+        }
+        nop();
+    }
+}
+
+// test sub64_r_mi: sub reg, [reg + offset]
+void funcao_teste_sub64_r_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r1 = all_regs[i];
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            uint8_t r2 = all_regs[j];
+            for (unsigned k = 0; k < sizeof(off_vals) / sizeof(*off_vals); ++k)
+            {
+                // Convert signed to unsigned for the function call
+                uint64_t offset = (uint64_t)(uint32_t)off_vals[k];
+                sub64_r_mi(r1, r2, offset);
+            }
+        }
+        nop();
+    }
+}
+
+// test sub64_r_mr: sub reg, [reg_base + reg_index]
+void funcao_teste_sub64_r_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r1 = all_regs[i];
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            uint8_t r2 = all_regs[j];
+            for (unsigned k = 0; k < sizeof(all_regs) / sizeof(*all_regs); ++k)
+            {
+                if (all_regs[k] == REG_RSP)
+                {
+                    continue; // Skip RSP as index register
+                }
+                uint8_t r3 = all_regs[k];
+                sub64_r_mr(r1, r2, r3);
+            }
+        }
+        nop();
+    }
+}
+
+// TEST MUL64 FUNCTIONS
+
+// test mul64_r_r: imul reg1, reg2
+void funcao_teste_mul64_r_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r1 = all_regs[i];
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            uint8_t r2 = all_regs[j];
+            mul64_r_r(r1, r2);
+        }
+        nop();
+    }
+}
+
+// test mul64_r_i: imul reg, imm64
+void funcao_teste_mul64_r_i(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r = all_regs[i];
+        for (unsigned j = 0; j < sizeof(imm64_vals) / sizeof(*imm64_vals); ++j)
+        {
+            uint64_t imm = imm64_vals[j];
+            if (imm <= UINT32_MAX) // Only test values that fit in 32 bits
+            {
+                mul64_r_i(r, imm);
+            }
+        }
+        nop();
+    }
+}
+
+// test mul64_r_m: imul reg, [reg]
+void funcao_teste_mul64_r_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r1 = all_regs[i];
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            uint8_t r2 = all_regs[j];
+            mul64_r_m(r1, r2);
+        }
+        nop();
+    }
+}
+
+// test mul64_r_mi: imul reg, [reg + offset]
+void funcao_teste_mul64_r_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r1 = all_regs[i];
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            uint8_t r2 = all_regs[j];
+            for (unsigned k = 0; k < sizeof(off_vals) / sizeof(*off_vals); ++k)
+            {
+                int32_t offset = off_vals[k];
+                if (offset >= 0) // Only test positive offsets for safety
+                {
+                    mul64_r_mi(r1, r2, (uint64_t)offset);
+                }
+            }
+        }
+        nop();
+    }
+}
+
+// test mul64_r_mr: imul reg, [reg_base + reg_index]
+void funcao_teste_mul64_r_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r1 = all_regs[i];
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            uint8_t r2 = all_regs[j];
+            for (unsigned k = 0; k < sizeof(all_regs) / sizeof(*all_regs); ++k)
+            {
+                if (all_regs[k] == REG_RSP)
+                {
+                    continue; // Skip RSP as index register
+                }
+                uint8_t r3 = all_regs[k];
+                mul64_r_mr(r1, r2, r3);
+            }
+        }
+        nop();
+    }
+}

@@ -48,6 +48,27 @@ void mov64_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2);
 void mov64_mr_i(uint8_t reg, uint8_t reg2, int32_t value);
 void mov64_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3);
 
+// Arithmetic operations
+void sum64_r_r(uint8_t reg1, uint8_t reg2);
+void sum64_r_i(uint8_t reg1, uint64_t imm64);
+void sum64_r_m(uint8_t reg1, uint8_t reg2);
+void sum64_r_mi(uint8_t reg1, uint8_t reg2, uint64_t offset);
+void sum64_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
+
+// Subtraction operations
+void sub64_r_r(uint8_t reg1, uint8_t reg2);
+void sub64_r_i(uint8_t reg1, uint64_t imm64);
+void sub64_r_m(uint8_t reg1, uint8_t reg2);
+void sub64_r_mi(uint8_t reg1, uint8_t reg2, uint64_t offset);
+void sub64_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
+
+// Multiplication operations
+void mul64_r_r(uint8_t reg1, uint8_t reg2);
+void mul64_r_i(uint8_t reg1, uint64_t imm64);
+void mul64_r_m(uint8_t reg1, uint8_t reg2);
+void mul64_r_mi(uint8_t reg1, uint8_t reg2, uint64_t offset);
+void mul64_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
+
 // Function prototypes for system calls
 void syscall_instruction();
 
@@ -63,6 +84,27 @@ void funcao_teste_mov64_mi_i(void);
 void funcao_teste_mov64_mi_r(void);
 void funcao_teste_mov64_mr_i(void);
 void funcao_teste_mov64_mr_r(void);
+
+// Arithmetic test functions
+void funcao_teste_sum64_r_r(void);
+void funcao_teste_sum64_r_i(void);
+void funcao_teste_sum64_r_m(void);
+void funcao_teste_sum64_r_mi(void);
+void funcao_teste_sum64_r_mr(void);
+
+// Subtraction test functions
+void funcao_teste_sub64_r_r(void);
+void funcao_teste_sub64_r_i(void);
+void funcao_teste_sub64_r_m(void);
+void funcao_teste_sub64_r_mi(void);
+void funcao_teste_sub64_r_mr(void);
+
+// Multiplication test functions
+void funcao_teste_mul64_r_r(void);
+void funcao_teste_mul64_r_i(void);
+void funcao_teste_mul64_r_m(void);
+void funcao_teste_mul64_r_mi(void);
+void funcao_teste_mul64_r_mr(void);
 
 void funcao_teste_cmp64_r_r(void);
 void funcao_teste_cmp64_r_i(void);

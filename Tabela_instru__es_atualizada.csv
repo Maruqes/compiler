@@ -1,5 +1,4 @@
 Funcionalidade,8-bit,16-bit,32-bit,64-bit,Comentário
-feito
 mov,✅,✅,✅,✅,"r/m, i"
 push/pop,✅,✅,✅,✅,automático via esp/rsp
 jmp,✅,✅,✅,✅,curto/longo
@@ -9,7 +8,6 @@ syscalls,—,—,✅,✅,syscall/int 0x80
 shifts (shl/shr/sar),✅,✅,✅,✅,shl/shr/sar
 neg,✅,✅,✅,✅,negação rápida
 
-por fazer
 aritmética (add/sub/mul),✅,✅,✅,✅,add/sub/mul
 divisão (div/idiv),✅,✅,✅,✅,div inteiro
 call/ret,✅,✅,✅,✅,com stack
