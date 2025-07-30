@@ -69,6 +69,19 @@ void mul64_r_m(uint8_t reg1, uint8_t reg2);
 void mul64_r_mi(uint8_t reg1, uint8_t reg2, uint64_t offset);
 void mul64_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
 
+// Division operations (multi-operand)
+void div64_r_r(uint8_t reg1, uint8_t reg2);
+void div64_r_i(uint8_t reg1, uint64_t imm64);
+void div64_r_m(uint8_t reg1, uint8_t reg2);
+void div64_r_mi(uint8_t reg1, uint8_t reg2, uint64_t offset);
+void div64_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
+
+// Division operations (single-operand IDIV)
+void div64_r(uint8_t reg1);
+void div64_m(uint8_t reg1);
+void div64_mi(uint8_t reg2, uint64_t offset);
+void div64_mr(uint8_t reg2, uint8_t reg3);
+
 // Function prototypes for system calls
 void syscall_instruction();
 
@@ -105,6 +118,12 @@ void funcao_teste_mul64_r_i(void);
 void funcao_teste_mul64_r_m(void);
 void funcao_teste_mul64_r_mi(void);
 void funcao_teste_mul64_r_mr(void);
+
+// Division test functions
+void funcao_teste_div64_r(void);
+void funcao_teste_div64_m(void);
+void funcao_teste_div64_mi(void);
+void funcao_teste_div64_mr(void);
 
 void funcao_teste_cmp64_r_r(void);
 void funcao_teste_cmp64_r_i(void);

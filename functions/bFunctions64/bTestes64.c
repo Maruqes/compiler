@@ -1006,3 +1006,64 @@ void funcao_teste_mul64_r_mr(void)
         nop();
     }
 }
+
+// TEST SINGLE-OPERAND DIV64 FUNCTIONS
+
+// test div64_r: idiv reg (single operand IDIV)
+void funcao_teste_div64_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r = all_regs[i];
+        div64_r(r);
+        nop();
+    }
+}
+
+// test div64_m: idiv [reg] (single operand IDIV)
+void funcao_teste_div64_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r = all_regs[i];
+        div64_m(r);
+        nop();
+    }
+}
+
+// test div64_mi: idiv [reg + offset] (single operand IDIV)
+void funcao_teste_div64_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r = all_regs[i];
+        for (unsigned j = 0; j < sizeof(off_vals) / sizeof(*off_vals); ++j)
+        {
+            int32_t offset = off_vals[j];
+            if (offset >= 0) // Only test positive offsets for safety
+            {
+                div64_mi(r, (uint64_t)offset);
+            }
+        }
+        nop();
+    }
+}
+
+// test div64_mr: idiv [reg_base + reg_index] (single operand IDIV)
+void funcao_teste_div64_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r1 = all_regs[i];
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            if (all_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as index register
+            }
+            uint8_t r2 = all_regs[j];
+            div64_mr(r1, r2);
+        }
+        nop();
+    }
+}

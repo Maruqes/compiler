@@ -590,3 +590,159 @@ void mul64_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3)
 
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
+
+void div64_r(uint8_t reg1)
+{
+    // IDIV r64 - divides RDX:RAX by reg1
+    // Quotient -> RAX, Remainder -> RDX
+    char *opcode_bytes = malloc(3);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    // Set REX prefix: W=1 (64-bit), R=0, X=0, B=reg1 high bit
+    set_rex_prefix(opcode_bytes, 1, 0, 0, (reg1 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xF7;                               // IDIV r/m64 opcode
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 7, reg1); // /7 indicates IDIV operation
+
+    OpCode new_opcode;
+    new_opcode.size = 3;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void div64_m(uint8_t reg1)
+{
+    // IDIV m64 - divides RDX:RAX by memory operand [reg1]
+    int usa_sib = precisa_sib(MOD_1BYTE_DISP, reg1, 0);
+
+    char *opcode_bytes = malloc(4 + usa_sib);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    // Set REX prefix: W=1 (64-bit), R=0, X=0, B=reg1 high bit
+    set_rex_prefix(opcode_bytes, 1, 0, 0, (reg1 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xF7;                                                  // IDIV r/m64 opcode
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, 7, usa_sib ? RM_SIB : reg1); // /7 indicates IDIV
+
+    if (usa_sib)
+    {
+        set_sib(&opcode_bytes[3], SCALE_1, RM_SIB, reg1);
+    }
+    opcode_bytes[3 + usa_sib] = 0x00; // 1-byte displacement (0)
+
+    OpCode new_opcode;
+    new_opcode.size = 4 + usa_sib;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void div64_mi(uint8_t reg2, uint64_t offset)
+{
+    // IDIV m64 - divides RDX:RAX by memory operand [reg2 + offset]
+    if (offset > UINT32_MAX)
+    {
+        perror("Offset > UINT32_MAX not supported in div64_mi");
+        exit(EXIT_FAILURE);
+    }
+
+    int usa_sib = precisa_sib(MOD_4BYTE_DISP, reg2, 0);
+    uint32_t offset32 = (uint32_t)offset;
+
+    char *opcode_bytes = malloc(7 + usa_sib);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    // Set REX prefix: W=1 (64-bit), R=0, X=0, B=reg2 high bit
+    set_rex_prefix(opcode_bytes, 1, 0, 0, (reg2 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xF7;                                                  // IDIV r/m64 opcode
+    set_modrm(&opcode_bytes[2], MOD_4BYTE_DISP, 7, usa_sib ? RM_SIB : reg2); // /7 indicates IDIV
+
+    if (usa_sib)
+    {
+        set_sib(&opcode_bytes[3], SCALE_1, RM_SIB, reg2);
+    }
+    memcpy(&opcode_bytes[3 + usa_sib], &offset32, sizeof(uint32_t));
+
+    OpCode new_opcode;
+    new_opcode.size = 7 + usa_sib;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void div64_mr(uint8_t reg2, uint8_t reg3)
+{
+    // IDIV m64 - divides RDX:RAX by memory operand [reg2 + reg3]
+    if (reg3 == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as an index register.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char *opcode_bytes = malloc(5);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    // Set REX prefix: W=1 (64-bit), R=0, X=reg3 high bit, B=reg2 high bit
+    set_rex_prefix(opcode_bytes, 1, 0, (reg3 >= REG_R8) ? 1 : 0, (reg2 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xF7;                                 // IDIV r/m64 opcode
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, 7, RM_SIB); // /7 indicates IDIV, use SIB byte
+    set_sib(&opcode_bytes[3], SCALE_1, reg3, reg2);         // [reg2 + reg3*1]
+    opcode_bytes[4] = 0x00;                                 // 1-byte displacement (0)
+
+    OpCode new_opcode;
+    new_opcode.size = 5;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
