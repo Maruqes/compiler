@@ -204,41 +204,10 @@ void printHello()
     syscall_instruction();  // invoke syscall
 }
 
-void write_code()
+// old main
+int write_elf()
 {
-    funcao_teste_xor8_r_r();
-    funcao_teste_xor8_r_i();
-    funcao_teste_xor8_r_m();
-    funcao_teste_xor8_r_mi();
-    funcao_teste_xor8_r_mr();
-
-    create_label("exit_label");
-    mov64_r_i(REG_RAX, 0x3c);
-    mov64_r_i(REG_RDI, 21);
-    syscall_instruction();
-}
-
-int main(int argc, char *argv[])
-{
-    // proximos passos:
-    /*
-    desenvolver 64/32/16/8 r/m/i
-    criar labels e jumps
-    conditionais em 64/32/16/8
-    criar readonly parts
-    desenvolver 64/32/16/8 push/pop
-    desenvolver 64/32/16/8 arithmetic
-    desenvolver 64/32/16/8 logic(ands/ors/xors)
-    desenvolver 64/32/16/8 shifts
-
-    ter cuidado com sp/bp
-    */
-
-    write_code();
-
-    add_string_constant("string1", "Hello, World!\n");
-    add_string_constant("string2", "AII, MEUU!\n");
-    add_string_constant("string3", "DEUSSS, JESUS CHRIST!\n");
+    // write_code();
 
     int fd = create_elf();
 

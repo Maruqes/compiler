@@ -608,3 +608,297 @@ void funcao_teste_not32_mr(void)
     }
     nop();
 }
+
+// ============================================================================
+// ARITHMETIC TESTS (SUM, SUB, MUL, DIV)
+// ============================================================================
+
+// SUM 32-bit tests
+
+// Test SUM r, r
+void funcao_teste_sum32_r_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            sum32_r_r(all_regs[i], all_regs[j]);
+        }
+        nop();
+    }
+}
+
+// Test SUM r, imm32
+void funcao_teste_sum32_r_i(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(imm32_vals) / sizeof(*imm32_vals); ++j)
+        {
+            sum32_r_i(all_regs[i], imm32_vals[j]);
+        }
+        nop();
+    }
+}
+
+// Test SUM r, [mem]
+void funcao_teste_sum32_r_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            sum32_r_m(all_regs[i], all_mem_regs[j]);
+        }
+        nop();
+    }
+}
+
+// Test SUM r, [mem + offset]
+void funcao_teste_sum32_r_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            for (unsigned k = 0; k < sizeof(off_vals) / sizeof(*off_vals); ++k)
+            {
+                sum32_r_mi(all_regs[i], all_mem_regs[j], (uint32_t)off_vals[k]);
+            }
+            nop();
+        }
+        nop();
+        nop();
+    }
+}
+
+// Test SUM r, [mem + reg]
+void funcao_teste_sum32_r_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            for (unsigned k = 0; k < sizeof(all_regs) / sizeof(*all_regs); ++k)
+            {
+                if (all_regs[k] == REG_ESP)
+                    continue;
+                sum32_r_mr(all_regs[i], all_mem_regs[j], all_regs[k]);
+            }
+            nop();
+        }
+        nop();
+        nop();
+    }
+}
+
+// SUB 32-bit tests
+
+// Test SUB r, r
+void funcao_teste_sub32_r_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            sub32_r_r(all_regs[i], all_regs[j]);
+        }
+        nop();
+    }
+}
+
+// Test SUB r, imm32
+void funcao_teste_sub32_r_i(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(imm32_vals) / sizeof(*imm32_vals); ++j)
+        {
+            sub32_r_i(all_regs[i], imm32_vals[j]);
+        }
+        nop();
+    }
+}
+
+// Test SUB r, [mem]
+void funcao_teste_sub32_r_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            sub32_r_m(all_regs[i], all_mem_regs[j]);
+        }
+        nop();
+    }
+}
+
+// Test SUB r, [mem + offset]
+void funcao_teste_sub32_r_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            for (unsigned k = 0; k < sizeof(off_vals) / sizeof(*off_vals); ++k)
+            {
+                sub32_r_mi(all_regs[i], all_mem_regs[j], (uint32_t)off_vals[k]);
+            }
+            nop();
+        }
+        nop();
+        nop();
+    }
+}
+
+// Test SUB r, [mem + reg]
+void funcao_teste_sub32_r_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            for (unsigned k = 0; k < sizeof(all_regs) / sizeof(*all_regs); ++k)
+            {
+                if (all_regs[k] == REG_ESP)
+                    continue;
+                sub32_r_mr(all_regs[i], all_mem_regs[j], all_regs[k]);
+            }
+            nop();
+        }
+        nop();
+        nop();
+    }
+}
+
+// MUL 32-bit tests
+
+// Test MUL r, r
+void funcao_teste_mul32_r_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            mul32_r_r(all_regs[i], all_regs[j]);
+        }
+        nop();
+    }
+}
+
+// Test MUL r, imm32
+void funcao_teste_mul32_r_i(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(imm32_vals) / sizeof(*imm32_vals); ++j)
+        {
+            mul32_r_i(all_regs[i], imm32_vals[j]);
+        }
+        nop();
+    }
+}
+
+// Test MUL r, [mem]
+void funcao_teste_mul32_r_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            mul32_r_m(all_regs[i], all_mem_regs[j]);
+        }
+        nop();
+    }
+}
+
+// Test MUL r, [mem + offset]
+void funcao_teste_mul32_r_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            for (unsigned k = 0; k < sizeof(off_vals) / sizeof(*off_vals); ++k)
+            {
+                mul32_r_mi(all_regs[i], all_mem_regs[j], (uint32_t)off_vals[k]);
+            }
+            nop();
+        }
+        nop();
+        nop();
+    }
+}
+
+// Test MUL r, [mem + reg]
+void funcao_teste_mul32_r_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            for (unsigned k = 0; k < sizeof(all_regs) / sizeof(*all_regs); ++k)
+            {
+                if (all_regs[k] == REG_ESP)
+                    continue;
+                mul32_r_mr(all_regs[i], all_mem_regs[j], all_regs[k]);
+            }
+            nop();
+        }
+        nop();
+        nop();
+    }
+}
+
+// DIV 32-bit tests
+
+// Test DIV r (divides EDX:EAX by r)
+void funcao_teste_div32_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        div32_r(all_regs[i]);
+    }
+    nop();
+}
+
+// Test DIV [mem] (divides EDX:EAX by [mem])
+void funcao_teste_div32_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        div32_m(all_mem_regs[i]);
+    }
+    nop();
+}
+
+// Test DIV [mem + offset] (divides EDX:EAX by [mem + offset])
+void funcao_teste_div32_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(off_vals) / sizeof(*off_vals); ++j)
+        {
+            div32_mi(all_mem_regs[i], (uint32_t)off_vals[j]);
+        }
+        nop();
+    }
+    nop();
+}
+
+// Test DIV [mem + reg] (divides EDX:EAX by [mem + reg])
+void funcao_teste_div32_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            if (all_regs[j] == REG_ESP)
+                continue;
+            div32_mr(all_mem_regs[i], all_regs[j]);
+        }
+        nop();
+    }
+    nop();
+}
+

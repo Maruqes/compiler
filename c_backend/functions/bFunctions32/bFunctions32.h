@@ -60,6 +60,30 @@ void setg_r(uint8_t reg);
 void shl_reg_imm(uint8_t reg, uint8_t imm);
 void shr_reg_imm(uint8_t reg, uint8_t imm);
 
+// Arithmetic operations
+void sum32_r_r(uint8_t reg1, uint8_t reg2);
+void sum32_r_i(uint8_t reg1, uint32_t imm32);
+void sum32_r_m(uint8_t reg1, uint8_t reg2);
+void sum32_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
+void sum32_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
+
+void sub32_r_r(uint8_t reg1, uint8_t reg2);
+void sub32_r_i(uint8_t reg1, uint32_t imm32);
+void sub32_r_m(uint8_t reg1, uint8_t reg2);
+void sub32_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
+void sub32_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
+
+void mul32_r_r(uint8_t reg1, uint8_t reg2);
+void mul32_r_i(uint8_t reg1, uint32_t imm32);
+void mul32_r_m(uint8_t reg1, uint8_t reg2);
+void mul32_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
+void mul32_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
+
+void div32_r(uint8_t reg1);
+void div32_m(uint8_t reg1);
+void div32_mi(uint8_t reg2, uint32_t offset);
+void div32_mr(uint8_t reg2, uint8_t reg3);
+
 // utils
 void cmp32_r_r(uint8_t reg1, uint8_t reg2);
 void cmp32_r_i(uint8_t reg1, uint32_t imm32);
@@ -141,5 +165,33 @@ void funcao_teste_not32_r(void);
 void funcao_teste_not32_m(void);
 void funcao_teste_not32_mi(void);
 void funcao_teste_not32_mr(void);
+
+// Arithmetic 32-bit tests (SUM, SUB, MUL, DIV)
+// SUM 32-bit tests
+void funcao_teste_sum32_r_r(void);
+void funcao_teste_sum32_r_i(void);
+void funcao_teste_sum32_r_m(void);
+void funcao_teste_sum32_r_mi(void);
+void funcao_teste_sum32_r_mr(void);
+
+// SUB 32-bit tests
+void funcao_teste_sub32_r_r(void);
+void funcao_teste_sub32_r_i(void);
+void funcao_teste_sub32_r_m(void);
+void funcao_teste_sub32_r_mi(void);
+void funcao_teste_sub32_r_mr(void);
+
+// MUL 32-bit tests
+void funcao_teste_mul32_r_r(void);
+void funcao_teste_mul32_r_i(void);
+void funcao_teste_mul32_r_m(void);
+void funcao_teste_mul32_r_mi(void);
+void funcao_teste_mul32_r_mr(void);
+
+// DIV 32-bit tests
+void funcao_teste_div32_r(void);
+void funcao_teste_div32_m(void);
+void funcao_teste_div32_mi(void);
+void funcao_teste_div32_mr(void);
 
 #endif // BFUNCTIONS32_H
