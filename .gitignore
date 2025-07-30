@@ -4,4 +4,4 @@ a.out
 .vscode/
 .gdb_history
 .prettierignore
-/bin/
+/bin//bin/
