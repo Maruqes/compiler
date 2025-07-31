@@ -41,10 +41,6 @@ func main() {
 	C.add_string_constant(cStr2, AII_MEUU)
 	C.add_string_constant(cStr3, DEUSSS_JESUS)
 
-	C.funcao_teste_div32_r()
-	C.funcao_teste_div32_m()
-	C.funcao_teste_div32_mi()
-	C.funcao_teste_div32_mr()
 
 	C.write_elf()
 

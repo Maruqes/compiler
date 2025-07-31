@@ -686,3 +686,356 @@ void funcao_teste_xor16_r_mr(void)
         nop();
     }
 }
+
+// ============================================================================
+// ARITHMETIC TESTS (SUM, SUB, MUL, DIV)
+// ============================================================================
+
+// SUM 16-bit tests
+
+// Test SUM r, r
+void funcao_teste_sum16_r_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            sum16_r_r(all_regs[i], all_regs[j]);
+        }
+        nop();
+    }
+}
+
+// Test SUM r, imm16
+void funcao_teste_sum16_r_i(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(imm16_vals) / sizeof(*imm16_vals); ++j)
+        {
+            sum16_r_i(all_regs[i], imm16_vals[j]);
+        }
+        nop();
+    }
+}
+
+// Test SUM r, [mem]
+void funcao_teste_sum16_r_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as it cannot be used as a memory operand
+            }
+            sum16_r_m(all_regs[i], all_mem_regs[j]);
+        }
+        nop();
+    }
+}
+
+// Test SUM r, [mem + offset]
+void funcao_teste_sum16_r_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as it cannot be used as a memory operand
+            }
+            for (unsigned k = 0; k < sizeof(off_vals) / sizeof(*off_vals); ++k)
+            {
+                sum16_r_mi(all_regs[i], all_mem_regs[j], (uint32_t)off_vals[k]);
+            }
+            nop();
+        }
+        nop();
+        nop();
+    }
+}
+
+// Test SUM r, [mem + reg]
+void funcao_teste_sum16_r_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as it cannot be used as a memory operand
+            }
+            for (unsigned k = 0; k < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++k)
+            {
+                if (all_mem_regs[k] == REG_RSP)
+                {
+                    continue; // Skip RSP as it cannot be used as an index register
+                }
+                sum16_r_mr(all_regs[i], all_mem_regs[j], all_mem_regs[k]);
+            }
+            nop();
+        }
+        nop();
+        nop();
+    }
+}
+
+// SUB 16-bit tests
+
+// Test SUB r, r
+void funcao_teste_sub16_r_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            sub16_r_r(all_regs[i], all_regs[j]);
+        }
+        nop();
+    }
+}
+
+// Test SUB r, imm16
+void funcao_teste_sub16_r_i(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(imm16_vals) / sizeof(*imm16_vals); ++j)
+        {
+            sub16_r_i(all_regs[i], imm16_vals[j]);
+        }
+        nop();
+    }
+}
+
+// Test SUB r, [mem]
+void funcao_teste_sub16_r_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as it cannot be used as a memory operand
+            }
+            sub16_r_m(all_regs[i], all_mem_regs[j]);
+        }
+        nop();
+    }
+}
+
+// Test SUB r, [mem + offset]
+void funcao_teste_sub16_r_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as it cannot be used as a memory operand
+            }
+            for (unsigned k = 0; k < sizeof(off_vals) / sizeof(*off_vals); ++k)
+            {
+                sub16_r_mi(all_regs[i], all_mem_regs[j], (uint32_t)off_vals[k]);
+            }
+            nop();
+        }
+        nop();
+        nop();
+    }
+}
+
+// Test SUB r, [mem + reg]
+void funcao_teste_sub16_r_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as it cannot be used as a memory operand
+            }
+            for (unsigned k = 0; k < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++k)
+            {
+                if (all_mem_regs[k] == REG_RSP)
+                {
+                    continue; // Skip RSP as it cannot be used as an index register
+                }
+                sub16_r_mr(all_regs[i], all_mem_regs[j], all_mem_regs[k]);
+            }
+            nop();
+        }
+        nop();
+        nop();
+    }
+}
+
+// MUL 16-bit tests
+
+// Test MUL r, r
+void funcao_teste_mul16_r_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            mul16_r_r(all_regs[i], all_regs[j]);
+        }
+        nop();
+    }
+}
+
+// Test MUL r, imm16
+void funcao_teste_mul16_r_i(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(imm16_vals) / sizeof(*imm16_vals); ++j)
+        {
+            mul16_r_i(all_regs[i], imm16_vals[j]);
+        }
+        nop();
+    }
+}
+
+// Test MUL r, [mem]
+void funcao_teste_mul16_r_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as it cannot be used as a memory operand
+            }
+            mul16_r_m(all_regs[i], all_mem_regs[j]);
+        }
+        nop();
+    }
+}
+
+// Test MUL r, [mem + offset]
+void funcao_teste_mul16_r_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as it cannot be used as a memory operand
+            }
+            for (unsigned k = 0; k < sizeof(off_vals) / sizeof(*off_vals); ++k)
+            {
+                mul16_r_mi(all_regs[i], all_mem_regs[j], (uint32_t)off_vals[k]);
+            }
+            nop();
+        }
+        nop();
+        nop();
+    }
+}
+
+// Test MUL r, [mem + reg]
+void funcao_teste_mul16_r_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as it cannot be used as a memory operand
+            }
+            for (unsigned k = 0; k < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++k)
+            {
+                if (all_mem_regs[k] == REG_RSP)
+                {
+                    continue; // Skip RSP as it cannot be used as an index register
+                }
+                mul16_r_mr(all_regs[i], all_mem_regs[j], all_mem_regs[k]);
+            }
+            nop();
+        }
+        nop();
+        nop();
+    }
+}
+
+// DIV 16-bit tests
+
+// Test DIV r (divides DX:AX by r)
+void funcao_teste_div16_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        // Note: Division requires proper setup of DX:AX before calling
+        // In a real scenario, you'd need to set up the dividend properly
+        div16_r(all_regs[i]);
+        nop();
+    }
+}
+
+// Test DIV [mem] (divides DX:AX by [mem])
+void funcao_teste_div16_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        if (all_mem_regs[i] == REG_RSP)
+        {
+            continue; // Skip RSP as it cannot be used as a memory operand
+        }
+        div16_m(all_mem_regs[i]);
+        nop();
+    }
+}
+
+// Test DIV [mem + offset] (divides DX:AX by [mem + offset])
+void funcao_teste_div16_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        if (all_mem_regs[i] == REG_RSP)
+        {
+            continue; // Skip RSP as it cannot be used as a memory operand
+        }
+        for (unsigned j = 0; j < sizeof(off_vals) / sizeof(*off_vals); ++j)
+        {
+            // Only test positive offsets for safety
+            if (off_vals[j] >= 0)
+            {
+                div16_mi(all_mem_regs[i], (uint32_t)off_vals[j]);
+            }
+        }
+        nop();
+    }
+}
+
+// Test DIV [mem + reg] (divides DX:AX by [mem + reg])
+void funcao_teste_div16_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        if (all_mem_regs[i] == REG_RSP)
+        {
+            continue; // Skip RSP as it cannot be used as a memory operand
+        }
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as it cannot be used as an index register
+            }
+            div16_mr(all_mem_regs[i], all_mem_regs[j]);
+        }
+        nop();
+    }
+}

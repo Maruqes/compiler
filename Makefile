@@ -7,8 +7,10 @@ SOURCES := c_backend/compiler.c \
            c_backend/functions/bFunctions8/bFunctions8.c \
            c_backend/functions/bFunctions8/utils8.c \
            c_backend/functions/bFunctions8/bTestes8.c \
+           c_backend/functions/bFunctions8/arithmetics8.c \
            c_backend/functions/bFunctions16/bFunctions16.c \
            c_backend/functions/bFunctions16/utils16.c \
+           c_backend/functions/bFunctions16/arithmetics16.c \
            c_backend/functions/bFunctions16/bTestes16.c \
            c_backend/functions/bFunctions32/bFunctions32.c \
            c_backend/functions/bFunctions32/utils32.c \
