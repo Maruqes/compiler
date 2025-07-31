@@ -694,3 +694,325 @@ void funcao_teste_xor8_r_mr(void)
         nop();
     }
 }
+
+// ============================================================================
+// ARITHMETIC TESTS (SUM, SUB, MUL, DIV)
+// ============================================================================
+
+// SUM 8-bit tests
+
+// Test SUM r, r
+void funcao_teste_sum8_r_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            sum8_r_r(all_regs[i], all_regs[j]);
+        }
+        nop();
+    }
+}
+
+// Test SUM r, imm8
+void funcao_teste_sum8_r_i(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r = all_regs[i];
+        for (unsigned j = 0; j < sizeof(imm8_vals) / sizeof(*imm8_vals); ++j)
+        {
+            sum8_r_i(r, imm8_vals[j]);
+        }
+        nop();
+    }
+}
+
+// Test SUM r, [mem]
+void funcao_teste_sum8_r_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as memory register
+            }
+            sum8_r_m(all_regs[i], all_mem_regs[j]);
+        }
+        nop();
+    }
+}
+
+// Test SUM r, [mem + offset]
+void funcao_teste_sum8_r_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as memory register
+            }
+            for (unsigned k = 0; k < sizeof(off_vals) / sizeof(*off_vals); ++k)
+            {
+                sum8_r_mi(all_regs[i], all_mem_regs[j], off_vals[k]);
+            }
+            nop();
+        }
+        nop();
+        nop();
+    }
+}
+
+// Test SUM r, [mem + reg]
+void funcao_teste_sum8_r_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as base register
+            }
+            for (unsigned k = 0; k < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++k)
+            {
+                if (all_mem_regs[k] == REG_RSP)
+                {
+                    continue; // Skip RSP as index register
+                }
+                sum8_r_mr(all_regs[i], all_mem_regs[j], all_mem_regs[k]);
+            }
+            nop();
+        }
+        nop();
+        nop();
+    }
+}
+
+// SUB 8-bit tests
+
+// Test SUB r, r
+void funcao_teste_sub8_r_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            sub8_r_r(all_regs[i], all_regs[j]);
+        }
+        nop();
+    }
+}
+
+// Test SUB r, imm8
+void funcao_teste_sub8_r_i(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        uint8_t r = all_regs[i];
+        for (unsigned j = 0; j < sizeof(imm8_vals) / sizeof(*imm8_vals); ++j)
+        {
+            sub8_r_i(r, imm8_vals[j]);
+        }
+        nop();
+    }
+}
+
+// Test SUB r, [mem]
+void funcao_teste_sub8_r_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as memory register
+            }
+            sub8_r_m(all_regs[i], all_mem_regs[j]);
+        }
+        nop();
+    }
+}
+
+// Test SUB r, [mem + offset]
+void funcao_teste_sub8_r_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as memory register
+            }
+            for (unsigned k = 0; k < sizeof(off_vals) / sizeof(*off_vals); ++k)
+            {
+                sub8_r_mi(all_regs[i], all_mem_regs[j], off_vals[k]);
+            }
+            nop();
+        }
+        nop();
+        nop();
+    }
+}
+
+// Test SUB r, [mem + reg]
+void funcao_teste_sub8_r_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as base register
+            }
+            for (unsigned k = 0; k < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++k)
+            {
+                if (all_mem_regs[k] == REG_RSP)
+                {
+                    continue; // Skip RSP as index register
+                }
+                sub8_r_mr(all_regs[i], all_mem_regs[j], all_mem_regs[k]);
+            }
+            nop();
+        }
+        nop();
+        nop();
+    }
+}
+
+// MUL 8-bit tests
+
+// Test MUL r (multiplies AL by r)
+void funcao_teste_mul8_r(void)
+{
+    for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+    {
+        mul8_r(all_regs[j]);
+    }
+}
+
+// Test MUL [mem] (multiplies AL by [mem])
+void funcao_teste_mul8_m(void)
+{
+    for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+    {
+        if (all_mem_regs[j] == REG_RSP)
+        {
+            continue; // Skip RSP as memory register
+        }
+        mul8_m(all_mem_regs[j]);
+    }
+}
+
+// Test MUL [mem + offset] (multiplies AL by [mem + offset])
+void funcao_teste_mul8_mi(void)
+{
+    for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+    {
+        if (all_mem_regs[j] == REG_RSP)
+        {
+            continue; // Skip RSP as memory register
+        }
+        for (unsigned k = 0; k < sizeof(off_vals) / sizeof(*off_vals); ++k)
+        {
+            mul8_mi(all_mem_regs[j], off_vals[k]);
+        }
+        nop();
+    }
+    nop();
+}
+
+// Test MUL [mem + reg] (multiplies AL by [mem + reg])
+void funcao_teste_mul8_mr(void)
+{
+    for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+    {
+        if (all_mem_regs[j] == REG_RSP)
+        {
+            continue; // Skip RSP as base register
+        }
+        for (unsigned k = 0; k < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++k)
+        {
+            if (all_mem_regs[k] == REG_RSP)
+            {
+                continue; // Skip RSP as index register
+            }
+            mul8_mr(all_mem_regs[j], all_mem_regs[k]);
+        }
+        nop();
+    }
+    nop();
+}
+
+// DIV 8-bit tests
+
+// Test DIV r (divides AX by r)
+void funcao_teste_div8_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        div8_r(all_regs[i]);
+        nop();
+    }
+}
+
+// Test DIV [mem] (divides AX by [mem])
+void funcao_teste_div8_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        if (all_mem_regs[i] == REG_RSP)
+        {
+            continue; // Skip RSP as memory register
+        }
+        div8_m(all_mem_regs[i]);
+        nop();
+    }
+}
+
+// Test DIV [mem + offset] (divides AX by [mem + offset])
+void funcao_teste_div8_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        if (all_mem_regs[i] == REG_RSP)
+        {
+            continue; // Skip RSP as memory register
+        }
+        for (unsigned j = 0; j < sizeof(off_vals) / sizeof(*off_vals); ++j)
+        {
+            div8_mi(all_mem_regs[i], off_vals[j]);
+        }
+        nop();
+        nop();
+    }
+}
+
+// Test DIV [mem + reg] (divides AX by [mem + reg])
+void funcao_teste_div8_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        if (all_mem_regs[i] == REG_RSP)
+        {
+            continue; // Skip RSP as base register
+        }
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as index register
+            }
+            div8_mr(all_mem_regs[i], all_mem_regs[j]);
+        }
+        nop();
+        nop();
+    }
+}

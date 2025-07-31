@@ -41,6 +41,10 @@ func main() {
 	C.add_string_constant(cStr2, AII_MEUU)
 	C.add_string_constant(cStr3, DEUSSS_JESUS)
 
+	C.funcao_teste_mul8_r()
+	C.funcao_teste_mul8_m()
+	C.funcao_teste_mul8_mi()
+	C.funcao_teste_mul8_mr()
 
 	C.write_elf()
 

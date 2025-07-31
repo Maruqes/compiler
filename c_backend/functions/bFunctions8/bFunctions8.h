@@ -82,10 +82,10 @@ void sub8_r_m(uint8_t reg1, uint8_t reg2);
 void sub8_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
 void sub8_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
 
-void mul8_r(uint8_t reg1, uint8_t reg2);
-void mul8_m(uint8_t reg1, uint8_t reg2);
-void mul8_mi(uint8_t reg1, uint8_t reg2, uint32_t offset);
-void mul8_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
+void mul8_r(uint8_t reg2);
+void mul8_m(uint8_t reg2);
+void mul8_mi(uint8_t reg2, uint32_t offset);
+void mul8_mr(uint8_t reg2, uint8_t reg3);
 
 void div8_r(uint8_t reg1);
 void div8_m(uint8_t reg1);
@@ -143,5 +143,32 @@ void funcao_teste_xor8_r_i(void);
 void funcao_teste_xor8_r_m(void);
 void funcao_teste_xor8_r_mi(void);
 void funcao_teste_xor8_r_mr(void);
+
+// Arithmetic test functions declarations
+// SUM test functions
+void funcao_teste_sum8_r_r(void);
+void funcao_teste_sum8_r_i(void);
+void funcao_teste_sum8_r_m(void);
+void funcao_teste_sum8_r_mi(void);
+void funcao_teste_sum8_r_mr(void);
+
+// SUB test functions
+void funcao_teste_sub8_r_r(void);
+void funcao_teste_sub8_r_i(void);
+void funcao_teste_sub8_r_m(void);
+void funcao_teste_sub8_r_mi(void);
+void funcao_teste_sub8_r_mr(void);
+
+// MUL test functions
+void funcao_teste_mul8_r(void);
+void funcao_teste_mul8_m(void);
+void funcao_teste_mul8_mi(void);
+void funcao_teste_mul8_mr(void);
+
+// DIV test functions
+void funcao_teste_div8_r(void);
+void funcao_teste_div8_m(void);
+void funcao_teste_div8_mi(void);
+void funcao_teste_div8_mr(void);
 
 #endif // BFUNCTIONS8_H
