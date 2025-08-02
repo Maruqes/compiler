@@ -7,9 +7,9 @@ lógica (and/or/xor/not),✅,✅,✅,✅,and/or/xor/not
 syscalls,—,—,✅,✅,syscall/int 0x80
 shifts (shl/shr/sar),✅,✅,✅,✅,shl/shr/sar
 neg,✅,✅,✅,✅,negação rápida
-
 aritmética (add/sub/mul),✅,✅,✅,✅,add/sub/mul
 divisão (div/idiv),✅,✅,✅,✅,div inteiro
+
 call/ret,✅,✅,✅,✅,com stack
 rodata (constantes),—,—,—,✅,secção extra
 lea,—,✅,✅,✅,cálculo de endereço
