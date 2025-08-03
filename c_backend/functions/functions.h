@@ -26,7 +26,6 @@
 #define INDEX_FIELD(x) ((x & 0b111) << 3) /* bits 5-3 */
 #define BASE_FIELD(x) (x & 0b111)         /* bits 2-0  */
 
-extern size_t custom_code_size;
 extern size_t data_size;
 
 typedef struct
@@ -61,12 +60,7 @@ extern uint64_t op_codes_array_size;
 extern Jump_struct *jump_array;
 extern uint32_t jump_array_size;
 
-void our_syscall();
-
-uint64_t add_custom_code_size();
 void write_all_custom_code(int __fd);
-
-void free_fixups();
 
 void fixup_addresses();
 

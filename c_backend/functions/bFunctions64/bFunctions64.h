@@ -19,8 +19,8 @@
 #define REG_RDI 0x7
 
 // Extended Registers (8-15)
-#define REG_R8 0x8  // o que importa sao os ultimos 3 bits ou seja continua a ser 000
-#define REG_R9 0x9  // o que importa sao os ultimos 3 bits ou seja continua a ser 001
+#define REG_R8 0x8	// o que importa sao os ultimos 3 bits ou seja continua a ser 000
+#define REG_R9 0x9	// o que importa sao os ultimos 3 bits ou seja continua a ser 001
 #define REG_R10 0xA // o que importa sao os ultimos 3 bits ou seja continua a ser 010
 #define REG_R11 0xB // o que importa sao os ultimos 3 bits ou seja continua a ser 011
 #define REG_R12 0xC // o que importa sao os ultimos 3 bits ou seja continua a ser 100
@@ -68,13 +68,6 @@ void mul64_r_i(uint8_t reg1, uint64_t imm64);
 void mul64_r_m(uint8_t reg1, uint8_t reg2);
 void mul64_r_mi(uint8_t reg1, uint8_t reg2, uint64_t offset);
 void mul64_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
-
-// Division operations (multi-operand)
-void div64_r_r(uint8_t reg1, uint8_t reg2);
-void div64_r_i(uint8_t reg1, uint64_t imm64);
-void div64_r_m(uint8_t reg1, uint8_t reg2);
-void div64_r_mi(uint8_t reg1, uint8_t reg2, uint64_t offset);
-void div64_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
 
 // Division operations (single-operand IDIV)
 void div64_r(uint8_t reg1);

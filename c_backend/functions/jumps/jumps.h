@@ -27,10 +27,6 @@ void jump_reg(uint8_t reg);
 void jmp(char *name);
 void jcc(char *name, uint8_t condition);
 
-// Test function prototypes
-void funcao_teste_jump_short(void);
-void funcao_teste_jump_near(void);
-void funcao_teste_jump_reg(void);
 
 // Comprehensive test functions
 void test_jump_short(void);

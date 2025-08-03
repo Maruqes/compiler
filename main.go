@@ -9,6 +9,8 @@ import "C"
 import (
 	"fmt"
 	"unsafe"
+
+	backend "github.com/Maruqes/compiler/swig"
 )
 
 func println(str *C.char, strLen int) {
@@ -46,7 +48,9 @@ func main() {
 	C.funcao_teste_mul8_mi()
 	C.funcao_teste_mul8_mr()
 
-	C.write_elf()
+	backend.And16_r_i(byte(backend.REG_RAX), 23)
+
+	backend.Write_elf()
 
 	fmt.Println("All C backend functions called successfully!")
 }
