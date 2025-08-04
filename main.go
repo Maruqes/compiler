@@ -8,8 +8,8 @@ package main
 import "C"
 import (
 	"fmt"
-	"unsafe"
 
+	"github.com/Maruqes/compiler/parser"
 	backend "github.com/Maruqes/compiler/swig"
 )
 
@@ -22,33 +22,10 @@ func println(str *C.char, strLen int) {
 }
 
 func main() {
+	var par parser.Parser
+	par.StartParse("test.lang")
 
-	cStr1 := C.CString("string1")
-	defer C.free(unsafe.Pointer(cStr1))
-	cStr2 := C.CString("string2")
-	defer C.free(unsafe.Pointer(cStr2))
-	cStr3 := C.CString("string3")
-	defer C.free(unsafe.Pointer(cStr3))
-
-	println(cStr1, 14)
-
-	HelloWorld := C.CString("Hello, World!\n")
-	defer C.free(unsafe.Pointer(HelloWorld))
-	AII_MEUU := C.CString("AII, MEUU!\n")
-	defer C.free(unsafe.Pointer(AII_MEUU))
-	DEUSSS_JESUS := C.CString("DEUSSS, JESUS CHRIST!\n")
-	defer C.free(unsafe.Pointer(DEUSSS_JESUS))
-
-	C.add_string_constant(cStr1, HelloWorld)
-	C.add_string_constant(cStr2, AII_MEUU)
-	C.add_string_constant(cStr3, DEUSSS_JESUS)
-
-	C.funcao_teste_mul8_r()
-	C.funcao_teste_mul8_m()
-	C.funcao_teste_mul8_mi()
-	C.funcao_teste_mul8_mr()
-
-	backend.And16_r_i(byte(backend.REG_RAX), 23)
+	parser.StartParsing(&par)
 
 	backend.Write_elf()
 

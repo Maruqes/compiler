@@ -183,3 +183,39 @@ func (p *Parser) NextToken() (string, error) {
 	}
 	return res, nil
 }
+
+// returns in RAX or similar the value after the equal sign
+func getAfterEqual(parser *Parser) error {
+	_, err := parser.NextToken()
+	if err != nil {
+		panic("Error getting after equal: " + err.Error())
+	}
+	return nil
+}
+
+func StartParsing(parser *Parser) error {
+	if parser.file == nil {
+		return os.ErrInvalid
+	}
+
+	token, err := parser.NextToken()
+	if err != nil {
+		return err
+	}
+
+	switch token {
+	case "dq":
+		//create 64-bit variable
+		createVar64(parser)
+	case "dd":
+		//create 32-bit variable
+	case "dw":
+		//create 16-bit variable
+	case "db":
+	//create 8-bit variable
+	default:
+		panic("Unknown token: " + token)
+	}
+
+	return nil
+}
