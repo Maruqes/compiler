@@ -198,15 +198,20 @@ func getValueFromToken(token string, reg byte) error {
 
 	//numbers
 	//check if token is a number
-	if num, err := strconv.Atoi(token); err == nil {
+	num, err := strconv.Atoi(token)
+	if err == nil {
 		//is a number
 		backend.Mov64_r_i(reg, uint64(num))
 		return nil
 	}
 
 	//check if token is a variable
+	err = VarList.GetVariable(token, reg)
+	if err == nil {
+		return nil
+	}
 
-	return fmt.Errorf("Unknown token: %s", token)
+	return err
 }
 
 // returns in RAX or similar the value after the equal sign
@@ -241,6 +246,12 @@ func getAfterEqual(parser *Parser) error {
 			return nil
 		}
 
+		//if not ";" it must be (+-*/etc) so we get whats after the symbol
+		token, err = parser.NextToken()
+		if err != nil {
+			return err
+		}
+
 		err = getValueFromToken(token, byte(backend.REG_RBX))
 		if err != nil {
 			panic("Error getting value from token: " + err.Error())
@@ -264,7 +275,6 @@ func getAfterEqual(parser *Parser) error {
 			fmt.Printf("Current line is %d\n", parser.lineNumber)
 			panic("Unknown symbol after equal: " + symbol)
 		}
-
 	}
 }
 
@@ -273,24 +283,29 @@ func StartParsing(parser *Parser) error {
 		return os.ErrInvalid
 	}
 
-	token, err := parser.NextToken()
-	if err != nil {
-		return err
-	}
+	for {
+		token, err := parser.NextToken()
+		if err != nil {
+			if err == io.EOF {
+				return nil
+			}
+			return err
+		}
 
-	switch token {
-	case "dq":
-		//create 64-bit variable
-		createVar64(parser)
-	case "dd":
-		//create 32-bit variable
-	case "dw":
-		//create 16-bit variable
-	case "db":
-	//create 8-bit variable
-	default:
-		panic("Unknown token: " + token)
+		switch token {
+		case "dq":
+			// create 64-bit variable
+			if err := createVar64(parser); err != nil {
+				return err
+			}
+		case "dd":
+			// create 32-bit variable
+		case "dw":
+			// create 16-bit variable
+		case "db":
+			// create 8-bit variable
+		default:
+			return fmt.Errorf("Unknown token: %s", token)
+		}
 	}
-
-	return nil
 }
