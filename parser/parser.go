@@ -1,12 +1,17 @@
 package parser
 
 import (
+	"fmt"
 	"io"
 	"os"
+	"strconv"
+
+	backend "github.com/Maruqes/compiler/swig"
 )
 
 type Parser struct {
-	file *os.File
+	file       *os.File
+	lineNumber int
 }
 
 // contains solo char that compose predefined tokens
@@ -112,6 +117,7 @@ func (p *Parser) RemoveLine() error {
 			return err
 		}
 		if char == "\n" {
+			p.lineNumber++
 			break
 		}
 	}
@@ -177,6 +183,9 @@ func (p *Parser) NextToken() (string, error) {
 		}
 
 		if char == " " || char == "\n" || char == "\t" {
+			if char == "\n" {
+				p.lineNumber++
+			}
 			break
 		}
 		res += char
@@ -184,13 +193,79 @@ func (p *Parser) NextToken() (string, error) {
 	return res, nil
 }
 
+func getValueFromToken(token string, reg byte) error {
+	//detect number and variables
+
+	//numbers
+	//check if token is a number
+	if num, err := strconv.Atoi(token); err == nil {
+		//is a number
+		backend.Mov64_r_i(reg, uint64(num))
+		return nil
+	}
+
+	//check if token is a variable
+
+	return fmt.Errorf("Unknown token: %s", token)
+}
+
 // returns in RAX or similar the value after the equal sign
 func getAfterEqual(parser *Parser) error {
-	_, err := parser.NextToken()
+	//parse token, parse symbol (+-*/ etc), parse token.... til ;
+	equal, err := parser.NextToken()
 	if err != nil {
 		panic("Error getting after equal: " + err.Error())
 	}
-	return nil
+	if equal != "=" {
+		return fmt.Errorf("Expected '=', got '%s' on line %d", equal, parser.lineNumber)
+	}
+
+	token, err := parser.NextToken()
+	if err != nil {
+		return err
+	}
+
+	err = getValueFromToken(token, byte(backend.REG_RAX))
+	if err != nil {
+		panic("Error getting value from token: " + err.Error())
+	}
+
+	for {
+		//can be symbol or ; to signal end of expression
+		symbol, err := parser.NextToken()
+		if err != nil {
+			return err
+		}
+
+		if symbol == ";" {
+			return nil
+		}
+
+		err = getValueFromToken(token, byte(backend.REG_RBX))
+		if err != nil {
+			panic("Error getting value from token: " + err.Error())
+		}
+
+		switch symbol {
+		case "+":
+			// handle addition
+			backend.Sum64_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
+		case "-":
+			// handle subtraction
+			backend.Sub64_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
+		case "*":
+			// handle multiplication
+			backend.Mul64_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
+		case "/":
+			// handle division
+			backend.Xor64_r_r(byte(backend.REG_RDX), byte(backend.REG_RDX)) // clear RDX before division
+			backend.Div64_r(byte(backend.REG_RBX))
+		default:
+			fmt.Printf("Current line is %d\n", parser.lineNumber)
+			panic("Unknown symbol after equal: " + symbol)
+		}
+
+	}
 }
 
 func StartParsing(parser *Parser) error {
