@@ -58,8 +58,8 @@ clean:
 
 run: 
 	$(MAKE) clean
-	$(MAKE) swig
 	$(MAKE) all
+	$(MAKE) swig
 	go build -o compiler main.go
 	./compiler
 	./hello_elf_64

@@ -26,7 +26,7 @@ void jump_near(uint32_t offset);
 void jump_reg(uint8_t reg);
 void jmp(char *name);
 void jcc(char *name, uint8_t condition);
-
+void call(char *name);
 
 // Comprehensive test functions
 void test_jump_short(void);

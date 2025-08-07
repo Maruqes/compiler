@@ -47,15 +47,6 @@ void create_label(char *name)
 
 void add_label_jump(char *name, char *addr, uint16_t instruction_size)
 {
-    for (uint32_t i = 0; i < jumps_size; i++)
-    {
-        if (strcmp(jumps[i].name, name) == 0)
-        {
-            fprintf(stderr, "Jump to label '%s' already exists\n", name);
-            return;
-        }
-    }
-
     jumps = realloc(jumps, (jumps_size + 1) * sizeof(Jump));
     if (!jumps)
     {

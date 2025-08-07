@@ -1,6 +1,8 @@
 #ifndef BACKEND_H
 #define BACKEND_H
 
+#define BASE_ADDRESS 0x400000;
+
 #include <stdint.h>
 #include <stdlib.h>
 

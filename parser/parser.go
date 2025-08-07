@@ -292,30 +292,9 @@ func StartParsing(parser *Parser) error {
 			}
 			return err
 		}
-
 		switch token {
-		case "dq":
-			// create 64-bit variable
-			if err := createVar(parser, DQ); err != nil {
-				return err
-			}
-		case "dd":
-			// create 32-bit variable
-			if err := createVar(parser, DD); err != nil {
-				return err
-			}
-		case "dw":
-			// create 16-bit variable
-			if err := createVar(parser, DW); err != nil {
-				return err
-			}
-		case "db":
-			// create 8-bit variable
-			if err := createVar(parser, DB); err != nil {
-				return err
-			}
 		case "func":
-			// function definition
+			createFunc(parser)
 		default:
 			return fmt.Errorf("Unknown token: %s", token)
 		}

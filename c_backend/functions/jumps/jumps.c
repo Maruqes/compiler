@@ -54,7 +54,7 @@ void jump_near(uint32_t offset)
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
     if (!op_codes_array)
     {
-        perror("Failed to reallocate memory for op_codes_array");
+        perror("Failed to reallo\te memory for op_codes_array");
         free(opcode_bytes);
         exit(EXIT_FAILURE);
     }
@@ -151,6 +151,35 @@ void jcc(char *name, uint8_t condition)
 
     OpCode new_opcode;
     new_opcode.size = 6; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void call(char *name)
+{
+    char *opcode_bytes = malloc(5);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xE8;
+
+    memset(&opcode_bytes[1], 0, 4); // Placeholder for address
+    add_label_jump(name, &opcode_bytes[1], 5);
+
+    OpCode new_opcode;
+    new_opcode.size = 5; // Total instruction size
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
