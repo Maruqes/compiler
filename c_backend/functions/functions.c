@@ -215,3 +215,36 @@ void nop()
     }
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
+
+/*
+LABEL PART
+*/
+
+typedef struct
+{
+    char *label_name;
+    uint64_t address;
+} Label;
+
+Label *labels_array = NULL;
+uint32_t labels_array_size = 0;
+
+void create_label(char *label_name)
+{
+    // get the current code size
+    uint64_t current_code_size = get_current_code_size();
+
+    // Allocate memory for the new label
+    labels_array = realloc(labels_array, (labels_array_size + 1) * sizeof(Label));
+    if (labels_array == NULL)
+    {
+        perror("Failed to reallocate memory for labels_array");
+        exit(EXIT_FAILURE);
+    }
+    Label new_label;
+    new_label.label_name = strdup(label_name); // Remember to free this later
+    new_label.address = current_code_size;     // Address is the current code size
+    labels_array[labels_array_size] = new_label;
+    labels_array_size++;
+}
+
