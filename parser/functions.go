@@ -6,6 +6,7 @@ import (
 	"os"
 
 	backend "github.com/Maruqes/compiler/swig"
+	"github.com/Maruqes/compiler/wrapper"
 )
 
 func parseCodeBlock(parser *Parser) error {
@@ -58,9 +59,11 @@ func parseCodeBlock(parser *Parser) error {
 				return err
 			}
 		case "return":
+			wrapper.LeaveStack()	
 			backend.Ret()
+			eatSemicolon(parser)
 		default:
-			return fmt.Errorf("Unknown token: %s", token)
+			return fmt.Errorf("Unknown token: '%s' found at line %d", token, parser.lineNumber)
 		}
 	}
 }
@@ -73,9 +76,16 @@ func createFunc(parser *Parser) error {
 		return err
 	}
 
-	backend.Create_label(name)
-	parseCodeBlock(parser)
+	fmt.Println("Creating function:", name)
+	fmt.Println("Creating function:", name)
+	fmt.Println("Creating function:", name)
 
+	backend.Create_label(name)
+	wrapper.CreateStack()
+	err = parseCodeBlock(parser)
+	if err != nil {
+		return fmt.Errorf("Error parsing code block for function '%s': %w", name, err)
+	}
 	return nil
 }
 

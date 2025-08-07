@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	backend "github.com/Maruqes/compiler/swig"
+	"github.com/Maruqes/compiler/wrapper"
 )
 
 var SCOPE = "global"
@@ -84,4 +85,12 @@ func createVar(parser *Parser, varType int) error {
 	}
 	backend.Push64(byte(backend.REG_RAX))
 	return nil
+}
+
+// print a numeros de 48-122 ascii
+func PrintVar(varName string) {
+	VarList.GetVariable(varName, byte(backend.REG_RAX))
+	backend.Create_variable_reference("printSave", byte(backend.REG_RSI))
+	backend.Mov8_m_r(byte(backend.REG_RSI), byte(backend.REG_RAX))
+	wrapper.Println("printSave", 3)
 }

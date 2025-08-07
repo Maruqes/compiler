@@ -11,42 +11,27 @@ import (
 
 	"github.com/Maruqes/compiler/parser"
 	backend "github.com/Maruqes/compiler/swig"
+	"github.com/Maruqes/compiler/wrapper"
 )
 
-func println(str string, strLen int) {
-	backend.Mov64_r_i(byte(backend.REG_RAX), 1)
-	backend.Mov64_r_i(byte(backend.REG_RDI), 1)
-	backend.Create_variable_reference(str, byte(backend.REG_RSI))
-	backend.Mov64_r_i(byte(backend.REG_RDX), uint64(strLen))
-	backend.Syscall_instruction()
-}
 
-func exit(code int) {
-	backend.Mov64_r_i(byte(backend.REG_RAX), 60) // syscall number for exit
-	backend.Mov64_r_i(byte(backend.REG_RDI), uint64(code))
-	backend.Syscall_instruction()
-}
+
 
 func main() {
 	var par parser.Parser
 	par.StartParse("test.lang")
 	
-	parser.StartParsing(&par)
+	backend.Call("main")
+	parser.PrintVar("a")
+	wrapper.Exit(0)
 
-	// cStr := "str1"
-	// backend.Add_string_constant(cStr, "Hello, World!\n")
+	err := parser.StartParsing(&par)
+	if err != nil {
+		panic(fmt.Sprintf("Error during parsing: %v", err))
+	}
 
-	// backend.Call("main")
-
-	// backend.Create_label("print")
-	// println("str1", 14)
-	// backend.Ret()
-
-	// backend.Create_label("main")
-	// backend.Call("print")
-	// backend.Jmp("main")
-	// exit(0)
-
+	// .data
+	backend.Add_string_constant("printSave", "--\n")
 	backend.Write_elf()
 
 	fmt.Println("All C backend functions called successfully!")

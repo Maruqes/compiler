@@ -215,16 +215,32 @@ func getValueFromToken(token string, reg byte) error {
 	return err
 }
 
+func eatEqual(parser *Parser) {
+	//parse = else panic
+	equal, err := parser.NextToken()
+	if err != nil {
+		panic("Error eating equal: " + err.Error())
+	}
+	if equal != "=" {
+		panic(fmt.Sprintf("Expected '=', got '%s' on line %d", equal, parser.lineNumber))
+	}
+}
+
+func eatSemicolon(parser *Parser) {
+	//parse ; else panic
+	semicolon, err := parser.NextToken()
+	if err != nil {
+		panic("Error eating semicolon: " + err.Error())
+	}
+	if semicolon != ";" {
+		panic(fmt.Sprintf("Expected ';', got '%s' on line %d", semicolon, parser.lineNumber))
+	}
+}
+
 // returns in RAX or similar the value after the equal sign
 func getAfterEqual(parser *Parser) error {
 	//parse token, parse symbol (+-*/ etc), parse token.... til ;
-	equal, err := parser.NextToken()
-	if err != nil {
-		panic("Error getting after equal: " + err.Error())
-	}
-	if equal != "=" {
-		return fmt.Errorf("Expected '=', got '%s' on line %d", equal, parser.lineNumber)
-	}
+	eatEqual(parser)
 
 	token, err := parser.NextToken()
 	if err != nil {
@@ -294,9 +310,12 @@ func StartParsing(parser *Parser) error {
 		}
 		switch token {
 		case "func":
-			createFunc(parser)
+			err := createFunc(parser)
+			if err != nil {
+				return err
+			}
 		default:
-			return fmt.Errorf("Unknown token: %s", token)
+			return fmt.Errorf("Unknown token: '%s' found at line %d", token, parser.lineNumber)
 		}
 	}
 }

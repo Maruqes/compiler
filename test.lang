@@ -1,9 +1,5 @@
-func name{
-	dq a = 100 + 200 - 300 * 400 / 500;
-	dq b = a;
-	dq c = b;
-	dq d = c;
-	dq e = d;
-	dq f = e +d + c + b + a;
+
+func main{
+	dq a = 66;
 	return;
 }
