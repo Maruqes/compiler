@@ -8,11 +8,28 @@ import (
 
 var SCOPE = "global"
 
+const (
+	DQ = 8
+	DD = 4
+	DW = 2
+	DB = 1
+)
+
+func isTypeValid(varType int) bool {
+	switch varType {
+	case DQ, DD, DW, DB:
+		return true
+	default:
+		return false
+	}
+}
+
 type Variable struct {
-	Name     string
-	Type     string // "dq" for 64-bit, "db" for 8-bit, etc.
-	Position uint64 // relative to RBP
-	Scope    string
+	Name           string
+	Type           int    // DQ for 64-bit, DB for 8-bit, etc.
+	Position       uint64 // relative to RBP
+	OffsetPosition uint8  // offset relative to position (push only has 64 bit, if we save 8 bit, we add the 56 (7 bytes) offset to the position)
+	Scope          string
 }
 
 type VarsList struct {
@@ -22,33 +39,26 @@ type VarsList struct {
 
 var VarList VarsList
 
-func (vl *VarsList) AddVariable(name, varType string) {
+func (vl *VarsList) AddVariable(name string, varType int) error {
 	vl.vars = append(vl.vars, Variable{
-		Name:     name,
-		Type:     varType,
-		Position: vl.lastPos,
-		Scope:    SCOPE,
+		Name:           name,
+		Type:           varType,
+		Position:       vl.lastPos,
+		Scope:          SCOPE,
+		OffsetPosition: 8 - uint8(varType), // offset for 8-bit variables
 	})
-	switch varType {
-	case "dq":
-		vl.lastPos += 8 // 64-bit variable takes 8 bytes
-	case "dd":
-		vl.lastPos += 4 // 32-bit variable takes 4 bytes
-	case "dw":
-		vl.lastPos += 2 // 16-bit variable takes 2 bytes
-	case "db":
-		vl.lastPos += 1 // 8-bit variable takes 1 byte
-	default:
-		panic("Unknown variable type: " + varType)
+	if !isTypeValid(varType) {
+		return fmt.Errorf("invalid variable type: %d", varType)
 	}
-
+	vl.lastPos += uint64(varType) // increment last position by the size of the variable type
+	return nil
 }
 
 func (vl *VarsList) GetVariable(name string, reg byte) error {
 	for _, v := range vl.vars {
 		if v.Name == name && v.Scope == SCOPE {
 			// Load the variable's value into the specified register
-			backend.Mov64_r_mi(reg, byte(backend.REG_BP), int(v.Position))
+			backend.Mov64_r_mi(reg, byte(backend.REG_RBP), int(v.Position))
 			return nil
 		}
 	}
@@ -56,7 +66,7 @@ func (vl *VarsList) GetVariable(name string, reg byte) error {
 }
 
 // push whats after the equal and save position in the stack compared to BASE POINTER (BP)
-func createVar64(parser *Parser) error {
+func createVar(parser *Parser, varType int) error {
 	//create var is get space on heap and get the after equal
 	name, err := parser.NextToken()
 	if err != nil {
@@ -68,7 +78,10 @@ func createVar64(parser *Parser) error {
 		return err
 	}
 
-	VarList.AddVariable(name, "dq")
+	err = VarList.AddVariable(name, varType)
+	if err != nil {
+		return err
+	}
 	backend.Push64(byte(backend.REG_RAX))
 	return nil
 }

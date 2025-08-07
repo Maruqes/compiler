@@ -89,7 +89,6 @@ void fixup_addresses()
     }
 }
 
-
 void write_all_custom_code(int __fd)
 {
     for (int i = 0; i < op_codes_array_size; i++)
@@ -106,32 +105,6 @@ void write_all_custom_code(int __fd)
             exit(EXIT_FAILURE);
         }
     }
-}
-
-void nop()
-{
-    char *opcode_bytes = malloc(1);
-    if (!opcode_bytes)
-    {
-        perror("Failed to allocate memory for opcode_bytes");
-        exit(EXIT_FAILURE);
-    }
-
-    opcode_bytes[0] = 0x90;
-
-    OpCode new_opcode;
-    new_opcode.size = 1; // Total instruction size
-    new_opcode.code = opcode_bytes;
-
-    // Add the opcode to the array
-    op_codes_array = realloc(op_codes_array,
-                             (op_codes_array_size + 1) * sizeof(OpCode));
-    if (!op_codes_array)
-    {
-        perror("Failed to reallocate memory for op_codes_array");
-        exit(EXIT_FAILURE);
-    }
-    op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
 /*
@@ -189,4 +162,56 @@ int precisa_sib(uint8_t mod,
 
     /* Nenhuma condição apanhou → não precisas de SIB */
     return 0;
+}
+
+void ret()
+{
+    char *opcode_bytes = malloc(1);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xC3; // RET instruction
+
+    OpCode new_opcode;
+    new_opcode.size = 1; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void nop()
+{
+    char *opcode_bytes = malloc(1);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0x90;
+
+    OpCode new_opcode;
+    new_opcode.size = 1; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
 }

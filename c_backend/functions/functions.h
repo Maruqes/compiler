@@ -74,5 +74,6 @@ void set_modrm(uint8_t *dst, uint8_t mod, uint8_t reg, uint8_t rm);
 void set_sib(uint8_t *dst, uint8_t scale, uint8_t index, uint8_t base);
 int precisa_sib(uint8_t mod, uint8_t reg_base, int usa_index);
 uint64_t get_current_code_size();
+void ret();
 
 #endif // FUNCTIONS_H
