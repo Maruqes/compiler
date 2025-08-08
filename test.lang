@@ -1,20 +1,26 @@
-func test{
-	dq a = 69;
-	dq b = 70;
-	dq c = 71;
+func test(dq a, dq b, dq c) {
 	print(a);
 	print(b);
 	print(c);	
 	return;
 }
-func main{
-	dq a = 66;
-	dq b = 67;
-	dq c = 68;
+
+func main(){
+	db a = 48;
+	dq b = 49;
+	db c = 50;
 	print(a);
 	print(b);
 	print(c);
-	test;
+
+	test(a+1,b+1,c+1);
+
+	db d = 69;
+	print(d);
+	dq e = 70;
+	print(e);
+
+	test(a+2,b+2,c+2);
+
 	return;
-	err
 }

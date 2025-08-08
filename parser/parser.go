@@ -228,8 +228,12 @@ func getValueFromToken(token string, reg byte) error {
 		return nil
 	}
 
+	varList := GetVarList(SCOPE)
+	if varList == nil {
+		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+	}
 	//check if token is a variable
-	err = VarList.GetVariable(token, reg)
+	err = varList.GetVariable(token, reg)
 	if err == nil {
 		return nil
 	}
@@ -259,17 +263,14 @@ func eatSemicolon(parser *Parser) {
 	}
 }
 
-// returns in RAX or similar the value after the equal sign
-func getAfterEqual(parser *Parser) error {
-	//parse token, parse symbol (+-*/ etc), parse token.... til ;
-	eatEqual(parser)
-
+// uses RBX and RDX in division
+func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *string) {
 	token, err := parser.NextToken()
 	if err != nil {
-		return err
+		return err, nil
 	}
 
-	err = getValueFromToken(token, byte(backend.REG_RAX))
+	err = getValueFromToken(token, reg)
 	if err != nil {
 		panic("Error getting value from token: " + err.Error())
 	}
@@ -278,17 +279,18 @@ func getAfterEqual(parser *Parser) error {
 		//can be symbol or ; to signal end of expression
 		symbol, err := parser.NextToken()
 		if err != nil {
-			return err
+			return err, nil
 		}
 
-		if symbol == ";" {
-			return nil
+		for _, stop := range stopSymbol {
+			if symbol == stop {
+				return nil, &symbol
+			}
 		}
 
-		//if not ";" it must be (+-*/etc) so we get whats after the symbol
 		token, err = parser.NextToken()
 		if err != nil {
-			return err
+			return err, nil
 		}
 
 		err = getValueFromToken(token, byte(backend.REG_RBX))
@@ -299,22 +301,30 @@ func getAfterEqual(parser *Parser) error {
 		switch symbol {
 		case "+":
 			// handle addition
-			backend.Sum64_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
+			backend.Sum64_r_r(reg, byte(backend.REG_RBX))
 		case "-":
 			// handle subtraction
-			backend.Sub64_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
+			backend.Sub64_r_r(reg, byte(backend.REG_RBX))
 		case "*":
 			// handle multiplication
-			backend.Mul64_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
+			backend.Mul64_r_r(reg, byte(backend.REG_RBX))
 		case "/":
 			// handle division
 			backend.Xor64_r_r(byte(backend.REG_RDX), byte(backend.REG_RDX)) // clear RDX before division
 			backend.Div64_r(byte(backend.REG_RBX))
 		default:
 			fmt.Printf("Current line is %d\n", parser.lineNumber)
-			panic("Unknown symbol after equal: " + symbol)
+			return fmt.Errorf("Unknown symbol '%s' found at line %d", symbol, parser.lineNumber), nil
 		}
 	}
+}
+
+// returns in RAX or similar the value after the equal sign
+func getAfterEqual(parser *Parser) error {
+	//parse token, parse symbol (+-*/ etc), parse token.... til ;
+	eatEqual(parser)
+	err, _ := getUntilSymbol(parser, []string{";"}, byte(backend.REG_RAX))
+	return err
 }
 
 func StartParsing(parser *Parser) error {
@@ -339,5 +349,20 @@ func StartParsing(parser *Parser) error {
 		default:
 			return fmt.Errorf("Unknown token: '%s' found at line %d", token, parser.lineNumber)
 		}
+	}
+}
+
+func getTypeFromToken(token string) (int, error) {
+	switch token {
+	case "dq":
+		return DQ, nil // 64-bit variable
+	case "dd":
+		return DD, nil // 32-bit variable
+	case "dw":
+		return DW, nil // 16-bit variable
+	case "db":
+		return DB, nil // 8-bit variable
+	default:
+		return -1, fmt.Errorf("Unknown type: '%s'", token)
 	}
 }
