@@ -1,5 +1,20 @@
+func test{
+	dq a =  69;
+	dq b =  70;
+	dq c =  71;
+	print(a);
+	print(b);
+	print(c);	
+	return;
+}
 
 func main{
 	dq a = 66;
+	dq b = 67;
+	dq c = 68;
+	print(a);
+	print(b);
+	print(c);
+	test;
 	return;
 }

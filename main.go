@@ -22,7 +22,6 @@ func main() {
 	par.StartParse("test.lang")
 	
 	backend.Call("main")
-	parser.PrintVar("a")
 	wrapper.Exit(0)
 
 	err := parser.StartParsing(&par)

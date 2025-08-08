@@ -28,14 +28,14 @@ func isTypeValid(varType int) bool {
 type Variable struct {
 	Name           string
 	Type           int    // DQ for 64-bit, DB for 8-bit, etc.
-	Position       uint64 // relative to RBP
+	Position       int // relative to RBP
 	OffsetPosition uint8  // offset relative to position (push only has 64 bit, if we save 8 bit, we add the 56 (7 bytes) offset to the position)
 	Scope          string
 }
 
 type VarsList struct {
 	vars    []Variable
-	lastPos uint64 // last position used in the stack
+	lastPos int // last position used in the stack
 }
 
 var VarList VarsList
@@ -51,7 +51,7 @@ func (vl *VarsList) AddVariable(name string, varType int) error {
 	if !isTypeValid(varType) {
 		return fmt.Errorf("invalid variable type: %d", varType)
 	}
-	vl.lastPos += uint64(varType) // increment last position by the size of the variable type
+	vl.lastPos -= varType // Decrease the last position by the size of the variable type
 	return nil
 }
 
