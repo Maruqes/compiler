@@ -15,7 +15,7 @@ type Parser struct {
 }
 
 // contains solo char that compose predefined tokens
-var composingTokens = []string{"{", "}", "(", ")", "[", "]", ";", ",", "+", "-", "*", "/", "%", "=", "!", "<", ">", "&", "|", "?", "/", "==", "!=", "<=", ">=", "&&", "||",
+var composingTokens = []string{"{", "}", "(", ")", "[", "]", ";", ",", "+", "-", "*", "%", "=", "!", "<", ">", "&", "|", "?", "/", "==", "!=", "<=", ">=", "&&", "||",
 	"++", "--", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "//"}
 
 func (p *Parser) StartParse(fileName string) error {
@@ -37,6 +37,9 @@ func (p *Parser) readNextChar() (string, error) {
 		}
 		return "", err
 	}
+	if buf[0] == '\n' {
+		p.lineNumber++
+	}
 	return string(buf), nil
 }
 
@@ -44,7 +47,30 @@ func (p *Parser) SeekBack(number int64) error {
 	if p.file == nil {
 		return os.ErrInvalid
 	}
-	_, err := p.file.Seek(-number, io.SeekCurrent)
+
+	// current position
+	pos, err := p.file.Seek(0, io.SeekCurrent)
+	if err != nil {
+		return err
+	}
+	if number > pos { // clamp to BOF
+		number = pos
+	}
+
+	// peek the bytes we’ll cross without moving the cursor
+	buf := make([]byte, number)
+	_, err = p.file.ReadAt(buf, pos-number)
+	if err != nil {
+		return err
+	}
+
+	for _, b := range buf {
+		if b == '\n' {
+			p.lineNumber--
+		}
+	}
+
+	_, err = p.file.Seek(-number, io.SeekCurrent)
 	return err
 }
 
@@ -64,7 +90,7 @@ func (p *Parser) isComposingToken(char string) (string, error) {
 	nextChar, err := p.readNextChar()
 	if err != nil {
 		if err == io.EOF {
-			return char, nil
+			return char, io.EOF
 		}
 		return "", err
 	}
@@ -117,7 +143,6 @@ func (p *Parser) RemoveLine() error {
 			return err
 		}
 		if char == "\n" {
-			p.lineNumber++
 			break
 		}
 	}
@@ -152,7 +177,7 @@ func (p *Parser) NextToken() (string, error) {
 		char, err := p.readNextChar()
 		if err != nil {
 			if err == io.EOF {
-				return res, nil
+				return res, io.EOF
 			}
 			return "", err
 		}
@@ -183,9 +208,6 @@ func (p *Parser) NextToken() (string, error) {
 		}
 
 		if char == " " || char == "\n" || char == "\t" {
-			if char == "\n" {
-				p.lineNumber++
-			}
 			break
 		}
 		res += char
