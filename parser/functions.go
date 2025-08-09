@@ -29,6 +29,15 @@ func isFunctionCall(token string) bool {
 	return false
 }
 
+func getFunction(funcName string) *FunctionType {
+	for _, function := range functions {
+		if function.Name == funcName {
+			return &function
+		}
+	}
+	return nil
+}
+
 func CreateStack() {
 	backend.Push64(byte(backend.REG_RBP))                           // Save the base pointer
 	backend.Mov64_r_r(byte(backend.REG_RBP), byte(backend.REG_RSP)) // Set the base pointer to the current stack pointer
@@ -68,6 +77,15 @@ func parseFunctionCall(parser *Parser, funcName string) error {
 		if *symbol == ")" {
 			break
 		}
+	}
+
+	functype := getFunction(funcName)
+	if functype == nil {
+		return fmt.Errorf("Function '%s' not found", funcName)
+	}
+
+	if functype.Params != nil && len(functype.Params) != n_params {
+		return fmt.Errorf("Function '%s' expects %d parameters, got %d on line %d", funcName, len(functype.Params), n_params, parser.lineNumber)
 	}
 
 	eatSemicolon(parser)
