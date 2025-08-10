@@ -168,6 +168,8 @@ func (vl *VarsList) setVarStruct(parser *Parser, varName string) error {
 		return err
 	}
 
+	vl.SetVar(variable)
+
 	switch variable.Type {
 	case DB:
 		backend.And64_r_i(byte(backend.REG_RAX), 0x00000000000000ff)

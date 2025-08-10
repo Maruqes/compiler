@@ -31,6 +31,7 @@ func main() {
 
 	// .data
 	backend.Add_string_constant("printSave", "--\n")
+	backend.Add_string_constant("printHex", "0123456789abcdef\n")
 	backend.Write_elf()
 
 	fmt.Println("All C backend functions called successfully!")

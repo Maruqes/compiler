@@ -1,29 +1,11 @@
-func test(db a, db b, db c) {
-	print(a);
-	print(b);
-	print(c);	
-	return;
-}
+
 
 func main(){
-	db a = 0xffffffffffffff61;
-	db b = 49;
-	dq c = 50;
+	dq b = 0x0123456789abcdef;
+	db a = 0x0123456789abcdef;
+	dq c = 0x0123456789abcdef;
 
-	a = 20;
-
-	print(a);
-	print(b);
-	print(c);
-
-	test(a+1,b+1,c+1);
-
-	db d = 69;
-	print(d);
-	dq e = 70;
-	print(e);
-
-	test(a+2,b+2,c+2);
+	printHex(a);
 
 	return;
 }

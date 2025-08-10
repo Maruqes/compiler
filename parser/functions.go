@@ -6,6 +6,7 @@ import (
 	"os"
 
 	backend "github.com/Maruqes/compiler/swig"
+	"github.com/Maruqes/compiler/wrapper"
 )
 
 type ParamType struct {
@@ -129,6 +130,43 @@ func temporaryPrintVar(parser *Parser) error {
 	return nil
 }
 
+
+func temporaryPrintHexVar(parser *Parser) error {
+	//parse "(", "var_name", ")"
+	if parser.file == nil {
+		return os.ErrInvalid
+	}
+
+	token, err := parser.NextToken()
+	if err != nil {
+		return err
+	}
+
+	if token != "(" {
+		return fmt.Errorf("Expected '(', got '%s'", token)
+	}
+
+	varName, err := parser.NextToken()
+	if err != nil {
+		return err
+	}
+
+	token, err = parser.NextToken()
+	if err != nil {
+		return err
+	}
+
+	if token != ")" {
+		return fmt.Errorf("Expected ')', got '%s'", token)
+	}
+	vl := GetVarList(SCOPE)
+
+	vl.GetVariable(varName, byte(backend.REG_RAX))
+	wrapper.PrintHex(byte(backend.REG_RAX))
+	
+	eatSemicolon(parser)
+	return nil
+}
 func parseCodeBlock(parser *Parser) error {
 	if parser.file == nil {
 		return os.ErrInvalid
@@ -179,6 +217,13 @@ func parseCodeBlock(parser *Parser) error {
 
 		if token == "print" {
 			if err := temporaryPrintVar(parser); err != nil {
+				return err
+			}
+			continue
+		}
+
+		if token == "printHex" {
+			if err := temporaryPrintHexVar(parser); err != nil {
 				return err
 			}
 			continue
