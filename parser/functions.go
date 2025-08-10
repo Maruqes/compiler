@@ -85,7 +85,7 @@ func parseFunctionCall(parser *Parser, funcName string) error {
 	}
 
 	if functype.Params != nil && len(functype.Params) != n_params {
-		return fmt.Errorf("Function '%s' expects %d parameters, got %d on line %d", funcName, len(functype.Params), n_params, parser.lineNumber)
+		return fmt.Errorf("Function '%s' expects %d parameters, got %d on line %d", funcName, len(functype.Params), n_params, parser.lineNumber	)
 	}
 
 	eatSemicolon(parser)

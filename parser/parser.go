@@ -219,6 +219,17 @@ func (p *Parser) NextToken() (string, error) {
 func getValueFromToken(token string, reg byte) error {
 	//detect number and variables
 
+	// xFFFFFFFF hex
+
+	if token[0] == '0' && token[1] == 'x' {
+		// parse hex number
+		num, err := strconv.ParseUint(token[2:], 16, 64)
+		if err == nil {
+			backend.Mov64_r_i(reg, num)
+			return nil
+		}
+	}
+
 	//numbers
 	//check if token is a number
 	num, err := strconv.Atoi(token)

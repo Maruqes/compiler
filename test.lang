@@ -1,4 +1,4 @@
-func test(dq a, dq b, dq c) {
+func test(db a, db b, db c) {
 	print(a);
 	print(b);
 	print(c);	
@@ -6,9 +6,10 @@ func test(dq a, dq b, dq c) {
 }
 
 func main(){
-	db a = 48;
-	dq b = 49;
-	db c = 50;
+	db a = 0xffffffffffffff61;
+	db b = 49;
+	dq c = 50;
+
 	print(a);
 	print(b);
 	print(c);

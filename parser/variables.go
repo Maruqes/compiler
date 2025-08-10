@@ -82,12 +82,33 @@ func PopStack64(reg byte) {
 
 // var should be in rax
 func (vl *VarsList) AddVariable(name string, varType int) error {
-	PushStack64(byte(backend.REG_RAX))
+	// PushStack64(byte(backend.REG_RAX))
+
+	switch varType {
+	case DB:
+		backend.Sub64_r_i(byte(backend.REG_RSP), 1)
+		backend.Mov8_m_r(byte(backend.REG_RSP), byte(backend.REG_RAX))
+		vl.lastPos -= 1
+	case DW:
+		backend.Sub64_r_i(byte(backend.REG_RSP), 2)
+		backend.Mov16_m_r(byte(backend.REG_RSP), byte(backend.REG_RAX))
+		vl.lastPos -= 2
+	case DD:
+		backend.Sub64_r_i(byte(backend.REG_RSP), 4)
+		backend.Mov32_m_r(byte(backend.REG_RSP), byte(backend.REG_RAX))
+		vl.lastPos -= 4
+	case DQ:
+		backend.Sub64_r_i(byte(backend.REG_RSP), 8)
+		backend.Mov64_m_r(byte(backend.REG_RSP), byte(backend.REG_RAX))
+		vl.lastPos -= 8
+	}
+
 	vl.vars = append(vl.vars, Variable{
 		Name:     name,
 		Type:     varType,
 		Position: vl.lastPos,
 	})
+
 	return nil
 }
 
@@ -131,6 +152,17 @@ func createVar(parser *Parser, varType int) error {
 	// get the value after the equal sign in RAX
 	if err := getAfterEqual(parser); err != nil {
 		return err
+	}
+
+	switch varType {
+	case DB:
+		backend.And64_r_i(byte(backend.REG_RAX), 0x00000000000000ff)
+	case DW:
+		backend.And64_r_i(byte(backend.REG_RAX), 0x000000000000ffff)
+	case DD:
+		backend.And64_r_i(byte(backend.REG_RAX), 0x00000000ffffffff)
+	case DQ:
+		backend.And64_r_i(byte(backend.REG_RAX), 0xffffffffffffffff)
 	}
 
 	err = varList.AddVariable(name, varType)
