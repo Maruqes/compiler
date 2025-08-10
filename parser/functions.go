@@ -85,7 +85,7 @@ func parseFunctionCall(parser *Parser, funcName string) error {
 	}
 
 	if functype.Params != nil && len(functype.Params) != n_params {
-		return fmt.Errorf("Function '%s' expects %d parameters, got %d on line %d", funcName, len(functype.Params), n_params, parser.lineNumber	)
+		return fmt.Errorf("Function '%s' expects %d parameters, got %d on line %d", funcName, len(functype.Params), n_params, parser.lineNumber)
 	}
 
 	eatSemicolon(parser)
@@ -134,6 +134,11 @@ func parseCodeBlock(parser *Parser) error {
 		return os.ErrInvalid
 	}
 
+	varList := GetVarList(SCOPE)
+	if varList == nil {
+		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+	}
+
 	token, err := parser.NextToken()
 	if err != nil {
 		if err == io.EOF {
@@ -164,6 +169,14 @@ func parseCodeBlock(parser *Parser) error {
 			continue
 		}
 
+		//if its a var redefenition
+		if varList.DoesVarExist(token) {
+			if err := varList.setVarStruct(parser, token); err != nil {
+				return err
+			}
+			continue
+		}
+
 		if token == "print" {
 			if err := temporaryPrintVar(parser); err != nil {
 				return err
@@ -176,22 +189,22 @@ func parseCodeBlock(parser *Parser) error {
 			return nil
 		case "dq":
 			// create 64-bit variable
-			if err := createVar(parser, DQ); err != nil {
+			if err := createVarStruct(parser, DQ); err != nil {
 				return err
 			}
 		case "dd":
 			// create 32-bit variable
-			if err := createVar(parser, DD); err != nil {
+			if err := createVarStruct(parser, DD); err != nil {
 				return err
 			}
 		case "dw":
 			// create 16-bit variable
-			if err := createVar(parser, DW); err != nil {
+			if err := createVarStruct(parser, DW); err != nil {
 				return err
 			}
 		case "db":
 			// create 8-bit variable
-			if err := createVar(parser, DB); err != nil {
+			if err := createVarStruct(parser, DB); err != nil {
 				return err
 			}
 		case "return":

@@ -112,6 +112,22 @@ func (vl *VarsList) AddVariable(name string, varType int) error {
 	return nil
 }
 
+func (vl *VarsList) SetVar(variable *Variable) error {
+	// PushStack64(byte(backend.REG_RAX))
+
+	switch variable.Type {
+	case DB:
+		backend.Mov8_mi_r(byte(backend.REG_RBP), uint(variable.Position), byte(backend.REG_RAX))
+	case DW:
+		backend.Mov16_mi_r(byte(backend.REG_RBP), uint(variable.Position), byte(backend.REG_RAX))
+	case DD:
+		backend.Mov32_mi_r(byte(backend.REG_RBP), uint(variable.Position), byte(backend.REG_RAX))
+	case DQ:
+		backend.Mov64_mi_r(byte(backend.REG_RBP), uint(variable.Position), byte(backend.REG_RAX))
+	}
+
+	return nil
+}
 func (vl *VarsList) GetVariable(name string, reg byte) error {
 	for _, v := range vl.vars {
 		if v.Name == name {
@@ -123,6 +139,15 @@ func (vl *VarsList) GetVariable(name string, reg byte) error {
 	return fmt.Errorf("Variable %s not found in scope %s", name, SCOPE)
 }
 
+func (vl *VarsList) GetVariableStruct(name string, reg byte) (*Variable, error) {
+	for _, v := range vl.vars {
+		if v.Name == name {
+			return &v, nil
+		}
+	}
+	return nil, fmt.Errorf("Variable %s not found in scope %s", name, SCOPE)
+}
+
 func (vl *VarsList) DoesVarExist(name string) bool {
 	for _, v := range vl.vars {
 		if v.Name == name {
@@ -132,8 +157,33 @@ func (vl *VarsList) DoesVarExist(name string) bool {
 	return false
 }
 
+func (vl *VarsList) setVarStruct(parser *Parser, varName string) error {
+	variable, err := vl.GetVariableStruct(varName, byte(backend.REG_RAX))
+	if err != nil {
+		return err
+	}
+
+	err = getAfterEqual(parser)
+	if err != nil {
+		return err
+	}
+
+	switch variable.Type {
+	case DB:
+		backend.And64_r_i(byte(backend.REG_RAX), 0x00000000000000ff)
+	case DW:
+		backend.And64_r_i(byte(backend.REG_RAX), 0x000000000000ffff)
+	case DD:
+		backend.And64_r_i(byte(backend.REG_RAX), 0x00000000ffffffff)
+	case DQ:
+		backend.And64_r_i(byte(backend.REG_RAX), 0xffffffffffffffff)
+	}
+
+	return nil
+}
+
 // push whats after the equal and save position in the stack compared to BASE POINTER (BP)
-func createVar(parser *Parser, varType int) error {
+func createVarStruct(parser *Parser, varType int) error {
 	//create var is get space on heap and get the after equal
 	name, err := parser.NextToken()
 	if err != nil {
