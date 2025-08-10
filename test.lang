@@ -1,11 +1,18 @@
-
+func test(dq a, dd b, db c) {
+	printHex(a);
+	print(10);
+	printHex(b);
+	print(10);
+	printHex(c);
+	return;
+}
 
 func main(){
 	dq b = 0x0123456789abcdef;
-	db a = 0x0123456789abcdef;
+	dq a = 0x0123456789abcdef;
 	dq c = 0x0123456789abcdef;
 
-	printHex(a);
+	test(a, b, c);
 
 	return;
 }
