@@ -4,7 +4,7 @@ func test(dq a, dd b, db c) {
 	printHex(b);
 	print(10);
 	printHex(c);
-	return;
+	return 0xdeadbeef;
 }
 
 func main(){
@@ -12,7 +12,7 @@ func main(){
 	dq a = 0x0123456789abcdef;
 	dq c = 0x0123456789abcdef;
 
-	test(a, b, c);
-
+	dq d = test(a, b, c);
+	printHex(d);
 	return;
 }

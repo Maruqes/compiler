@@ -80,6 +80,24 @@ func PopStack64(reg byte) {
 	varL.lastPos += 8
 }
 
+func SumStack(n int) {
+	varL := GetVarList(SCOPE)
+	if varL == nil {
+		panic(fmt.Sprintf("Variable list for scope '%s' not found", SCOPE))
+	}
+	varL.lastPos += n
+	backend.Sum64_r_i(byte(backend.REG_RSP), uint64(n))
+}
+
+func SubStack(n int) {
+	varL := GetVarList(SCOPE)
+	if varL == nil {
+		panic(fmt.Sprintf("Variable list for scope '%s' not found", SCOPE))
+	}
+	varL.lastPos -= n
+	backend.Sub64_r_i(byte(backend.REG_RSP), uint64(n))
+}
+
 // var should be in rax
 func (vl *VarsList) AddVariable(name string, varType int) error {
 	// PushStack64(byte(backend.REG_RAX))

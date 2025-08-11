@@ -216,7 +216,7 @@ func (p *Parser) NextToken() (string, error) {
 }
 
 // uses 64 bit registers to get the value of the token
-func getValueFromToken(token string, reg byte) error {
+func getValueFromToken(parser *Parser, token string, reg byte) error {
 	//detect number and variables
 
 	// xFFFFFFFF hex
@@ -249,6 +249,14 @@ func getValueFromToken(token string, reg byte) error {
 		return nil
 	}
 
+	if isFunctionCall(token) {
+		err := parseFunctionCall(parser, token)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
 	return err
 }
 
@@ -275,13 +283,19 @@ func eatSemicolon(parser *Parser) {
 }
 
 // uses RBX and RDX in division
-func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *string) {
+func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *string, bool) {
 	token, err := parser.NextToken()
 	if err != nil {
-		return err, nil
+		return err, nil, false
 	}
 
-	err = getValueFromToken(token, reg)
+	for _, stop := range stopSymbol {
+		if token == stop {
+			return nil, &token, false
+		}
+	}
+
+	err = getValueFromToken(parser, token, reg)
 	if err != nil {
 		panic("Error getting value from token: " + err.Error())
 	}
@@ -290,21 +304,21 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 		//can be symbol or ; to signal end of expression
 		symbol, err := parser.NextToken()
 		if err != nil {
-			return err, nil
+			return err, nil, false
 		}
 
 		for _, stop := range stopSymbol {
 			if symbol == stop {
-				return nil, &symbol
+				return nil, &symbol, true
 			}
 		}
 
 		token, err = parser.NextToken()
 		if err != nil {
-			return err, nil
+			return err, nil, false
 		}
 
-		err = getValueFromToken(token, byte(backend.REG_RBX))
+		err = getValueFromToken(parser, token, byte(backend.REG_RBX))
 		if err != nil {
 			panic("Error getting value from token: " + err.Error())
 		}
@@ -325,7 +339,7 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 			backend.Div64_r(byte(backend.REG_RBX))
 		default:
 			fmt.Printf("Current line is %d\n", parser.lineNumber)
-			return fmt.Errorf("Unknown symbol '%s' found at line %d", symbol, parser.lineNumber), nil
+			return fmt.Errorf("Unknown symbol '%s' found at line %d", symbol, parser.lineNumber), nil, false
 		}
 	}
 }
@@ -334,7 +348,7 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 func getAfterEqual(parser *Parser) error {
 	//parse token, parse symbol (+-*/ etc), parse token.... til ;
 	eatEqual(parser)
-	err, _ := getUntilSymbol(parser, []string{";"}, byte(backend.REG_RAX))
+	err, _, _ := getUntilSymbol(parser, []string{";"}, byte(backend.REG_RAX))
 	return err
 }
 

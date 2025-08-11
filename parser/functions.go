@@ -68,12 +68,16 @@ func parseFunctionCall(parser *Parser, funcName string) error {
 	//falta checkar tipos e numero de parametros
 	n_params := 0
 	for {
-		err, symbol := getUntilSymbol(parser, []string{")", ","}, byte(backend.REG_RAX))
+		err, symbol, parsed := getUntilSymbol(parser, []string{")", ","}, byte(backend.REG_RAX))
 		if err != nil {
 			return fmt.Errorf("Error getting parameters for function '%s': %v", funcName, err)
 		}
-		PushStack64(byte(backend.REG_RAX))
-		n_params++
+
+		if parsed {
+			PushStack64(byte(backend.REG_RAX))
+			n_params++
+		}
+
 		fmt.Println("Symbol:", string(*symbol))
 		if *symbol == ")" {
 			break
@@ -85,15 +89,20 @@ func parseFunctionCall(parser *Parser, funcName string) error {
 		return fmt.Errorf("Function '%s' not found", funcName)
 	}
 
-	if functype.Params != nil && len(functype.Params) != n_params {
+	if functype.Params == nil || len(functype.Params) != n_params {
 		return fmt.Errorf("Function '%s' expects %d parameters, got %d on line %d", funcName, len(functype.Params), n_params, parser.lineNumber)
 	}
 
-	eatSemicolon(parser)
 	backend.Call(funcName)
-	for i := 0; i < n_params; i++ {
-		PopStack64(byte(backend.REG_RAX))
-	}
+	SubStack(n_params*8)
+	return nil
+}
+
+func parseReturn(parser *Parser) error {
+	getUntilSymbol(parser, []string{";"}, byte(backend.REG_RAX))
+	LeaveStack()
+	backend.Ret()
+	setScope(GLOBAL_SCOPE)
 	return nil
 }
 
@@ -130,7 +139,6 @@ func temporaryPrintVar(parser *Parser) error {
 	return nil
 }
 
-
 func temporaryPrintHexVar(parser *Parser) error {
 	//parse "(", "var_name", ")"
 	if parser.file == nil {
@@ -163,7 +171,7 @@ func temporaryPrintHexVar(parser *Parser) error {
 
 	vl.GetVariable(varName, byte(backend.REG_RAX))
 	wrapper.PrintHex(byte(backend.REG_RAX))
-	
+
 	eatSemicolon(parser)
 	return nil
 }
@@ -204,6 +212,7 @@ func parseCodeBlock(parser *Parser) error {
 			if err := parseFunctionCall(parser, token); err != nil {
 				return err
 			}
+			eatSemicolon(parser)
 			continue
 		}
 
@@ -253,10 +262,9 @@ func parseCodeBlock(parser *Parser) error {
 				return err
 			}
 		case "return":
-			LeaveStack()
-			backend.Ret()
-			eatSemicolon(parser)
-			setScope(GLOBAL_SCOPE)
+			if err := parseReturn(parser); err != nil {
+				return err
+			}
 		default:
 			return fmt.Errorf("Unknown token: '%s' found at line %d", token, parser.lineNumber)
 		}
