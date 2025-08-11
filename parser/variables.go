@@ -132,7 +132,16 @@ func (vl *VarsList) GetVariable(name string, reg byte) error {
 	for _, v := range vl.vars {
 		if v.Name == name {
 			fmt.Println("Loading variable:", v.Name, "of type:", v.Type, "at position:", v.Position)
-			backend.Mov64_r_mi(reg, byte(backend.REG_RBP), int(v.Position))
+			switch v.Type {
+			case DB:
+				backend.Mov8_r_mi(reg, byte(backend.REG_RBP), int(v.Position))
+			case DW:
+				backend.Mov16_r_mi(reg, byte(backend.REG_RBP), int(v.Position))
+			case DD:
+				backend.Mov32_r_mi(reg, byte(backend.REG_RBP), int(v.Position))
+			case DQ:
+				backend.Mov64_r_mi(reg, byte(backend.REG_RBP), int(v.Position))
+			}
 			return nil
 		}
 	}
