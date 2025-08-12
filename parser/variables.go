@@ -163,7 +163,7 @@ func (vl *VarsList) GetVariable(name string, reg byte) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("Variable %s not found in scope %s", name, SCOPE)
+	return fmt.Errorf("Variable %s not found in scope %s in line", name, SCOPE)
 }
 
 func (vl *VarsList) GetVariableStruct(name string, reg byte) (*Variable, error) {

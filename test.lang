@@ -12,7 +12,9 @@ func main(){
 	dq a = 0x0123456789abcdef;
 	dq c = 0x0123456789abcdef;
 
-	dq d = test(a, b, c);
-	printHex(d);
+
+	if 1+1+1+1 > 2+1+1{
+		printHex(a);
+	}
 	return;
 }

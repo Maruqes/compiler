@@ -14,9 +14,12 @@ type Parser struct {
 	lineNumber int
 }
 
+
+var comparisonOperators = []string{"==", "!=", "<=", ">=", "<", ">"}
+
 // contains solo char that compose predefined tokens
-var composingTokens = []string{"{", "}", "(", ")", "[", "]", ";", ",", "+", "-", "*", "%", "=", "!", "<", ">", "&", "|", "?", "/", "==", "!=", "<=", ">=", "&&", "||",
-	"++", "--", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "//"}
+var composingTokens = append([]string{"{", "}", "(", ")", "[", "]", ";", ",", "+", "-", "*", "%", "=", "!", "&", "|", "?", "/",
+	"++", "--", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "//"}, comparisonOperators...)
 
 func (p *Parser) StartParse(fileName string) error {
 	//open file
@@ -297,7 +300,7 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 
 	err = getValueFromToken(parser, token, reg)
 	if err != nil {
-		panic("Error getting value from token: " + err.Error())
+		panic("Error getting value from token in line " + fmt.Sprintf("%d: %s", parser.lineNumber, err.Error()))
 	}
 
 	for {
@@ -320,7 +323,7 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 
 		err = getValueFromToken(parser, token, byte(backend.REG_RBX))
 		if err != nil {
-			panic("Error getting value from token: " + err.Error())
+			panic("Error getting value from token in line " + fmt.Sprintf("%d: %s", parser.lineNumber, err.Error()))
 		}
 
 		switch symbol {

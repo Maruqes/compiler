@@ -94,7 +94,7 @@ func parseFunctionCall(parser *Parser, funcName string) error {
 	}
 
 	backend.Call(funcName)
-	SubStack(n_params*8)
+	SubStack(n_params * 8)
 	return nil
 }
 
@@ -103,6 +103,52 @@ func parseReturn(parser *Parser) error {
 	LeaveStack()
 	backend.Ret()
 	setScope(GLOBAL_SCOPE)
+	return nil
+}
+
+/*
+if a == b {
+}
+*/
+var ifCount = 0
+
+func parseIf(parser *Parser) error {
+	ifcc := fmt.Sprintf("if_end%d", ifCount)
+	err, symbol, _ := getUntilSymbol(parser, comparisonOperators, byte(backend.REG_RAX))
+	if err != nil {
+		return err
+	}
+	PushStack64(byte(backend.REG_RAX))
+
+	err, _, _ = getUntilSymbol(parser, []string{"{"}, byte(backend.REG_RAX))
+	if err != nil {
+		return err
+	}
+	parser.SeekBack(1) //seeks back because "parseCodeBlock" consumes the "{"
+	PopStack64(byte(backend.REG_RBX))
+
+	backend.Cmp64_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
+
+	switch *symbol {
+	case "==":
+		backend.Jcc(ifcc, byte(backend.JNE_OPCODE))
+	case "!=":
+		backend.Jcc(ifcc, byte(backend.JE_OPCODE))
+	case "<=":
+		backend.Jcc(ifcc, byte(backend.JG_OPCODE))
+	case ">=":
+		backend.Jcc(ifcc, byte(backend.JL_OPCODE))
+	case "<":
+		backend.Jcc(ifcc, byte(backend.JGE_OPCODE))
+	case ">":
+		backend.Jcc(ifcc, byte(backend.JLE_OPCODE))
+	}
+
+	err = parseCodeBlock(parser)
+	if err != nil {
+		return err
+	}
+	backend.Create_label(ifcc)
 	return nil
 }
 
@@ -263,6 +309,10 @@ func parseCodeBlock(parser *Parser) error {
 			}
 		case "return":
 			if err := parseReturn(parser); err != nil {
+				return err
+			}
+		case "if":
+			if err := parseIf(parser); err != nil {
 				return err
 			}
 		default:
