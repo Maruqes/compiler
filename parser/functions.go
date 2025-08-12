@@ -106,52 +106,6 @@ func parseReturn(parser *Parser) error {
 	return nil
 }
 
-/*
-if a == b {
-}
-*/
-var ifCount = 0
-
-func parseIf(parser *Parser) error {
-	ifcc := fmt.Sprintf("if_end%d", ifCount)
-	err, symbol, _ := getUntilSymbol(parser, comparisonOperators, byte(backend.REG_RAX))
-	if err != nil {
-		return err
-	}
-	PushStack64(byte(backend.REG_RAX))
-
-	err, _, _ = getUntilSymbol(parser, []string{"{"}, byte(backend.REG_RAX))
-	if err != nil {
-		return err
-	}
-	parser.SeekBack(1) //seeks back because "parseCodeBlock" consumes the "{"
-	PopStack64(byte(backend.REG_RBX))
-
-	backend.Cmp64_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
-
-	switch *symbol {
-	case "==":
-		backend.Jcc(ifcc, byte(backend.JNE_OPCODE))
-	case "!=":
-		backend.Jcc(ifcc, byte(backend.JE_OPCODE))
-	case "<=":
-		backend.Jcc(ifcc, byte(backend.JG_OPCODE))
-	case ">=":
-		backend.Jcc(ifcc, byte(backend.JL_OPCODE))
-	case "<":
-		backend.Jcc(ifcc, byte(backend.JGE_OPCODE))
-	case ">":
-		backend.Jcc(ifcc, byte(backend.JLE_OPCODE))
-	}
-
-	err = parseCodeBlock(parser)
-	if err != nil {
-		return err
-	}
-	backend.Create_label(ifcc)
-	return nil
-}
-
 func temporaryPrintVar(parser *Parser) error {
 	//parse "(", "var_name", ")"
 	if parser.file == nil {
@@ -221,6 +175,50 @@ func temporaryPrintHexVar(parser *Parser) error {
 	eatSemicolon(parser)
 	return nil
 }
+
+/*
+dq a = 20
+a=30
+*/
+func parseVariableDeclaration(parser *Parser, token string) (bool, error) {
+	varList := GetVarList(SCOPE)
+	if varList == nil {
+		return false, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+	}
+
+	//if its a var redefenition
+	if varList.DoesVarExist(token) {
+		return true, varList.setVarStruct(parser, token)
+	}
+
+	switch token {
+	case "dq":
+		// create 64-bit variable
+		if err := createVarStruct(parser, DQ); err != nil {
+			return false, err
+		}
+	case "dd":
+		// create 32-bit variable
+		if err := createVarStruct(parser, DD); err != nil {
+			return false, err
+		}
+	case "dw":
+		// create 16-bit variable
+		if err := createVarStruct(parser, DW); err != nil {
+			return false, err
+		}
+	case "db":
+		// create 8-bit variable
+		if err := createVarStruct(parser, DB); err != nil {
+			return false, err
+		}
+	default:
+		return false, fmt.Errorf("Unknown token: '%s' found at line %d", token, parser.lineNumber)
+	}
+
+	return true, nil
+}
+
 func parseCodeBlock(parser *Parser) error {
 	if parser.file == nil {
 		return os.ErrInvalid
@@ -252,24 +250,6 @@ func parseCodeBlock(parser *Parser) error {
 			return err
 		}
 
-		//check for function calls
-
-		if isFunctionCall(token) {
-			if err := parseFunctionCall(parser, token); err != nil {
-				return err
-			}
-			eatSemicolon(parser)
-			continue
-		}
-
-		//if its a var redefenition
-		if varList.DoesVarExist(token) {
-			if err := varList.setVarStruct(parser, token); err != nil {
-				return err
-			}
-			continue
-		}
-
 		if token == "print" {
 			if err := temporaryPrintVar(parser); err != nil {
 				return err
@@ -287,26 +267,6 @@ func parseCodeBlock(parser *Parser) error {
 		switch token {
 		case "}":
 			return nil
-		case "dq":
-			// create 64-bit variable
-			if err := createVarStruct(parser, DQ); err != nil {
-				return err
-			}
-		case "dd":
-			// create 32-bit variable
-			if err := createVarStruct(parser, DD); err != nil {
-				return err
-			}
-		case "dw":
-			// create 16-bit variable
-			if err := createVarStruct(parser, DW); err != nil {
-				return err
-			}
-		case "db":
-			// create 8-bit variable
-			if err := createVarStruct(parser, DB); err != nil {
-				return err
-			}
 		case "return":
 			if err := parseReturn(parser); err != nil {
 				return err
@@ -315,7 +275,28 @@ func parseCodeBlock(parser *Parser) error {
 			if err := parseIf(parser); err != nil {
 				return err
 			}
+		case "for":
+			if err := parseFor(parser); err != nil {
+				return err
+			}
 		default:
+
+			if isFunctionCall(token) {
+				if err := parseFunctionCall(parser, token); err != nil {
+					return err
+				}
+				eatSemicolon(parser)
+				continue
+			}
+
+			parsed, err := parseVariableDeclaration(parser, token)
+			if err != nil {
+				return err
+			}
+			if parsed {
+				continue
+			}
+
 			return fmt.Errorf("Unknown token: '%s' found at line %d", token, parser.lineNumber)
 		}
 	}

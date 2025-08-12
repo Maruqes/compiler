@@ -13,8 +13,19 @@ func main(){
 	dq c = 0x0123456789abcdef;
 
 
-	if 1+1+1+1 > 2+1+1{
+	if 1+1+1+1 >= 2+1+1{
 		printHex(a);
+		test(a, b, c);
 	}
+
+	for dq i = 0; i <= 10; i = i + 1; {
+		printHex(i);
+	}
+
+	printHex(c);
+	printHex(c);
+	printHex(c);
+
+
 	return;
 }

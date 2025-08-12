@@ -14,7 +14,6 @@ type Parser struct {
 	lineNumber int
 }
 
-
 var comparisonOperators = []string{"==", "!=", "<=", ">=", "<", ">"}
 
 // contains solo char that compose predefined tokens
@@ -223,13 +222,14 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 	//detect number and variables
 
 	// xFFFFFFFF hex
-
-	if token[0] == '0' && token[1] == 'x' {
-		// parse hex number
-		num, err := strconv.ParseUint(token[2:], 16, 64)
-		if err == nil {
-			backend.Mov64_r_i(reg, num)
-			return nil
+	if len(token) > 2 {
+		if token[0] == '0' && token[1] == 'x' {
+			// parse hex number
+			num, err := strconv.ParseUint(token[2:], 16, 64)
+			if err == nil {
+				backend.Mov64_r_i(reg, num)
+				return nil
+			}
 		}
 	}
 
