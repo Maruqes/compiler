@@ -279,6 +279,10 @@ func parseCodeBlock(parser *Parser) error {
 			if err := parseFor(parser); err != nil {
 				return err
 			}
+		case "while":
+			if err := parseWhile(parser); err != nil {
+				return err
+			}
 		default:
 
 			if isFunctionCall(token) {
