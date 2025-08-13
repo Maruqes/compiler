@@ -7,9 +7,7 @@ func test2(){
 
 
 func test(dq a, dd b, db c) {
-	defer {
-		printHex(0x1234123412341234);
-	}
+	
 	printHex(a);
 	print(10);
 	printHex(b);
