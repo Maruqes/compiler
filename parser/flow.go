@@ -48,8 +48,10 @@ if a == b {
 var ifCount = 0
 
 func parseIf(parser *Parser) error {
-	ifcc := fmt.Sprintf("if_end%d", ifCount)
-	err := parseCondition(parser, ifcc, "{", true)
+	ifCount++
+	ifelse := fmt.Sprintf("if_else%d", ifCount)
+	ifleave := fmt.Sprintf("if_leave%d", ifCount)
+	err := parseCondition(parser, ifelse, "{", true)
 	if err != nil {
 		return err
 	}
@@ -58,8 +60,27 @@ func parseIf(parser *Parser) error {
 	if err != nil {
 		return err
 	}
-	backend.Create_label(ifcc)
-	ifCount++
+	backend.Jmp(ifleave)
+	backend.Create_label(ifelse)
+
+	token, err := parser.NextToken()
+	if err != nil {
+		return err
+	}
+
+	switch token {
+	case "else":
+		err = parseCodeBlock(parser)
+		if err != nil {
+			return err
+		}
+	case "elif":
+		parseIf(parser)
+	default:
+		parser.SeekBack(int64(len(token)))
+	}
+	backend.Create_label(ifleave)
+
 	return nil
 }
 

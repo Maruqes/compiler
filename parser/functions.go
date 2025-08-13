@@ -154,22 +154,10 @@ func temporaryPrintHexVar(parser *Parser) error {
 		return fmt.Errorf("Expected '(', got '%s'", token)
 	}
 
-	varName, err := parser.NextToken()
+	err, _, _ = getUntilSymbol(parser, []string{")"}, byte(backend.REG_RAX))
 	if err != nil {
 		return err
 	}
-
-	token, err = parser.NextToken()
-	if err != nil {
-		return err
-	}
-
-	if token != ")" {
-		return fmt.Errorf("Expected ')', got '%s'", token)
-	}
-	vl := GetVarList(SCOPE)
-
-	vl.GetVariable(varName, byte(backend.REG_RAX))
 	wrapper.PrintHex(byte(backend.REG_RAX))
 
 	eatSemicolon(parser)

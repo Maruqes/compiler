@@ -14,13 +14,15 @@ import (
 	"github.com/Maruqes/compiler/wrapper"
 )
 
-
-
+/*
+else/else if
+break/continue
+*/
 
 func main() {
 	var par parser.Parser
 	par.StartParse("test.lang")
-	
+
 	backend.Call("main")
 	wrapper.Exit(0)
 
