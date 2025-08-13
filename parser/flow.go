@@ -84,6 +84,60 @@ func parseIf(parser *Parser) error {
 	return nil
 }
 
+
+/*this exists to make breaks and continue possible so we can have fors inside fors*/
+type LoopBreaks struct {
+	breakLabel    string
+	continueLabel string
+}
+
+// stack needs to be first in first out
+var loopBreaks []LoopBreaks
+
+func PushLoopBreaks(breakLabel string, continueLabel string) {
+	loopBreaks = append(loopBreaks, LoopBreaks{
+		breakLabel:    breakLabel,
+		continueLabel: continueLabel,
+	})
+}
+
+func PopLoopBreaks() LoopBreaks {
+	if len(loopBreaks) == 0 {
+		return LoopBreaks{"", ""}
+	}
+	breakLabel := loopBreaks[len(loopBreaks)-1].breakLabel
+	continueLabel := loopBreaks[len(loopBreaks)-1].continueLabel
+	loopBreaks = loopBreaks[:len(loopBreaks)-1]
+	return LoopBreaks{breakLabel, continueLabel}
+}
+
+func PeekLoopBreaks() LoopBreaks {
+	if len(loopBreaks) == 0 {
+		return LoopBreaks{"", ""}
+	}
+	return loopBreaks[len(loopBreaks)-1]
+}
+
+func ParseNewBreak(parser *Parser) error {
+	loopBreak := PeekLoopBreaks()
+	if loopBreak.breakLabel == "" {
+		return fmt.Errorf("No loop break label found you are not in a loop")
+	}
+	backend.Jmp(loopBreak.breakLabel)
+	eatSemicolon(parser)
+	return nil
+}
+
+func ParseNewContinue(parser *Parser) error {
+	loopBreak := PeekLoopBreaks()
+	if loopBreak.continueLabel == "" {
+		return fmt.Errorf("No loop continue label found you are not in a loop")
+	}
+	backend.Jmp(loopBreak.continueLabel)
+	eatSemicolon(parser)
+	return nil
+}
+
 /*
 for dq i = 0; i < 10; i++ {
 }
@@ -91,11 +145,13 @@ for dq i = 0; i < 10; i++ {
 var forCount = 0
 
 func parseFor(parser *Parser) error {
+	forCount++
 	//label creation
 	forCond := fmt.Sprintf("for_cond%d", forCount)
 	forSecond := fmt.Sprintf("for_second%d", forCount)
 	forBody := fmt.Sprintf("for_body%d", forCount)
 	forEnd := fmt.Sprintf("for_end%d", forCount)
+	PushLoopBreaks(forEnd, forSecond)
 
 	/*
 		PARSE FIRST VAR DECLARATION
@@ -145,16 +201,18 @@ func parseFor(parser *Parser) error {
 	}
 	backend.Jmp(forSecond) //we jump to second var declaration (i++)
 	backend.Create_label(forEnd)
-	forCount++
+	PopLoopBreaks()
 	return nil
 }
 
 var whileCount = 0
 
 func parseWhile(parser *Parser) error {
+	whileCount++
 	//label creation
 	whileCond := fmt.Sprintf("while_cond%d", whileCount)
 	whileEnd := fmt.Sprintf("while_end%d", whileCount)
+	PushLoopBreaks(whileEnd, whileCond)
 
 	backend.Create_label(whileCond)
 	err := parseCondition(parser, whileEnd, "{", true)
@@ -168,6 +226,6 @@ func parseWhile(parser *Parser) error {
 	}
 	backend.Jmp(whileCond)
 	backend.Create_label(whileEnd)
-	whileCount++
+	PopLoopBreaks()
 	return nil
 }

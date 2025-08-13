@@ -13,14 +13,26 @@ func main(){
 	dq c = 0x0123456789abcdef;
 
 
-	if 3 == 2 {
-		printHex(5);
-	} elif 4 == 3 {
-		printHex(6);
-	} elif 4 == 4 {
-		printHex(7);
-	} else {
-		printHex(8);
+	dq i = 0;
+	dq j = 0;
+
+	while i < 10{
+		if i == 5 {
+			i = i + 1;
+			while j < 10 {
+				if j == 5 {
+					j = j + 1;
+					test(a,b,c);
+					continue;
+				}
+				printHex(j+0xff00);
+				j = j + 1;
+			}
+			continue;
+		}
+		printHex(i);
+		i = i + 1;
 	}
+
 	return;
 }
