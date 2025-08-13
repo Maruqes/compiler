@@ -12,10 +12,11 @@ const GLOBAL_SCOPE = "global"
 var SCOPE = GLOBAL_SCOPE
 
 const (
-	DQ = 8
-	DD = 4
-	DW = 2
-	DB = 1
+	DQ  = 8
+	DD  = 4
+	DW  = 2
+	DB  = 1
+	PTR = 8
 )
 
 func isTypeValid(varType int) bool {
@@ -206,6 +207,34 @@ func (vl *VarsList) setVarStruct(parser *Parser, varName string) error {
 		backend.And64_r_i(byte(backend.REG_RAX), 0x00000000ffffffff)
 	case DQ:
 		backend.And64_r_i(byte(backend.REG_RAX), 0xffffffffffffffff)
+	}
+
+	return nil
+}
+
+func createPointerVar(parser *Parser) error {
+	name, err := parser.NextToken()
+	if err != nil {
+		return err
+	}
+
+	varList := GetVarList(SCOPE)
+	if varList == nil {
+		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+	}
+
+	if varList.DoesVarExist(name) {
+		return fmt.Errorf("Variable '%s' already exists in scope '%s' in line %d", name, SCOPE, parser.lineNumber)
+	}
+
+	// get the value after the equal sign in RAX
+	if err := getAfterEqual(parser); err != nil {
+		return err
+	}
+
+	err = varList.AddVariable(name, DQ)
+	if err != nil {
+		return err
 	}
 
 	return nil

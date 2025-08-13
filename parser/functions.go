@@ -241,6 +241,11 @@ func parseVariableDeclaration(parser *Parser, token string) (bool, error) {
 		if err := createVarStruct(parser, DB); err != nil {
 			return false, err
 		}
+	case "ptr":
+		// create pointer variable
+		if err := createPointerVar(parser); err != nil {
+			return false, err
+		}
 	default:
 		return false, fmt.Errorf("Unknown token: '%s' found at line %d", token, parser.lineNumber)
 	}
@@ -373,7 +378,7 @@ func getParams(parser *Parser) ([]ParamType, error) {
 			continue
 		}
 
-		if token == "dq" || token == "dd" || token == "dw" || token == "db" {
+		if token == "dq" || token == "dd" || token == "dw" || token == "db" || token == "ptr" {
 			paramType, err := getTypeFromToken(token)
 			if err != nil {
 				return nil, fmt.Errorf("Error getting type from token '%s': %v", token, err)

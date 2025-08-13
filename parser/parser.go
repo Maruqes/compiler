@@ -218,8 +218,13 @@ func (p *Parser) NextToken() (string, error) {
 }
 
 // uses 64 bit registers to get the value of the token
+// MAY USE RBX
 func getValueFromToken(parser *Parser, token string, reg byte) error {
 	//detect number and variables
+	varList := GetVarList(SCOPE)
+	if varList == nil {
+		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+	}
 
 	// xFFFFFFFF hex
 	if len(token) > 2 {
@@ -233,6 +238,55 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 		}
 	}
 
+	if len(token) >= 1 {
+		switch token[0] {
+		case '&':
+			//create pointer
+			token, err := parser.NextToken()
+			if err != nil {
+				return err
+			}
+
+			//check if token is a variable
+			varStruct, err := varList.GetVariableStruct(token, reg)
+			if err != nil {
+				return err
+			}
+
+			backend.Mov64_r_r(reg, byte(backend.REG_RBP))
+			backend.Mov64_r_i(byte(backend.REG_RBX), uint64(varStruct.Position))
+			backend.Sum64_r_r(reg, byte(backend.REG_RBX))
+
+			return nil
+		case '*':
+			numberOfDereferences := 1
+			//create pointer
+			token, err := parser.NextToken()
+			if err != nil {
+				return err
+			}
+
+			for token == "*" {
+				numberOfDereferences++
+				token, err = parser.NextToken()
+				if err != nil {
+					return err
+				}
+			}
+
+			//check if token is a variable
+			err = varList.GetVariable(token, reg)
+			if err != nil {
+				return err
+			}
+
+			for i := 0; i < numberOfDereferences; i++ {
+				backend.Mov64_r_m(reg, reg)
+			}
+			return nil
+		}
+	}
+
 	//numbers
 	//check if token is a number
 	num, err := strconv.Atoi(token)
@@ -242,10 +296,6 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 		return nil
 	}
 
-	varList := GetVarList(SCOPE)
-	if varList == nil {
-		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
-	}
 	//check if token is a variable
 	err = varList.GetVariable(token, reg)
 	if err == nil {
@@ -384,6 +434,8 @@ func getTypeFromToken(token string) (int, error) {
 	switch token {
 	case "dq":
 		return DQ, nil // 64-bit variable
+	case "ptr":
+		return PTR, nil // pointer variable
 	case "dd":
 		return DD, nil // 32-bit variable
 	case "dw":
