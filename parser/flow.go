@@ -77,7 +77,7 @@ func parseIf(parser *Parser) error {
 	case "elif":
 		parseIf(parser)
 	default:
-		parser.SeekBack(int64(len(token)))
+		parser.SeekBack(int64(len(token)+1))
 	}
 	backend.Create_label(ifleave)
 

@@ -1,9 +1,23 @@
+func test2(){
+	defer {
+		printHex(0xabcdabcd);
+	}
+	return;
+}
+
+
 func test(dq a, dd b, db c) {
+	defer {
+		printHex(0x1234123412341234);
+	}
 	printHex(a);
 	print(10);
 	printHex(b);
 	print(10);
 	printHex(c);
+
+	test2();
+
 	return 0xdeadbeef;
 }
 
@@ -11,28 +25,23 @@ func main(){
 	dq b = 0x0123456789abcdef;
 	dq a = 0x0123456789abcdef;
 	dq c = 0x0123456789abcdef;
+	defer {
+		printHex(0xdeadbeef);
+	}
 
 
 	dq i = 0;
 	dq j = 0;
 
 	while i < 10{
-		if i == 5 {
-			i = i + 1;
-			while j < 10 {
-				if j == 5 {
-					j = j + 1;
-					test(a,b,c);
-					continue;
-				}
-				printHex(j+0xff00);
-				j = j + 1;
-			}
-			continue;
+		defer {
+			printHex(0xdeaabeef);
 		}
 		printHex(i);
 		i = i + 1;
 	}
+
+	test(a,b,c);
 
 	return;
 }
