@@ -218,7 +218,6 @@ func (p *Parser) NextToken() (string, error) {
 }
 
 // uses 64 bit registers to get the value of the token
-// MAY USE RBX
 func getValueFromToken(parser *Parser, token string, reg byte) error {
 	//detect number and variables
 	varList := GetVarList(SCOPE)
