@@ -253,9 +253,8 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 				return err
 			}
 
-			backend.Mov64_r_r(reg, byte(backend.REG_RBP))
-			backend.Mov64_r_i(byte(backend.REG_RBX), uint64(varStruct.Position))
-			backend.Sum64_r_r(reg, byte(backend.REG_RBX))
+			backend.Mov64_r_i(reg, uint64(varStruct.Position))
+			backend.Sum64_r_r(reg, byte(backend.REG_RBP))
 
 			return nil
 		case '*':
