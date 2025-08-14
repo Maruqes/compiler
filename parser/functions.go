@@ -134,8 +134,10 @@ func parseDefer(parser *Parser) error {
 }
 
 func parseReturn(parser *Parser) error {
-	getUntilSymbol(parser, []string{";"}, byte(backend.REG_RAX))
-
+	err, _, _ := getUntilSymbol(parser, []string{";"}, byte(backend.REG_RAX))
+	if err != nil {
+		return err
+	}
 	defers := getAllDefers()
 	for _, deferBlock := range defers {
 		backend.Call(deferBlock.startLabel)

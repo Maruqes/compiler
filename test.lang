@@ -1,28 +1,10 @@
-func test2(){
-	defer{
-		printHex(10);
-	}
-	printHex(5);
-	return;
-}
-
-func test(ptr p, ptr p2, ptr a){
-	printHex(p);
-	printHex(p2);
-	printHex(***a);
-	return;
-}
 
 func main(){
-	test2();
-	dq a = 0x0123456789abcdef;
-	dq b = 0x0123456789abcdef;
+	dq a = 5;
+	dq arr = {1,2,3,4};
 
-	ptr d = &a;
-
-	ptr e = &d;
-
-	test(d, &b, &e);
+	printHex(&a);
+	printHex(arr);
 
 	return;
 }

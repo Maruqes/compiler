@@ -11,22 +11,8 @@ const GLOBAL_SCOPE = "global"
 
 var SCOPE = GLOBAL_SCOPE
 
-const (
-	DQ  = 8
-	DD  = 4
-	DW  = 2
-	DB  = 1
-	PTR = 8
-)
 
-func isTypeValid(varType int) bool {
-	switch varType {
-	case DQ, DD, DW, DB:
-		return true
-	default:
-		return false
-	}
-}
+
 
 func setScope(scope string) {
 	SCOPE = scope
