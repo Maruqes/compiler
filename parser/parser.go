@@ -216,6 +216,21 @@ func (p *Parser) NextToken() (string, error) {
 	return res, nil
 }
 
+func (p *Parser) Peek() (string, error) {
+	if p.file == nil {
+		return "", os.ErrInvalid
+	}
+
+	// peek the next character without advancing the cursor
+	token, err := p.NextToken()
+	if err != nil {
+		return "", err
+	}
+	p.SeekBack(int64(len(token)))
+
+	return token, nil
+}
+
 func eatEqual(parser *Parser) {
 	//parse = else panic
 	equal, err := parser.NextToken()
@@ -332,4 +347,3 @@ func StartParsing(parser *Parser) error {
 		}
 	}
 }
-

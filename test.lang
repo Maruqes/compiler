@@ -1,17 +1,18 @@
 func main(){
-
-	dq arr = dq{1,2,3, dq{4,5,6}};
+	dq mds2 = dq{7,8,9};
+	dq mds =dq{4,5,6, mds2};
+	dq arr = dq{1,2,3, mds};
 
 
 	for dq i = 0; i < 4; i=i+1; {
 		printHex(arr[i*8]);
-
-		if i == 3 {
-			for dq j = 0; j < 4; j=j+1; {
-				printHex(arr[i*8][j*8]);
-			}
-		}
 	}
+
+
+	for i = 0; i < 3; i=i+1; {
+		printHex(arr[8*3][8*3][i*8]);
+	}
+
 
 	return;
 }

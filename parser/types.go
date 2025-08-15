@@ -2,7 +2,6 @@ package parser
 
 import (
 	"fmt"
-	"io"
 	"strconv"
 
 	backend "github.com/Maruqes/compiler/swig"
@@ -133,6 +132,7 @@ func parsePointer(parser *Parser, token string, reg byte) (bool, error) {
 	return false, nil
 }
 
+// precisa de refactor e pensamentos foda
 func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 
 	arrType, err := getTypeFromToken(token)
@@ -153,60 +153,29 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 		return false, nil
 	}
 
-	//count the number of elements
-	//so we agree peeking into the next tokens and seekback to parse it normally
-	// 1) remember where we are
-	pos, err := parser.file.Seek(0, io.SeekCurrent)
-	if err != nil {
-		return false, err
-	}
-
-	paramCount := 0
 	err, symbol, parsed := getUntilSymbol(parser, []string{"}", ","}, reg)
-	if err != nil {
-		return false, err
-	}
-	for *symbol == "}" || *symbol == "," {
-		if parsed {
-			paramCount++
-		}
-		if *symbol == "}" {
-			break
-		}
-		err, symbol, parsed = getUntilSymbol(parser, []string{"}", ","}, reg)
-		if err != nil {
-			return false, err
-		}
-	}
-
-	//after counting the number of params we get seek back and parse them
-	parser.file.Seek(pos, io.SeekStart) //seek back to the position we were
-
-	SubStack(arrType * paramCount)
-	err, symbol, parsed = getUntilSymbol(parser, []string{"}", ","}, reg)
 	if err != nil {
 		return false, err
 	}
 	count := 0
 	for *symbol == "}" || *symbol == "," {
 		if parsed {
-			//place variable in correct array place
-			offset := (count * arrType)
+			SubStack(arrType)
 			switch arrType {
 			case DQ:
-				backend.Mov64_mi_r(byte(backend.REG_RSP), uint(offset), reg)
+				backend.Mov64_m_r(byte(backend.REG_RSP), reg)
 			case DD:
-				backend.Mov32_mi_r(byte(backend.REG_RSP), uint(offset), reg)
+				backend.Mov32_m_r(byte(backend.REG_RSP), reg)
 			case DW:
-				backend.Mov16_mi_r(byte(backend.REG_RSP), uint(offset), reg)
+				backend.Mov16_m_r(byte(backend.REG_RSP), reg)
 			case DB:
-				backend.Mov8_mi_r(byte(backend.REG_RSP), uint(offset), reg)
+				backend.Mov8_m_r(byte(backend.REG_RSP), reg)
 			}
 			count++
 		}
 		if *symbol == "}" {
 			backend.Mov64_r_r(reg, byte(backend.REG_RSP))
-			return true, nil
+			break
 		}
 
 		err, symbol, parsed = getUntilSymbol(parser, []string{"}", ","}, reg)
@@ -215,7 +184,22 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 		}
 	}
 
-	return false, nil
+	//with the count number we are going to reverse the order in the stack so its the right order
+	i := 0
+	j := count - 1
+	for i < j {
+		fmt.Println("REVERSING ", count)
+		// load left/right
+		backend.Mov64_r_mi(byte(backend.REG_R11), byte(backend.REG_RSP), int(i*arrType))
+		backend.Mov64_r_mi(byte(backend.REG_R12), byte(backend.REG_RSP), int(j*arrType))
+		// swap
+		backend.Mov64_mi_r(byte(backend.REG_RSP), uint(i*arrType), byte(backend.REG_R12))
+		backend.Mov64_mi_r(byte(backend.REG_RSP), uint(j*arrType), byte(backend.REG_R11))
+		i++
+		j--
+	}
+
+	return true, nil
 }
 
 // uses r8
@@ -237,27 +221,29 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 
 	parsedOne := false
 
-	token, err = parser.NextToken()
-	if err != nil {
-		return false, err
-	}
+	for {
+		token, err = parser.NextToken()
+		if err != nil {
+			return false, err
+		}
 
-	if token != "[" {
-		parser.SeekBack(int64(len(token)))
-		return false, nil
-	}
+		if token != "[" {
+			parser.SeekBack(int64(len(token)))
+			break
+		}
 
-	err, _, parsed := getUntilSymbol(parser, []string{"]"}, byte(backend.REG_R8))
-	if err != nil {
-		return false, err
-	}
+		err, _, parsed := getUntilSymbol(parser, []string{"]"}, byte(backend.REG_R8))
+		if err != nil {
+			return false, err
+		}
 
-	if !parsed {
-		return false, fmt.Errorf("Array index not found for variable '%s' in scope '%s'", token, SCOPE)
-	}
+		if !parsed {
+			return false, fmt.Errorf("Array index not found for variable '%s' in scope '%s'", token, SCOPE)
+		}
 
-	backend.Mov64_r_mr(reg, reg, byte(backend.REG_R8))
-	parsedOne = true
+		backend.Mov64_r_mr(reg, reg, byte(backend.REG_R8))
+		parsedOne = true
+	}
 
 	return parsedOne, nil
 }
