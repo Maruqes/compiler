@@ -178,6 +178,7 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 			return false, err
 		}
 	}
+
 	//after counting the number of params we get seek back and parse them
 	parser.file.Seek(pos, io.SeekStart) //seek back to the position we were
 
@@ -229,12 +230,12 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 		return false, nil
 	}
 
-	err := varList.GetVariable(token, byte(backend.REG_R8))
+	err := varList.GetVariable(token, reg)
 	if err != nil {
 		return false, err
 	}
 
-	//var exists and we need to check for []
+	parsedOne := false
 
 	token, err = parser.NextToken()
 	if err != nil {
@@ -243,10 +244,10 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 
 	if token != "[" {
 		parser.SeekBack(int64(len(token)))
-		return false, nil //we dont return an error becouse it could be just a var declaration  a = 20, a[0] = 20, both valid we only want the second
+		return false, nil
 	}
 
-	err, _, parsed := getUntilSymbol(parser, []string{"]"}, reg)
+	err, _, parsed := getUntilSymbol(parser, []string{"]"}, byte(backend.REG_R8))
 	if err != nil {
 		return false, err
 	}
@@ -255,11 +256,10 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 		return false, fmt.Errorf("Array index not found for variable '%s' in scope '%s'", token, SCOPE)
 	}
 
-	//REG NEEDS TO BE MULTIPLIED BY THE TYPE
-	// backend.Mul64_r_i(reg, 0xFFFFFFFF) // -1 as 32-bit immediate (sign-extended)
-	backend.Mov64_r_mr(reg, byte(backend.REG_R8), reg)
+	backend.Mov64_r_mr(reg, reg, byte(backend.REG_R8))
+	parsedOne = true
 
-	return true, nil
+	return parsedOne, nil
 }
 
 // may uses r8

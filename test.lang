@@ -1,9 +1,17 @@
 func main(){
-	dq arr = dq{1,2,3,dq{4,5,6}};
-	dq arr2 = arr[3*8];
-	printHex(arr2[0]);
-	printHex(arr2[8]);
-	printHex(arr2[16]);
+
+	dq arr = dq{1,2,3, dq{4,5,6}};
+
+
+	for dq i = 0; i < 4; i=i+1; {
+		printHex(arr[i*8]);
+
+		if i == 3 {
+			for dq j = 0; j < 4; j=j+1; {
+				printHex(arr[i*8][j*8]);
+			}
+		}
+	}
 
 	return;
 }
