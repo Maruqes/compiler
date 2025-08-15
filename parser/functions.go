@@ -300,6 +300,7 @@ func parseCodeBlock(parser *Parser) error {
 			continue
 		}
 
+
 		switch token {
 		case "}":
 			return nil

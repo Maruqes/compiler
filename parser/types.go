@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"io"
 	"strconv"
 
 	backend "github.com/Maruqes/compiler/swig"
@@ -132,8 +133,17 @@ func parsePointer(parser *Parser, token string, reg byte) (bool, error) {
 	return false, nil
 }
 
-// assumir que o tipo do array é dq mas deve mudar no futuro
 func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
+
+	arrType, err := getTypeFromToken(token)
+	if err != nil {
+		return false, nil
+	}
+
+	token, err = parser.NextToken()
+	if err != nil {
+		return false, err
+	}
 
 	if len(token) < 1 {
 		return false, nil
@@ -143,14 +153,55 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 		return false, nil
 	}
 
+	//count the number of elements
+	//so we agree peeking into the next tokens and seekback to parse it normally
+	// 1) remember where we are
+	pos, err := parser.file.Seek(0, io.SeekCurrent)
+	if err != nil {
+		return false, err
+	}
+
+	paramCount := 0
 	err, symbol, parsed := getUntilSymbol(parser, []string{"}", ","}, reg)
 	if err != nil {
 		return false, err
 	}
 	for *symbol == "}" || *symbol == "," {
 		if parsed {
-			SubStack(8) //dq
-			backend.Mov64_r_m(reg, byte(backend.REG_RSP))
+			paramCount++
+		}
+		if *symbol == "}" {
+			break
+		}
+		err, symbol, parsed = getUntilSymbol(parser, []string{"}", ","}, reg)
+		if err != nil {
+			return false, err
+		}
+	}
+	//after counting the number of params we get seek back and parse them
+	parser.file.Seek(pos, io.SeekStart) //seek back to the position we were
+
+	SubStack(arrType * paramCount)
+	err, symbol, parsed = getUntilSymbol(parser, []string{"}", ","}, reg)
+	if err != nil {
+		return false, err
+	}
+	count := 0
+	for *symbol == "}" || *symbol == "," {
+		if parsed {
+			//place variable in correct array place
+			offset := (count * arrType)
+			switch arrType {
+			case DQ:
+				backend.Mov64_mi_r(byte(backend.REG_RSP), uint(offset), reg)
+			case DD:
+				backend.Mov32_mi_r(byte(backend.REG_RSP), uint(offset), reg)
+			case DW:
+				backend.Mov16_mi_r(byte(backend.REG_RSP), uint(offset), reg)
+			case DB:
+				backend.Mov8_mi_r(byte(backend.REG_RSP), uint(offset), reg)
+			}
+			count++
 		}
 		if *symbol == "}" {
 			backend.Mov64_r_r(reg, byte(backend.REG_RSP))
@@ -166,6 +217,52 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 	return false, nil
 }
 
+// uses r8
+func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
+
+	varList := GetVarList(SCOPE)
+	if varList == nil {
+		return false, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+	}
+
+	if !varList.DoesVarExist(token) {
+		return false, nil
+	}
+
+	err := varList.GetVariable(token, byte(backend.REG_R8))
+	if err != nil {
+		return false, err
+	}
+
+	//var exists and we need to check for []
+
+	token, err = parser.NextToken()
+	if err != nil {
+		return false, err
+	}
+
+	if token != "[" {
+		parser.SeekBack(int64(len(token)))
+		return false, nil //we dont return an error becouse it could be just a var declaration  a = 20, a[0] = 20, both valid we only want the second
+	}
+
+	err, _, parsed := getUntilSymbol(parser, []string{"]"}, reg)
+	if err != nil {
+		return false, err
+	}
+
+	if !parsed {
+		return false, fmt.Errorf("Array index not found for variable '%s' in scope '%s'", token, SCOPE)
+	}
+
+	//REG NEEDS TO BE MULTIPLIED BY THE TYPE
+	// backend.Mul64_r_i(reg, 0xFFFFFFFF) // -1 as 32-bit immediate (sign-extended)
+	backend.Mov64_r_mr(reg, byte(backend.REG_R8), reg)
+
+	return true, nil
+}
+
+// may uses r8
 // uses 64 bit registers to get the value of the token
 func getValueFromToken(parser *Parser, token string, reg byte) error {
 	//detect number and variables
@@ -190,7 +287,7 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 		return nil
 	}
 
-	parsed, err = parseVariablesFuncCalls(parser, token, reg)
+	parsed, err = parseArrays(parser, token, reg)
 	if err != nil {
 		return err
 	}
@@ -198,7 +295,15 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 		return nil
 	}
 
-	parsed, err = parseArrays(parser, token, reg)
+	parsed, err = parseGetArrayIndex(parser, token, reg)
+	if err != nil {
+		return err
+	}
+	if parsed {
+		return nil
+	}
+
+	parsed, err = parseVariablesFuncCalls(parser, token, reg)
 	if err != nil {
 		return err
 	}

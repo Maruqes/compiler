@@ -51,7 +51,6 @@ func PrintHex(reg byte) {
 		backend.Rshfit64(byte(backend.REG_R8), 4)
 	}
 
-
 	backend.Mov64_r_i(byte(backend.REG_RAX), 1)
 	backend.Mov64_r_i(byte(backend.REG_RDI), 1)
 	backend.Mov64_r_r(byte(backend.REG_RSI), byte(backend.REG_RSP))

@@ -4,6 +4,6 @@ a.out
 .vscode/
 .gdb_history
 .prettierignore
-/bin//bin/
+/bin/
 swig/backend_wrap.c
 swig/backend.go

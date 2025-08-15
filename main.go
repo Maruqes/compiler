@@ -15,8 +15,9 @@ import (
 )
 
 /*
-else/else if
-break/continue
+multiple arr referece arr[0][0][0]
+
+in a[x] x is a byte, we need to now if a is dq dd dw db and multiply x by 8, 4, 2, 1 respectively
 */
 
 func main() {

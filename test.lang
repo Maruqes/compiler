@@ -1,10 +1,9 @@
-
 func main(){
-	dq a = 5;
-	dq arr = {1,2,3,4};
-
-	printHex(&a);
-	printHex(arr);
+	dq arr = dq{1,2,3,dq{4,5,6}};
+	dq arr2 = arr[3*8];
+	printHex(arr2[0]);
+	printHex(arr2[8]);
+	printHex(arr2[16]);
 
 	return;
 }
