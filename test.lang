@@ -1,18 +1,27 @@
+
+
 func main(){
-	dq mds2 = dq{7,8,9};
-	dq mds =dq{4,5,6, mds2};
-	dq arr = dq{1,2,3, mds};
+	dq arr = dq{1,2,3,dq{10,11,12,dq{0xaa, dq{0x2020, 0x2021, 0x2022, 0x023}, 0xcc, 0xdd}}};
 
+	printHex(arr[0*8]);
+	printHex(arr[1*8]);
+	printHex(arr[2*8]);
+	printHex(arr[3*8]);
+	
+	printHex(arr[3*8][0*8]);
+	printHex(arr[3*8][1*8]);
+	printHex(arr[3*8][2*8]);
+	printHex(arr[3*8][3*8]);
 
-	for dq i = 0; i < 4; i=i+1; {
-		printHex(arr[i*8]);
-	}
+	printHex(arr[3*8][3*8][0*8]);
+	printHex(arr[3*8][3*8][1*8]);
+	printHex(arr[3*8][3*8][2*8]);
+	printHex(arr[3*8][3*8][3*8]);
 
-
-	for i = 0; i < 3; i=i+1; {
-		printHex(arr[8*3][8*3][i*8]);
-	}
-
+	printHex(arr[3*8][3*8][1*8][0*8]);
+	printHex(arr[3*8][3*8][1*8][1*8]);
+	printHex(arr[3*8][3*8][1*8][2*8]);
+	printHex(arr[3*8][3*8][1*8][3*8]);
 
 	return;
 }

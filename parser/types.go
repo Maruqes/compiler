@@ -132,6 +132,11 @@ func parsePointer(parser *Parser, token string, reg byte) (bool, error) {
 	return false, nil
 }
 
+var r15Stack bool = false
+var depth int = 0
+
+const maxDepth = 8 // shadow stack de 8 níveis (8*8 bytes)
+
 // precisa de refactor e pensamentos foda
 func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 
@@ -153,28 +158,55 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 		return false, nil
 	}
 
+	createdShadow := false
+	if !r15Stack {
+		r15Stack = true
+		createdShadow = true
+		SubStack(8 * maxDepth)
+		backend.Mov64_r_r(byte(backend.REG_R15), byte(backend.REG_RSP)) // r15 = base da shadow stack
+		depth = 0
+	}
+
+	// 3) Limite de profundidade
+	if depth >= maxDepth {
+		if createdShadow {
+			r15Stack = false
+		} // só limpa flag; não mexer no RSP
+		return false, fmt.Errorf("nesting de arrays excede maxDepth=%d", maxDepth)
+	}
+
+	numberOfElements := 4
+	SubStack(arrType * numberOfElements)
+	our_depth := depth
+	backend.Mov64_mi_r(byte(backend.REG_R15), uint(our_depth*8), byte(backend.REG_RSP))
+	depth++
+
 	err, symbol, parsed := getUntilSymbol(parser, []string{"}", ","}, reg)
 	if err != nil {
 		return false, err
 	}
 	count := 0
+
 	for *symbol == "}" || *symbol == "," {
+		backend.Mov64_r_mi(byte(backend.REG_R13), byte(backend.REG_R15), int(our_depth*8))
+		offset := uint(count * arrType)
 		if parsed {
-			SubStack(arrType)
 			switch arrType {
 			case DQ:
-				backend.Mov64_m_r(byte(backend.REG_RSP), reg)
+				backend.Mov64_mi_r(byte(backend.REG_R13), offset, reg)
 			case DD:
-				backend.Mov32_m_r(byte(backend.REG_RSP), reg)
+				backend.Mov32_mi_r(byte(backend.REG_R13), offset, reg)
 			case DW:
-				backend.Mov16_m_r(byte(backend.REG_RSP), reg)
+				backend.Mov16_mi_r(byte(backend.REG_R13), offset, reg)
 			case DB:
-				backend.Mov8_m_r(byte(backend.REG_RSP), reg)
+				backend.Mov8_mi_r(byte(backend.REG_R13), offset, reg)
+			default:
+				return false, fmt.Errorf("Unknown array type: %d on line %d", arrType, parser.lineNumber)
 			}
 			count++
 		}
 		if *symbol == "}" {
-			backend.Mov64_r_r(reg, byte(backend.REG_RSP))
+			backend.Mov64_r_r(reg, byte(backend.REG_R13))
 			break
 		}
 
@@ -184,20 +216,12 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 		}
 	}
 
-	//with the count number we are going to reverse the order in the stack so its the right order
-	i := 0
-	j := count - 1
-	for i < j {
-		fmt.Println("REVERSING ", count)
-		// load left/right
-		backend.Mov64_r_mi(byte(backend.REG_R11), byte(backend.REG_RSP), int(i*arrType))
-		backend.Mov64_r_mi(byte(backend.REG_R12), byte(backend.REG_RSP), int(j*arrType))
-		// swap
-		backend.Mov64_mi_r(byte(backend.REG_RSP), uint(i*arrType), byte(backend.REG_R12))
-		backend.Mov64_mi_r(byte(backend.REG_RSP), uint(j*arrType), byte(backend.REG_R11))
-		i++
-		j--
+	depth--
+
+	if createdShadow {
+		r15Stack = false
 	}
+
 
 	return true, nil
 }
