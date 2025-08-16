@@ -1,7 +1,53 @@
 
 
 func main(){
-	dq arr = dq{1,2,3,dq{10,11,12,dq{0xaa, dq{0x2020, 0x2021, 0x2022, 0x023}, 0xcc, 0xdd}}};
+
+	dq arr00 = dq{};                                                   
+
+	dq arr01 = dq{1};                                                  
+	dq arr02 = dq{1,2,3,4,5};                                          
+	dq arr03 = dq{0x1,0x2,0x3,0x4,0x5};                               
+
+	dq arr04 = dq{dq{1,2,3}};                                          
+	dq arr05 = dq{1, dq{2,3,4}};                                      
+	dq arr06 = dq{dq{1}, 2};                                            
+	dq arr07 = dq{1, dq{}, 2};                                         
+	dq arr08 = dq{dq{}, dq{}, dq{}};                                   
+
+	dq arr09 = dq{1,2,3, dq{10,11,12}, 4,5};                           
+	dq arr10 = dq{1,2,3, dq{10,11,12, dq{0xaa, dq{0x2020,0x2021,0x2022,0x23}, 0xcc, 0xdd}}, dq{}}; 
+																		
+
+	dq arr11 = dq{dq{0x10}, dq{0x20,0x30}, dq{}};                       
+	dq arr12 = dq{0x1, 0x2, dq{0x3, dq{0x4}}, 0x5};                     
+	dq arr13 = dq{dq{1,2}, dq{3,4}, dq{5,6, dq{7,8}}};                 
+	dq arr14 = dq{0xA, dq{0xB}, 0xC, dq{0xD, dq{0xE}}, 0xF};           
+	dq arr15 = dq{dq{}, 1, dq{}, 2, dq{}};                            
+	dq arr16 = dq{1, dq{2}, dq{3}, dq{4}, 5};                          
+	dq arr17 = dq{dq{dq{1}}};                                           
+	dq arr18 = dq{1,2,3, dq{0x10, dq{0x20, dq{0x30}}}};                
+	dq arr19 = dq{dq{1,2,3}, 0x7, dq{4,5}, 0x8, dq{}};                 
+
+	// Large hex values (still positive, fit in 64-bit)
+	dq arr20 = dq{0xFFFFFFFFFFFFFFFF};                                   
+	dq arr21 = dq{0x7FFFFFFFFFFFFFFF, dq{1,2}, 0x1};                    
+
+	// Multiple nested siblings in the middle
+	dq arr22 = dq{1, dq{2,3}, dq{4,5,6}, 7};                             
+
+	// Deeply nested as first/last
+	dq arr23 = dq{dq{1, dq{2, dq{3}}}, 9, 10};                          
+	dq arr24 = dq{11, 12, dq{13, dq{14, dq{15}}}};                      
+
+	// Empty child at end and start
+	dq arr25 = dq{dq{}, 1,2,3,4, dq{}};                                  
+
+	// Your original style (for regression)
+	dq arr26 = dq{1,2,3, dq{10,11,12, dq{0xaa, dq{0x2020,0x2021,0x2022,0x23}, 0xcc, 0xdd}}, dq{}}; 
+																		
+
+
+	dq arr = dq{1,2,3,dq{10,11,12,dq{0xaa, dq{0x2020, 0x2021, 0x2022, 0x023, 0x24}, 0xcc, 0xdd}}, dq{}};
 
 	printHex(arr[0*8]);
 	printHex(arr[1*8]);
@@ -22,6 +68,7 @@ func main(){
 	printHex(arr[3*8][3*8][1*8][1*8]);
 	printHex(arr[3*8][3*8][1*8][2*8]);
 	printHex(arr[3*8][3*8][1*8][3*8]);
+	printHex(arr[3*8][3*8][1*8][4*8]);
 
 	return;
 }

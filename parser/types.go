@@ -32,6 +32,15 @@ func getTypeFromToken(token string) (int, error) {
 	}
 }
 
+func isTypeToken(token string) bool {
+	switch token {
+	case "dq", "dd", "dw", "db", "ptr":
+		return true
+	default:
+		return false
+	}
+}
+
 func parseRawNumbers(token string, reg byte) (bool, error) {
 	if len(token) > 2 && token[:2] == "0x" {
 		num, err := strconv.ParseUint(token[2:], 16, 64)
@@ -132,6 +141,77 @@ func parsePointer(parser *Parser, token string, reg byte) (bool, error) {
 	return false, nil
 }
 
+func countArrayElements(p *Parser) (int, error) {
+	mark, err := p.Mark()
+	if err != nil {
+		return 0, err
+	}
+	defer p.Restore(mark)
+
+	count := 0
+	inElem := false
+
+	for {
+		tok, err := p.NextToken()
+		if err != nil {
+			return 0, err
+		}
+		if tok == "" {
+			return 0, fmt.Errorf("unexpected EOF while counting array elements")
+		}
+
+		switch tok {
+		case "}":
+			if inElem {
+				count++
+				inElem = false
+			}
+			return count, nil
+
+		case ",":
+			if inElem {
+				count++
+				inElem = false
+			}
+			// continue to next token
+
+		default:
+			if isTypeToken(tok) {
+				peekMark, _ := p.Mark()
+				nx, err := p.NextToken()
+				if err != nil {
+					return 0, err
+				}
+				//caso seja um array
+				if nx == "{" {
+					depth := 1
+					for depth > 0 {
+						z, err := p.NextToken()
+						if err != nil {
+							return 0, err
+						}
+						if z == "" {
+							return 0, fmt.Errorf("unexpected EOF inside nested array")
+						}
+						switch z {
+						case "{":
+							depth++
+						case "}":
+							depth--
+						}
+					}
+					inElem = true
+					continue
+				} else {
+					p.Restore(peekMark)
+					}
+			}
+
+			inElem = true
+		}
+	}
+}
+
 var r15Stack bool = false
 var depth int = 0
 
@@ -158,6 +238,12 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 		return false, nil
 	}
 
+	numberOfElements, err := countArrayElements(parser)
+	if err != nil {
+		return false, err
+	}
+	fmt.Println(numberOfElements)
+
 	createdShadow := false
 	if !r15Stack {
 		r15Stack = true
@@ -171,11 +257,10 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 	if depth >= maxDepth {
 		if createdShadow {
 			r15Stack = false
-		} // só limpa flag; não mexer no RSP
+		}
 		return false, fmt.Errorf("nesting de arrays excede maxDepth=%d", maxDepth)
 	}
 
-	numberOfElements := 4
 	SubStack(arrType * numberOfElements)
 	our_depth := depth
 	backend.Mov64_mi_r(byte(backend.REG_R15), uint(our_depth*8), byte(backend.REG_RSP))
@@ -222,6 +307,9 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 		r15Stack = false
 	}
 
+	if count != numberOfElements {
+		return false, fmt.Errorf("number of elements parsed (%d) does not match expected (%d)", count, numberOfElements)
+	}
 
 	return true, nil
 }

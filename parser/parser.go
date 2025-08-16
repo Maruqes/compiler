@@ -231,6 +231,17 @@ func (p *Parser) Peek() (string, error) {
 	return token, nil
 }
 
+
+func (p *Parser) Mark() (int64,error) {
+	return p.file.Seek(0, io.SeekCurrent)
+}
+
+func (p *Parser) Restore(mark int64) error {
+	_, err := p.file.Seek(mark, io.SeekStart)
+	return err
+}
+
+
 func eatEqual(parser *Parser) {
 	//parse = else panic
 	equal, err := parser.NextToken()
