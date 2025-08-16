@@ -77,13 +77,12 @@ func parseIf(parser *Parser) error {
 	case "elif":
 		parseIf(parser)
 	default:
-		parser.SeekBack(int64(len(token)+1))
+		parser.SeekBack(int64(len(token) + 1))
 	}
 	backend.Create_label(ifleave)
 
 	return nil
 }
-
 
 /*this exists to make breaks and continue possible so we can have fors inside fors*/
 type LoopBreaks struct {
@@ -145,6 +144,7 @@ for dq i = 0; i < 10; i++ {
 var forCount = 0
 
 func parseFor(parser *Parser) error {
+
 	forCount++
 	//label creation
 	forCond := fmt.Sprintf("for_cond%d", forCount)
@@ -166,6 +166,17 @@ func parseFor(parser *Parser) error {
 		return fmt.Errorf("Error parsing variable declaration for 'for' loop: %v", err)
 	}
 
+
+	//get current state of the stack after creating the first variable
+	varList := GetVarList(SCOPE)
+	if varList == nil {
+		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+	}
+	oldStackSize := varList.lastPos
+
+	backend.Mov64_r_r(byte(backend.REG_R9), byte(backend.REG_RSP))
+
+
 	/*
 		PARSE CONDITION
 	*/
@@ -176,6 +187,7 @@ func parseFor(parser *Parser) error {
 	}
 	//condition is met we jump to body
 	backend.Jmp(forBody)
+	
 
 	/*
 		PARSE SECOND VAR DECLARATION
@@ -199,15 +211,28 @@ func parseFor(parser *Parser) error {
 	if err != nil {
 		return err
 	}
+	backend.Mov64_r_r(byte(backend.REG_RSP), byte(backend.REG_R9)) // Restore stack pointer for next iteration
 	backend.Jmp(forSecond) //we jump to second var declaration (i++)
 	backend.Create_label(forEnd)
 	PopLoopBreaks()
+
+	backend.Mov64_r_r(byte(backend.REG_RSP), byte(backend.REG_R9))//restore stack pointer for continue program
+	varList.lastPos = oldStackSize
 	return nil
 }
 
 var whileCount = 0
 
 func parseWhile(parser *Parser) error {
+
+	varList := GetVarList(SCOPE)
+	if varList == nil {
+		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+	}
+	oldStackSize := varList.lastPos
+
+	backend.Mov64_r_r(byte(backend.REG_R9), byte(backend.REG_RSP))
+
 	whileCount++
 	//label creation
 	whileCond := fmt.Sprintf("while_cond%d", whileCount)
@@ -224,8 +249,13 @@ func parseWhile(parser *Parser) error {
 	if err != nil {
 		return err
 	}
+	backend.Mov64_r_r(byte(backend.REG_RSP), byte(backend.REG_R9))
+
 	backend.Jmp(whileCond)
 	backend.Create_label(whileEnd)
 	PopLoopBreaks()
+
+	backend.Mov64_r_r(byte(backend.REG_RSP), byte(backend.REG_R9))
+	varList.lastPos = oldStackSize
 	return nil
 }

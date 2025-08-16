@@ -1,74 +1,101 @@
-
+// helper
+func test(dq a){
+    printHex(a);
+	return;
+}
 
 func main(){
+    // ===== Baseline nested array =====
+    dq arr = dq{1,2,3,dq{10,11,12,dq{0xaa, dq{0x2020, 0x2021, 0x2022, 0x23, 0x24}, 0xcc, 0xdd}}, dq{}};
 
-	dq arr00 = dq{};                                                   
+    // Baseline prints (top level)
+    printHex(arr[0*8]);        // expect 1
+    printHex(arr[1*8]);        // expect 2
+    printHex(arr[2*8]);        // expect 3
+    printHex(arr[3*8]);        // ptr to nested
 
-	dq arr01 = dq{1};                                                  
-	dq arr02 = dq{1,2,3,4,5};                                          
-	dq arr03 = dq{0x1,0x2,0x3,0x4,0x5};                               
+    // 2nd level under arr[3]
+    printHex(arr[3*8][0*8]);   // 10
+    printHex(arr[3*8][1*8]);   // 11
+    printHex(arr[3*8][2*8]);   // 12
+    printHex(arr[3*8][3*8]);   // ptr to deeper
 
-	dq arr04 = dq{dq{1,2,3}};                                          
-	dq arr05 = dq{1, dq{2,3,4}};                                      
-	dq arr06 = dq{dq{1}, 2};                                            
-	dq arr07 = dq{1, dq{}, 2};                                         
-	dq arr08 = dq{dq{}, dq{}, dq{}};                                   
+    // 3rd level under arr[3][3]
+    printHex(arr[3*8][3*8][0*8]); // 0xaa
+    printHex(arr[3*8][3*8][1*8]); // ptr to dq{0x2020,...}
+    printHex(arr[3*8][3*8][2*8]); // 0xcc
+    printHex(arr[3*8][3*8][3*8]); // 0xdd
 
-	dq arr09 = dq{1,2,3, dq{10,11,12}, 4,5};                           
-	dq arr10 = dq{1,2,3, dq{10,11,12, dq{0xaa, dq{0x2020,0x2021,0x2022,0x23}, 0xcc, 0xdd}}, dq{}}; 
-																		
+    // 4th level under arr[3][3][1]
+    printHex(arr[3*8][3*8][1*8][0*8]); // 0x2020
+    printHex(arr[3*8][3*8][1*8][1*8]); // 0x2021
+    printHex(arr[3*8][3*8][1*8][2*8]); // 0x2022
+    printHex(arr[3*8][3*8][1*8][3*8]); // 0x23
+    printHex(arr[3*8][3*8][1*8][4*8]); // 0x24
 
-	dq arr11 = dq{dq{0x10}, dq{0x20,0x30}, dq{}};                       
-	dq arr12 = dq{0x1, 0x2, dq{0x3, dq{0x4}}, 0x5};                     
-	dq arr13 = dq{dq{1,2}, dq{3,4}, dq{5,6, dq{7,8}}};                 
-	dq arr14 = dq{0xA, dq{0xB}, 0xC, dq{0xD, dq{0xE}}, 0xF};           
-	dq arr15 = dq{dq{}, 1, dq{}, 2, dq{}};                            
-	dq arr16 = dq{1, dq{2}, dq{3}, dq{4}, 5};                          
-	dq arr17 = dq{dq{dq{1}}};                                           
-	dq arr18 = dq{1,2,3, dq{0x10, dq{0x20, dq{0x30}}}};                
-	dq arr19 = dq{dq{1,2,3}, 0x7, dq{4,5}, 0x8, dq{}};                 
+    dd c = 0;
+    while 1 == 1 {
+        c = c + 1;
 
-	// Large hex values (still positive, fit in 64-bit)
-	dq arr20 = dq{0xFFFFFFFFFFFFFFFF};                                   
-	dq arr21 = dq{0x7FFFFFFFFFFFFFFF, dq{1,2}, 0x1};                    
+        dd ms = 2;
 
-	// Multiple nested siblings in the middle
-	dq arr22 = dq{1, dq{2,3}, dq{4,5,6}, 7};                             
+        test(0x1111111111111111);
 
-	// Deeply nested as first/last
-	dq arr23 = dq{dq{1, dq{2, dq{3}}}, 9, 10};                          
-	dq arr24 = dq{11, 12, dq{13, dq{14, dq{15}}}};                      
+        if c == 2 {
+            dd tmp = 9;
+            test(0x2222222222222222);
+            continue;
+        }
 
-	// Empty child at end and start
-	dq arr25 = dq{dq{}, 1,2,3,4, dq{}};                                  
+        if c == 4 {
+            dd zap = 7;
+            test(0x3333333333333333);
+            break;
+        }
 
-	// Your original style (for regression)
-	dq arr26 = dq{1,2,3, dq{10,11,12, dq{0xaa, dq{0x2020,0x2021,0x2022,0x23}, 0xcc, 0xdd}}, dq{}}; 
-																		
+    }
 
+    // after while, stack must be back to pre-loop base
+    dq afterWhile = 0xAAAAAAAAAAAAAAA0;
+    printHex(afterWhile);     // should print exactly this value
 
-	dq arr = dq{1,2,3,dq{10,11,12,dq{0xaa, dq{0x2020, 0x2021, 0x2022, 0x023, 0x24}, 0xcc, 0xdd}}, dq{}};
+    // Re-print a few array cells to confirm nothing got corrupted
+    printHex(arr[0*8]);                    // still 1
+    printHex(arr[3*8][3*8][1*8][4*8]);     // still 0x24
 
-	printHex(arr[0*8]);
-	printHex(arr[1*8]);
-	printHex(arr[2*8]);
-	printHex(arr[3*8]);
-	
-	printHex(arr[3*8][0*8]);
-	printHex(arr[3*8][1*8]);
-	printHex(arr[3*8][2*8]);
-	printHex(arr[3*8][3*8]);
+    // init
+    
+    for dq i = 0; i < 8; i = i + 1; {
+        // locals inside body
+        dd bodyLocal = 123;
 
-	printHex(arr[3*8][3*8][0*8]);
-	printHex(arr[3*8][3*8][1*8]);
-	printHex(arr[3*8][3*8][2*8]);
-	printHex(arr[3*8][3*8][3*8]);
+        // call inside body (alignment check again)
+        test(0x4444444444444444 + i);
 
-	printHex(arr[3*8][3*8][1*8][0*8]);
-	printHex(arr[3*8][3*8][1*8][1*8]);
-	printHex(arr[3*8][3*8][1*8][2*8]);
-	printHex(arr[3*8][3*8][1*8][3*8]);
-	printHex(arr[3*8][3*8][1*8][4*8]);
+        if i == 3 {
+            // allocate another local + call, then continue
+            dd onlyHere = 5;
+            test(0x5555555555555555);
+            continue;
+        }
+        if i == 6 {
+            // break path with its own allocs + call
+            dd bye = 6;
+            test(0x6666666666666666);
+            break;
+        }
 
-	return;
+        test(arr[3*8][3*8][1*8][i]); 
+    }
+
+    // after for, stack must again be at the same base
+    dq afterFor = 0xBBBBBBBBBBBBBBB0;
+    printHex(afterFor);      // should match exactly
+
+    // final sanity prints on the array
+    printHex(arr[1*8]);                  // still 2
+    printHex(arr[3*8][2*8]);             // still 12
+    printHex(arr[3*8][3*8][3*8]);        // still 0xdd
+
+    return;
 }

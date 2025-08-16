@@ -11,9 +11,6 @@ const GLOBAL_SCOPE = "global"
 
 var SCOPE = GLOBAL_SCOPE
 
-
-
-
 func setScope(scope string) {
 	SCOPE = scope
 }
@@ -73,7 +70,7 @@ func SumStack(n int) {
 		panic(fmt.Sprintf("Variable list for scope '%s' not found", SCOPE))
 	}
 	varL.lastPos += n
-	backend.Sum64_r_i(byte(backend.REG_RSP), uint64(n))
+	backend.Sum64_r_i(byte(backend.REG_RSP), uint(n))
 }
 
 func SubStack(n int) {
