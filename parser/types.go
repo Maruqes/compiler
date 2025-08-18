@@ -344,7 +344,7 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 			break
 		}
 
-		err, _, parsed := getUntilSymbol(parser, []string{"]"}, byte(backend.REG_R8))
+		err, _, parsed := getUntilSymbol(parser, []string{"]"}, byte(backend.REG_RCX))
 		if err != nil {
 			return false, err
 		}
@@ -353,7 +353,7 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 			return false, fmt.Errorf("Array index not found for variable '%s' in scope '%s'", token, SCOPE)
 		}
 
-		backend.Mov64_r_mr(reg, reg, byte(backend.REG_R8))
+		backend.Mov64_r_mr(reg, reg, byte(backend.REG_RCX))
 		parsedOne = true
 	}
 

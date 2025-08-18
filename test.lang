@@ -97,5 +97,13 @@ func main(){
     printHex(arr[3*8][2*8]);             // still 12
     printHex(arr[3*8][3*8][3*8]);        // still 0xdd
 
+    dq arr22 = dq{1,2,3,dq{10,11,12,dq{0xaa, dq{0x2020, 0x2021, 0x2022, 0x023}, 0xcc, 0xdd}}};
+
+	//com dd isto da seg fault com dq funciona
+	for dq u = 0; u < 3; u = u + 1; {
+		printHex(arr22[u*8]);
+	}
+
+
     return;
 }

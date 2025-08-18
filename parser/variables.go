@@ -183,11 +183,11 @@ func (vl *VarsList) setVarStruct(parser *Parser, varName string) error {
 
 	switch variable.Type {
 	case DB:
-		backend.And64_r_i(byte(backend.REG_RAX), 0x00000000000000ff)
+		backend.And8_r_i(byte(backend.REG_RAX), 0x00000000000000ff)
 	case DW:
-		backend.And64_r_i(byte(backend.REG_RAX), 0x000000000000ffff)
+		backend.And16_r_i(byte(backend.REG_RAX), 0x000000000000ffff)
 	case DD:
-		backend.And64_r_i(byte(backend.REG_RAX), 0x00000000ffffffff)
+		backend.And32_r_i(byte(backend.REG_RAX), 0x00000000ffffffff)
 	case DQ:
 		backend.And64_r_i(byte(backend.REG_RAX), 0xffffffffffffffff)
 	}
