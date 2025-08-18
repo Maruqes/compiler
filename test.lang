@@ -101,8 +101,13 @@ func main(){
 
 	//com dd isto da seg fault com dq funciona
 	for dq u = 0; u < 3; u = u + 1; {
-		printHex(arr22[u*8]);
+		printHex(-arr22[u*8]);
 	}
+
+    dq pila = -1;
+    dq pila2 = 0;
+    dq res = pila2 - pila;
+    printHex(res); // should print -1
 
 
     return;

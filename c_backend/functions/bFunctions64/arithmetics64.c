@@ -411,44 +411,36 @@ void mul64_r_r(uint8_t reg1, uint8_t reg2)
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
-void mul64_r_i(uint8_t reg1, uint64_t imm64)
+void mul64_r_i(uint8_t reg1, uint32_t imm64)
 {
-    // For 64-bit immediate, we need to check if it fits in 32 bits
-    if (imm64 <= UINT32_MAX)
+
+    // Use 32-bit immediate which gets sign-extended to 64-bit
+    char *opcode_bytes = malloc(7);
+    if (!opcode_bytes)
     {
-        // Use 32-bit immediate which gets sign-extended to 64-bit
-        char *opcode_bytes = malloc(7);
-        if (!opcode_bytes)
-        {
-            perror("Failed to allocate memory for opcode_bytes");
-            exit(EXIT_FAILURE);
-        }
-
-        set_rex_prefix(opcode_bytes, 1, (reg1 >= REG_R8) ? 1 : 0, 0, (reg1 >= REG_R8) ? 1 : 0);
-        opcode_bytes[1] = 0x69;                                  // IMUL r64, r/m64, imm32 opcode
-        set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, reg1, reg1); // reg1 = reg1 * imm32
-        uint32_t imm32 = (uint32_t)imm64;
-        memcpy(&opcode_bytes[3], &imm32, sizeof(uint32_t));
-
-        OpCode new_opcode;
-        new_opcode.size = 7;
-        new_opcode.code = opcode_bytes;
-
-        op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
-        if (!op_codes_array)
-        {
-            perror("Failed to reallocate memory for op_codes_array");
-            free(opcode_bytes);
-            exit(EXIT_FAILURE);
-        }
-
-        op_codes_array[op_codes_array_size++] = new_opcode;
-    }
-    else
-    {
-        perror("64-bit immediate values > UINT32_MAX not supported in mul64_r_i");
+        perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
+
+    set_rex_prefix(opcode_bytes, 1, (reg1 >= REG_R8) ? 1 : 0, 0, (reg1 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x69;                                  // IMUL r64, r/m64, imm32 opcode
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, reg1, reg1); // reg1 = reg1 * imm32
+    uint32_t imm32 = (uint32_t)imm64;
+    memcpy(&opcode_bytes[3], &imm32, sizeof(uint32_t));
+
+    OpCode new_opcode;
+    new_opcode.size = 7;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
 void mul64_r_m(uint8_t reg1, uint8_t reg2)

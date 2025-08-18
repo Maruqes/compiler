@@ -204,7 +204,7 @@ func countArrayElements(p *Parser) (int, error) {
 					continue
 				} else {
 					p.Restore(peekMark)
-					}
+				}
 			}
 
 			inElem = true
@@ -360,6 +360,27 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 	return parsedOne, nil
 }
 
+func parseNegValues(parser *Parser, token string, reg byte) (bool, error) {
+
+	if token != "-" {
+		return false, nil
+	}
+
+	nextToken, err := parser.NextToken()
+	if err != nil {
+		return false, err
+	}
+
+	err = getValueFromToken(parser, nextToken, reg)
+	if err != nil {
+		return false, err
+	}
+
+	backend.Mul64_r_i(reg, ^uint(0))
+
+	return true, nil
+}
+
 // may uses r8
 // uses 64 bit registers to get the value of the token
 func getValueFromToken(parser *Parser, token string, reg byte) error {
@@ -369,7 +390,15 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
 	}
 
-	parsed, err := parseRawNumbers(token, reg)
+	parsed, err := parseNegValues(parser, token, reg)
+	if err != nil {
+		return err
+	}
+	if parsed {
+		return nil
+	}
+
+	parsed, err = parseRawNumbers(token, reg)
 	if err != nil {
 		return err
 	}

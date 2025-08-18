@@ -64,7 +64,7 @@ void sub64_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
 
 // Multiplication operations
 void mul64_r_r(uint8_t reg1, uint8_t reg2);
-void mul64_r_i(uint8_t reg1, uint64_t imm64);
+void mul64_r_i(uint8_t reg1, uint32_t imm64);
 void mul64_r_m(uint8_t reg1, uint8_t reg2);
 void mul64_r_mi(uint8_t reg1, uint8_t reg2, uint64_t offset);
 void mul64_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3);
