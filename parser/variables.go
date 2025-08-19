@@ -181,16 +181,7 @@ func (vl *VarsList) setVarStruct(parser *Parser, varName string) error {
 
 	vl.SetVar(variable)
 
-	switch variable.Type {
-	case DB:
-		backend.And8_r_i(byte(backend.REG_RAX), 0x00000000000000ff)
-	case DW:
-		backend.And16_r_i(byte(backend.REG_RAX), 0x000000000000ffff)
-	case DD:
-		backend.And32_r_i(byte(backend.REG_RAX), 0x00000000ffffffff)
-	case DQ:
-		backend.And64_r_i(byte(backend.REG_RAX), 0xffffffffffffffff)
-	}
+	clearReg(byte(backend.REG_RAX), variable.Type)
 
 	return nil
 }
@@ -245,16 +236,7 @@ func createVarStruct(parser *Parser, varType int) error {
 		return err
 	}
 
-	switch varType {
-	case DB:
-		backend.And64_r_i(byte(backend.REG_RAX), 0x00000000000000ff)
-	case DW:
-		backend.And64_r_i(byte(backend.REG_RAX), 0x000000000000ffff)
-	case DD:
-		backend.And64_r_i(byte(backend.REG_RAX), 0x00000000ffffffff)
-	case DQ:
-		backend.And64_r_i(byte(backend.REG_RAX), 0xffffffffffffffff)
-	}
+	clearReg(byte(backend.REG_RAX), varType)
 
 	err = varList.AddVariable(name, varType)
 	if err != nil {
@@ -296,4 +278,19 @@ func PrintVar(varName string) {
 	backend.Create_variable_reference("printSave", byte(backend.REG_RSI))
 	backend.Mov8_m_r(byte(backend.REG_RSI), byte(backend.REG_RAX))
 	wrapper.Println("printSave", 3)
+}
+
+func clearReg(reg byte, typeToken int) {
+	switch typeToken {
+	case DB:
+		backend.And64_r_i(reg, 0x00000000000000ff)
+	case DW:
+		backend.And64_r_i(reg, 0x000000000000ffff)
+	case DD:
+		backend.Mov32_r_r(reg, reg)
+	case DQ:
+		return
+	default:
+		panic(fmt.Sprintf("Unknown type token %d in clearReg", typeToken))
+	}
 }

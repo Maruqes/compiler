@@ -20,7 +20,6 @@ void add_string_constant(char *name, char *content)
         fprintf(stderr, "Error: NULL string passed to add_string_constant\n");
         return;
     }
-
     string_constants = realloc(string_constants, (string_constants_count + 1) * sizeof(StringConstant));
     if (!string_constants)
     {
@@ -36,37 +35,56 @@ void add_string_constant(char *name, char *content)
     }
 
     string_constants[string_constants_count].offset = data_section_size;
+
     string_constants[string_constants_count].content = strdup(content);
     if (!string_constants[string_constants_count].content)
     {
         perror("Failed to duplicate content string for string_constants");
         exit(EXIT_FAILURE);
     }
+
     string_constants_count++;
 
-    // Check for potential overflow before adding
-    size_t content_length = strlen(content);
-    if (data_section_size > UINT64_MAX - content_length)
+    size_t len = strlen(content);
+    // +1 para o 0x00 que vamos escrever forçosamente
+    if (data_section_size > UINT64_MAX - (len + 1))
     {
         fprintf(stderr, "Error: Data section size would overflow\n");
         exit(EXIT_FAILURE);
     }
-    data_section_size += content_length;
+    data_section_size += (len + 1);
 }
 
-void write_string_constants_to_file(int file_descriptor)
+void write_string_constants_to_file(int fd)
 {
     for (uint32_t i = 0; i < string_constants_count; i++)
     {
-        ssize_t bytes_written = write(file_descriptor, string_constants[i].content, strlen(string_constants[i].content));
-        if (bytes_written == -1)
+        const char *s = string_constants[i].content;
+        size_t len = strlen(s);
+
+        // escreve o conteúdo "tal e qual"
+        if (len > 0)
         {
-            perror("Failed to write string constant content to file");
-            exit(EXIT_FAILURE);
+            ssize_t w = write(fd, s, len);
+            if (w == -1)
+            {
+                perror("Failed to write string content");
+                exit(EXIT_FAILURE);
+            }
+            if ((size_t)w != len)
+            {
+                fprintf(stderr, "Partial write occurred for string constant '%s'\n", string_constants[i].name);
+                exit(EXIT_FAILURE);
+            }
         }
-        else if (bytes_written != strlen(string_constants[i].content))
+
+        // FORÇA 0x00 no fim da string no ficheiro (mesmo que o último char "visível" não seja 0)
+        uint8_t zero = 0;
+        ssize_t wz = write(fd, &zero, 1);
+        printf("Wrote terminating NUL (0x00) for string constant '%s'\n", string_constants[i].name);
+        if (wz == -1 || wz != 1)
         {
-            fprintf(stderr, "Partial write occurred for string constant '%s'\n", string_constants[i].name);
+            perror("Failed to write terminating NUL (0x00)");
             exit(EXIT_FAILURE);
         }
     }

@@ -221,5 +221,7 @@ int write_elf()
 
     cleanup();
 
+    printf("ELF file created successfully.\n");
+
     return 0;
 }

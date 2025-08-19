@@ -5,7 +5,6 @@ func test(dq a){
 }
 
 func main(){
-    // ===== Baseline nested array =====
     dq arr = dq{1,2,3,dq{10,11,12,dq{0xaa, dq{0x2020, 0x2021, 0x2022, 0x23, 0x24}, 0xcc, 0xdd}}, dq{}};
 
     // Baseline prints (top level)
@@ -109,6 +108,12 @@ func main(){
     dq res = pila2 - pila;
     printHex(res); // should print -1
 
+    dq stringTest = "ola amigo";
+    
+    for i = 0; i < 10; i = i + 1; {
+        dq ahcrl = db(stringTest[i]);
+        print(ahcrl);
+    }
 
     return;
 }

@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	backend "github.com/Maruqes/compiler/swig"
 )
@@ -317,6 +318,8 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 // uses r8
 func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 
+	arrType := DQ
+
 	varList := GetVarList(SCOPE)
 	if varList == nil {
 		return false, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
@@ -353,7 +356,18 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 			return false, fmt.Errorf("Array index not found for variable '%s' in scope '%s'", token, SCOPE)
 		}
 
-		backend.Mov64_r_mr(reg, reg, byte(backend.REG_RCX))
+		switch arrType {
+		case DQ:
+			backend.Mov64_r_mr(reg, reg, byte(backend.REG_RCX))
+		case DD:
+			backend.Mov32_r_mr(reg, reg, byte(backend.REG_RCX))
+		case DW:
+			backend.Mov16_r_mr(reg, reg, byte(backend.REG_RCX))
+		case DB:
+			backend.Mov8_r_mr(reg, reg, byte(backend.REG_RCX))
+		default:
+			return false, fmt.Errorf("Unknown array type: %d on line %d", arrType, parser.lineNumber)
+		}
 		parsedOne = true
 	}
 
@@ -381,6 +395,71 @@ func parseNegValues(parser *Parser, token string, reg byte) (bool, error) {
 	return true, nil
 }
 
+var sNumber = 0
+
+func parseStrings(token string, reg byte) (bool, error) {
+
+	if len(token) > 0 && token[0] != '"' {
+		return false, nil
+	}
+	token = token[1 : len(token)-1] // remove surrounding quotes
+
+	// (Optional) handle simple escapes you expect in literals
+	// If you need more, switch to strconv.Unquote.
+	token = strings.ReplaceAll(token, `\n`, "\n")
+	token = strings.ReplaceAll(token, `\t`, "\t")
+	token = strings.ReplaceAll(token, `\"`, `"`)
+
+	// Append exactly one NUL terminator (only if not already there)
+	if len(token) == 0 || token[len(token)-1] != 0 {
+		token += "\x00"
+	}
+
+	name := fmt.Sprintf("string_%d", sNumber)
+	sNumber++
+
+	backend.Add_string_constant(name, token)
+	backend.Create_variable_reference(name, reg)
+	return true, nil
+}
+
+func parseTypeFuncs(parser *Parser, token string, reg byte) (bool, error) {
+	if !isTypeToken(token) {
+		return false, nil
+	}
+
+	s, err := parser.Peek()
+	if err != nil {
+		return false, err
+	}
+	if s != "(" {
+		return false, nil
+	}
+
+	eatFirstBrace(parser)
+
+	typeToken, err := getTypeFromToken(token)
+	if err != nil {
+		return false, err
+	}
+
+	nextToken, err := parser.NextToken()
+	if err != nil {
+		return false, err
+	}
+
+	err = getValueFromToken(parser, nextToken, reg)
+	if err != nil {
+		return false, err
+	}
+
+	clearReg(reg, typeToken)
+
+	eatLastBrace(parser)
+
+	return true, nil
+}
+
 // may uses r8
 // uses 64 bit registers to get the value of the token
 func getValueFromToken(parser *Parser, token string, reg byte) error {
@@ -391,6 +470,22 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 	}
 
 	parsed, err := parseNegValues(parser, token, reg)
+	if err != nil {
+		return err
+	}
+	if parsed {
+		return nil
+	}
+
+	parsed, err = parseStrings(token, reg)
+	if err != nil {
+		return err
+	}
+	if parsed {
+		return nil
+	}
+
+	parsed, err = parseTypeFuncs(parser, token, reg)
 	if err != nil {
 		return err
 	}

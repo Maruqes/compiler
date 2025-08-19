@@ -253,6 +253,29 @@ func eatEqual(parser *Parser) {
 	}
 }
 
+//(
+func eatFirstBrace(parser *Parser) {
+	//parse ( else panic
+	firstBrace, err := parser.NextToken()
+	if err != nil {
+		panic("Error eating first brace: " + err.Error())
+	}
+	if firstBrace != "(" {
+		panic(fmt.Sprintf("Expected '(', got '%s' on line %d", firstBrace, parser.lineNumber))
+	}
+}
+
+func eatLastBrace(parser *Parser) {
+	//parse ) else panic
+	lastBrace, err := parser.NextToken()
+	if err != nil {
+		panic("Error eating last brace: " + err.Error())
+	}
+	if lastBrace != ")" {
+		panic(fmt.Sprintf("Expected ')', got '%s' on line %d", lastBrace, parser.lineNumber))
+	}
+}
+
 func eatSemicolon(parser *Parser) {
 	//parse ; else panic
 	semicolon, err := parser.NextToken()
