@@ -973,3 +973,335 @@ void xor8_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3)
 
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
+
+// INC operations: INC r, INC [r], INC [r+disp], INC [r_base+index]
+
+void inc8_r(uint8_t reg)
+{
+    cant_use_rx((uint8_t[]){reg}, 1);
+
+    char *opcode_bytes = malloc(2);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xFE;                              // INC r8
+    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, 0, reg); // /0 for INC
+
+    OpCode new_opcode;
+    new_opcode.size = 2;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void inc8_m(uint8_t reg)
+{
+    cant_use_rx((uint8_t[]){reg}, 1);
+
+    if (reg == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as a memory register in 8-bit mode.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (reg == RM_SIB) // R12 equivalent
+    {
+        fprintf(stderr, "Error: Cannot use R12 as memory register in 8-bit mode without proper SIB handling.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    int sib_needed = (reg == REG_RSP || reg == RM_SIB) ? 1 : 0;
+    char *opcode_bytes = malloc(3 + sib_needed);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xFE; // INC r/m8
+    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, 0, reg);
+    if (sib_needed)
+    {
+        set_sib(&opcode_bytes[2], SCALE_1, RM_SIB, reg);
+    }
+    opcode_bytes[1 + sib_needed + 1] = 0x00;
+
+    OpCode new_opcode;
+    new_opcode.size = 3 + sib_needed;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void inc8_mi(uint8_t reg, uint32_t offset)
+{
+    cant_use_rx((uint8_t[]){reg}, 1);
+
+    if (reg == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as a memory register in 8-bit mode.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (reg == RM_SIB) // R12 equivalent
+    {
+        fprintf(stderr, "Error: Cannot use R12 as memory register in 8-bit mode without proper SIB handling.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    int sib_needed = (reg == REG_RSP || reg == RM_SIB) ? 1 : 0;
+    char *opcode_bytes = malloc(6 + sib_needed);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xFE; // INC r/m8
+    set_modrm(&opcode_bytes[1], MOD_4BYTE_DISP, 0, reg);
+    if (sib_needed)
+    {
+        set_sib(&opcode_bytes[2], SCALE_1, RM_SIB, reg);
+    }
+    memcpy(&opcode_bytes[2 + sib_needed], &offset, sizeof(offset));
+
+    OpCode new_opcode;
+    new_opcode.size = 6 + sib_needed;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void inc8_mr(uint8_t reg_base, uint8_t reg_index)
+{
+    cant_use_rx((uint8_t[]){reg_base, reg_index}, 2);
+
+    if (reg_base == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as base register in 8-bit mode.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (reg_index == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as index register in 8-bit mode.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (reg_base == RM_SIB) // R12 equivalent
+    {
+        fprintf(stderr, "Error: Cannot use R12 as base register in 8-bit mode without proper SIB handling.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char *opcode_bytes = malloc(4);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xFE; // INC r/m8
+    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, 0, RM_SIB);
+    set_sib(&opcode_bytes[2], SCALE_1, reg_index, reg_base);
+    opcode_bytes[3] = 0x00;
+
+    OpCode new_opcode;
+    new_opcode.size = 4;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+// DEC operations: DEC r, DEC [r], DEC [r+disp], DEC [r_base+index]
+
+void dec8_r(uint8_t reg)
+{
+    cant_use_rx((uint8_t[]){reg}, 1);
+
+    char *opcode_bytes = malloc(2);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xFE;                              // DEC r8
+    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, 1, reg); // /1 for DEC
+
+    OpCode new_opcode;
+    new_opcode.size = 2;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void dec8_m(uint8_t reg)
+{
+    cant_use_rx((uint8_t[]){reg}, 1);
+
+    if (reg == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as a memory register in 8-bit mode.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (reg == RM_SIB) // R12 equivalent
+    {
+        fprintf(stderr, "Error: Cannot use R12 as memory register in 8-bit mode without proper SIB handling.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    int sib_needed = (reg == REG_RSP || reg == RM_SIB) ? 1 : 0;
+    char *opcode_bytes = malloc(3 + sib_needed);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xFE; // DEC r/m8
+    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, 1, reg);
+    if (sib_needed)
+    {
+        set_sib(&opcode_bytes[2], SCALE_1, RM_SIB, reg);
+    }
+    opcode_bytes[1 + sib_needed + 1] = 0x00;
+
+    OpCode new_opcode;
+    new_opcode.size = 3 + sib_needed;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void dec8_mi(uint8_t reg, uint32_t offset)
+{
+    cant_use_rx((uint8_t[]){reg}, 1);
+
+    if (reg == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as a memory register in 8-bit mode.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (reg == RM_SIB) // R12 equivalent
+    {
+        fprintf(stderr, "Error: Cannot use R12 as memory register in 8-bit mode without proper SIB handling.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    int sib_needed = (reg == REG_RSP || reg == RM_SIB) ? 1 : 0;
+    char *opcode_bytes = malloc(6 + sib_needed);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xFE; // DEC r/m8
+    set_modrm(&opcode_bytes[1], MOD_4BYTE_DISP, 1, reg);
+    if (sib_needed)
+    {
+        set_sib(&opcode_bytes[2], SCALE_1, RM_SIB, reg);
+    }
+    memcpy(&opcode_bytes[2 + sib_needed], &offset, sizeof(offset));
+
+    OpCode new_opcode;
+    new_opcode.size = 6 + sib_needed;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void dec8_mr(uint8_t reg_base, uint8_t reg_index)
+{
+    cant_use_rx((uint8_t[]){reg_base, reg_index}, 2);
+
+    if (reg_base == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as base register in 8-bit mode.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (reg_index == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as index register in 8-bit mode.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (reg_base == RM_SIB) // R12 equivalent
+    {
+        fprintf(stderr, "Error: Cannot use R12 as base register in 8-bit mode without proper SIB handling.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char *opcode_bytes = malloc(4);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xFE; // DEC r/m8
+    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, 1, RM_SIB);
+    set_sib(&opcode_bytes[2], SCALE_1, reg_index, reg_base);
+    opcode_bytes[3] = 0x00;
+
+    OpCode new_opcode;
+    new_opcode.size = 4;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}

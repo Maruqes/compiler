@@ -20,6 +20,9 @@ strings
 structs
 vars globais
 asm funcs
+i++
+i+=1
+tirar o ; do ultimo no for
 
 */
 

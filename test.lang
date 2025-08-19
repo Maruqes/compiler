@@ -110,10 +110,71 @@ func main(){
 
     dq stringTest = "ola amigo";
     
-    for i = 0; i < 10; i = i + 1; {
+    for i = 0; i < 10; i++; {
         dq ahcrl = db(stringTest[i]);
         print(ahcrl);
     }
+
+    i--;
+    printHex(i);
+
+    dq adq = 0;
+    dd add = 0;
+    dw adw = 0;
+    db adb = 0;
+
+    adq++;
+    add++;
+    adw++;
+    adb++;
+
+    printHex(adq);
+    printHex(add);
+    printHex(adw);
+    printHex(adb);
+
+    adq--;
+    add--;
+    adw--;
+    adb--;
+    adq--;
+    add--;
+    adw--;
+    adb--;
+
+    printHex(adq);
+    printHex(add);
+    printHex(adw);
+    printHex(adb);
+
+
+    adq += 5;
+    add += 5;
+    adw += 5;
+    adb += 5;
+    printHex(adq);
+    printHex(add);
+    printHex(adw);
+    printHex(adb);
+    
+    adq += 5;
+    add += 5;
+    adw += 5;
+    adb += 5;
+    printHex(adq);
+    printHex(add);
+    printHex(adw);
+    printHex(adb);
+
+
+    adq -= 10;
+    add -= 10;
+    adw -= 10;
+    adb -= 10;
+    printHex(adq);
+    printHex(add);
+    printHex(adw);
+    printHex(adb);
 
     return;
 }

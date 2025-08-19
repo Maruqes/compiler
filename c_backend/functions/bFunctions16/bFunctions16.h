@@ -69,6 +69,18 @@ void not16_m(uint8_t reg);
 void not16_mi(uint8_t reg, uint32_t offset);
 void not16_mr(uint8_t reg_base, uint8_t reg_index);
 
+// INC 16-bit operations
+void inc16_r(uint8_t reg);
+void inc16_m(uint8_t reg);
+void inc16_mi(uint8_t reg, uint32_t offset);
+void inc16_mr(uint8_t reg_base, uint8_t reg_index);
+
+// DEC 16-bit operations
+void dec16_r(uint8_t reg);
+void dec16_m(uint8_t reg);
+void dec16_mi(uint8_t reg, uint32_t offset);
+void dec16_mr(uint8_t reg_base, uint8_t reg_index);
+
 // Arithmetic operations - sum, sub, mul, div
 void sum16_r_r(uint8_t reg1, uint8_t reg2);
 void sum16_r_i(uint8_t reg1, uint16_t imm16);

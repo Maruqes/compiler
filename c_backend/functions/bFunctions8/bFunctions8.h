@@ -62,6 +62,18 @@ void not8_m(uint8_t reg);
 void not8_mi(uint8_t reg, uint32_t offset);
 void not8_mr(uint8_t reg_base, uint8_t reg_index);
 
+// INC 8-bit operations
+void inc8_r(uint8_t reg);
+void inc8_m(uint8_t reg);
+void inc8_mi(uint8_t reg, uint32_t offset);
+void inc8_mr(uint8_t reg_base, uint8_t reg_index);
+
+// DEC 8-bit operations
+void dec8_r(uint8_t reg);
+void dec8_m(uint8_t reg);
+void dec8_mi(uint8_t reg, uint32_t offset);
+void dec8_mr(uint8_t reg_base, uint8_t reg_index);
+
 // XOR functions declarations
 void xor8_r_r(uint8_t reg1, uint8_t reg2);
 void xor8_r_i(uint8_t reg, uint8_t imm8);

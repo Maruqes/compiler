@@ -201,6 +201,18 @@ void not64_m(uint8_t reg);
 void not64_mi(uint8_t reg, uint32_t offset);
 void not64_mr(uint8_t reg_base, uint8_t reg_index);
 
+// INC utility function prototypes
+void inc64_r(uint8_t reg);
+void inc64_m(uint8_t reg);
+void inc64_mi(uint8_t reg, uint32_t offset);
+void inc64_mr(uint8_t reg_base, uint8_t reg_index);
+
+// DEC utility function prototypes
+void dec64_r(uint8_t reg);
+void dec64_m(uint8_t reg);
+void dec64_mi(uint8_t reg, uint32_t offset);
+void dec64_mr(uint8_t reg_base, uint8_t reg_index);
+
 void set_rex_prefix(char *opcode_bytes, uint8_t w, uint8_t r, uint8_t x, uint8_t b);
 
 #endif

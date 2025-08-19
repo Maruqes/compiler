@@ -114,6 +114,7 @@ func (vl *VarsList) AddVariable(name string, varType int) error {
 	return nil
 }
 
+// sets the variable to the value in RAX
 func (vl *VarsList) SetVar(variable *Variable) error {
 	// PushStack64(byte(backend.REG_RAX))
 
@@ -168,20 +169,152 @@ func (vl *VarsList) DoesVarExist(name string) bool {
 	return false
 }
 
+func (vl *VarsList) incrementVar(parser *Parser, varName string, variable *Variable) error {
+	//consume the token
+	_, err := parser.NextToken()
+	if err != nil {
+		return err
+	}
+
+	switch variable.Type {
+	case DB:
+		backend.Inc8_mi(byte(backend.REG_RBP), uint(variable.Position))
+	case DW:
+		backend.Inc16_mi(byte(backend.REG_RBP), uint(variable.Position))
+	case DD:
+		backend.Inc32_mi(byte(backend.REG_RBP), uint(variable.Position))
+	case DQ:
+		backend.Inc64_mi(byte(backend.REG_RBP), uint(variable.Position))
+	}
+
+	eatSemicolon(parser)
+	return nil
+}
+
+func (vl *VarsList) decrementVar(parser *Parser, varName string, variable *Variable) error {
+	_, err := parser.NextToken()
+	if err != nil {
+		return err
+	}
+	switch variable.Type {
+	case DB:
+		backend.Dec8_mi(byte(backend.REG_RBP), uint(variable.Position))
+	case DW:
+		backend.Dec16_mi(byte(backend.REG_RBP), uint(variable.Position))
+	case DD:
+		backend.Dec32_mi(byte(backend.REG_RBP), uint(variable.Position))
+	case DQ:
+		backend.Dec64_mi(byte(backend.REG_RBP), uint(variable.Position))
+	}
+	eatSemicolon(parser)
+	return nil
+}
+
+func (vl *VarsList) sumVar(parser *Parser, varName string, variable *Variable) error {
+	_, err := parser.NextToken()
+	if err != nil {
+		return err
+	}
+
+	// First, load the current variable value into RAX
+	err = vl.GetVariable(varName, byte(backend.REG_RAX))
+	if err != nil {
+		return fmt.Errorf("Error getting variable %s in line %d: %s", varName, parser.lineNumber, err.Error())
+	}
+
+	// Parse the expression to add and put result in RBX
+	err, _, parsed := getUntilSymbol(parser, []string{";"}, byte(backend.REG_RBX))
+	if !parsed {
+		return fmt.Errorf("Error parsing sum variable in line %d", parser.lineNumber)
+	}
+
+	// Add the values based on variable type
+	switch variable.Type {
+	case DB:
+		backend.Sum8_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
+	case DW:
+		backend.Sum16_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
+	case DD:
+		backend.Sum32_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
+	case DQ:
+		backend.Sum64_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
+	}
+
+	// Clear the register based on variable type and store result
+	clearReg(byte(backend.REG_RAX), variable.Type)
+	vl.SetVar(variable)
+
+	return nil
+}
+
+func (vl *VarsList) subVar(parser *Parser, varName string, variable *Variable) error {
+	_, err := parser.NextToken()
+	if err != nil {
+		return err
+	}
+
+	// First, load the current variable value into RAX
+	err = vl.GetVariable(varName, byte(backend.REG_RAX))
+	if err != nil {
+		return fmt.Errorf("Error getting variable %s in line %d: %s", varName, parser.lineNumber, err.Error())
+	}
+
+	// Parse the expression to subtract and put result in RBX
+	err, _, parsed := getUntilSymbol(parser, []string{";"}, byte(backend.REG_RBX))
+	if !parsed {
+		return fmt.Errorf("Error parsing sub variable in line %d", parser.lineNumber)
+	}
+
+	// Subtract the values based on variable type
+	switch variable.Type {
+	case DB:
+		backend.Sub8_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
+	case DW:
+		backend.Sub16_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
+	case DD:
+		backend.Sub32_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
+	case DQ:
+		backend.Sub64_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
+	}
+
+	// Clear the register based on variable type and store result
+	clearReg(byte(backend.REG_RAX), variable.Type)
+	vl.SetVar(variable)
+
+	return nil
+}
+
 func (vl *VarsList) setVarStruct(parser *Parser, varName string) error {
 	variable, err := vl.GetVariableStruct(varName, byte(backend.REG_RAX))
 	if err != nil {
 		return err
 	}
-
-	err = getAfterEqual(parser)
+	peekToken, err := parser.Peek()
 	if err != nil {
 		return err
 	}
+	fmt.Println(peekToken)
+	switch peekToken {
+	case "=":
+		err = getAfterEqual(parser)
+		if err != nil {
+			return err
+		}
 
-	vl.SetVar(variable)
+		vl.SetVar(variable)
 
-	clearReg(byte(backend.REG_RAX), variable.Type)
+		clearReg(byte(backend.REG_RAX), variable.Type)
+	case "++":
+		return vl.incrementVar(parser, varName, variable)
+	case "--":
+		return vl.decrementVar(parser, varName, variable)
+	case "+=":
+		return vl.sumVar(parser, varName, variable)
+	case "-=":
+		return vl.subVar(parser, varName, variable)
+	default:
+		return fmt.Errorf("Unexpected token '%s' after '--' in line %d", peekToken, parser.lineNumber)
+	}
 
 	return nil
 }

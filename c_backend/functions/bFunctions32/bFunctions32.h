@@ -105,6 +105,18 @@ void not32_m(uint8_t reg);
 void not32_mi(uint8_t reg, uint32_t offset);
 void not32_mr(uint8_t reg_base, uint8_t reg_index);
 
+// INC 32-bit operations
+void inc32_r(uint8_t reg);
+void inc32_m(uint8_t reg);
+void inc32_mi(uint8_t reg, uint32_t offset);
+void inc32_mr(uint8_t reg_base, uint8_t reg_index);
+
+// DEC 32-bit operations
+void dec32_r(uint8_t reg);
+void dec32_m(uint8_t reg);
+void dec32_mi(uint8_t reg, uint32_t offset);
+void dec32_mr(uint8_t reg_base, uint8_t reg_index);
+
 // Test functions
 void funcao_teste_mov32_r_i(void);
 void funcao_teste_mov32_r_m(void);

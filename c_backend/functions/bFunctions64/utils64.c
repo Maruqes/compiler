@@ -1,7 +1,7 @@
 #include "bFunctions64.h"
 #include "../functions.h"
 
-// file for cmp shifts push/pop logic(and/or/xor/not)
+// file for cmp shifts push/pop logic(and/or/xor/not) inc/dec
 // irm
 
 /*
@@ -1129,6 +1129,290 @@ void not64_mr(uint8_t reg_base, uint8_t reg_index)
                    (reg_base >= REG_R8) ? 1 : 0);
     opcode_bytes[1] = 0xF7; // NOT r/m64
     set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, 2, RM_SIB);
+    set_sib(&opcode_bytes[3], SCALE_1, reg_index, reg_base);
+    opcode_bytes[3 + need_sib] = 0x00;
+
+    OpCode new_opcode = {.size = 4 + need_sib, .code = opcode_bytes};
+    OpCode *tmp = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!tmp)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array = tmp;
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+// INC operations: INC r, INC [r], INC [r+disp], INC [r_base+index]
+
+void inc64_r(uint8_t reg)
+{
+    char *opcode_bytes = malloc(3);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    set_rex_prefix(opcode_bytes, 1,
+                   0,
+                   0,
+                   (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xFF;                              // INC r64
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 0, reg); // /0 for INC
+
+    OpCode new_opcode = {.size = 3, .code = opcode_bytes};
+    OpCode *tmp = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!tmp)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array = tmp;
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void inc64_m(uint8_t reg)
+{
+    int usa_sib = precisa_sib(MOD_1BYTE_DISP, reg, 0);
+    if (reg == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as a memory register.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char *opcode_bytes = malloc(4 + usa_sib);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    set_rex_prefix(opcode_bytes, 1,
+                   0,
+                   0,
+                   (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xFF; // INC r/m64
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, 0, reg);
+    set_sib(&opcode_bytes[3], SCALE_1, RM_SIB, reg);
+    opcode_bytes[3 + usa_sib] = 0x00;
+
+    OpCode new_opcode = {.size = 4 + usa_sib, .code = opcode_bytes};
+    OpCode *tmp = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!tmp)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array = tmp;
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void inc64_mi(uint8_t reg, uint32_t offset)
+{
+    int usa_sib = precisa_sib(MOD_4BYTE_DISP, reg, 0);
+    if (reg == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as a memory register.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char *opcode_bytes = malloc(7 + usa_sib);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    set_rex_prefix(opcode_bytes, 1,
+                   0,
+                   0,
+                   (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xFF; // INC r/m64
+    set_modrm(&opcode_bytes[2], MOD_4BYTE_DISP, 0, reg);
+    set_sib(&opcode_bytes[3], SCALE_1, RM_SIB, reg);
+    memcpy(&opcode_bytes[3 + usa_sib], &offset, sizeof(offset));
+
+    OpCode new_opcode = {.size = 7 + usa_sib, .code = opcode_bytes};
+    OpCode *tmp = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!tmp)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array = tmp;
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void inc64_mr(uint8_t reg_base, uint8_t reg_index)
+{
+    if (reg_base == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as base register.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (reg_index == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as index register.\n");
+        exit(EXIT_FAILURE);
+    }
+    const int need_sib = 1;
+
+    char *opcode_bytes = malloc(4 + need_sib);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    set_rex_prefix(opcode_bytes, 1,
+                   0,
+                   (reg_index >= REG_R8) ? 1 : 0,
+                   (reg_base >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xFF; // INC r/m64
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, 0, RM_SIB);
+    set_sib(&opcode_bytes[3], SCALE_1, reg_index, reg_base);
+    opcode_bytes[3 + need_sib] = 0x00;
+
+    OpCode new_opcode = {.size = 4 + need_sib, .code = opcode_bytes};
+    OpCode *tmp = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!tmp)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array = tmp;
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+// DEC operations: DEC r, DEC [r], DEC [r+disp], DEC [r_base+index]
+
+void dec64_r(uint8_t reg)
+{
+    char *opcode_bytes = malloc(3);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    set_rex_prefix(opcode_bytes, 1,
+                   0,
+                   0,
+                   (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xFF;                              // DEC r64
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 1, reg); // /1 for DEC
+
+    OpCode new_opcode = {.size = 3, .code = opcode_bytes};
+    OpCode *tmp = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!tmp)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array = tmp;
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void dec64_m(uint8_t reg)
+{
+    int usa_sib = precisa_sib(MOD_1BYTE_DISP, reg, 0);
+    if (reg == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as a memory register.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char *opcode_bytes = malloc(4 + usa_sib);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    set_rex_prefix(opcode_bytes, 1,
+                   0,
+                   0,
+                   (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xFF; // DEC r/m64
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, 1, reg);
+    set_sib(&opcode_bytes[3], SCALE_1, RM_SIB, reg);
+    opcode_bytes[3 + usa_sib] = 0x00;
+
+    OpCode new_opcode = {.size = 4 + usa_sib, .code = opcode_bytes};
+    OpCode *tmp = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!tmp)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array = tmp;
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void dec64_mi(uint8_t reg, uint32_t offset)
+{
+    int usa_sib = precisa_sib(MOD_4BYTE_DISP, reg, 0);
+    if (reg == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as a memory register.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char *opcode_bytes = malloc(7 + usa_sib);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    set_rex_prefix(opcode_bytes, 1,
+                   0,
+                   0,
+                   (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xFF; // DEC r/m64
+    set_modrm(&opcode_bytes[2], MOD_4BYTE_DISP, 1, reg);
+    set_sib(&opcode_bytes[3], SCALE_1, RM_SIB, reg);
+    memcpy(&opcode_bytes[3 + usa_sib], &offset, sizeof(offset));
+
+    OpCode new_opcode = {.size = 7 + usa_sib, .code = opcode_bytes};
+    OpCode *tmp = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!tmp)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array = tmp;
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void dec64_mr(uint8_t reg_base, uint8_t reg_index)
+{
+    if (reg_base == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as base register.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (reg_index == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as index register.\n");
+        exit(EXIT_FAILURE);
+    }
+    const int need_sib = 1;
+
+    char *opcode_bytes = malloc(4 + need_sib);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    set_rex_prefix(opcode_bytes, 1,
+                   0,
+                   (reg_index >= REG_R8) ? 1 : 0,
+                   (reg_base >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xFF; // DEC r/m64
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, 1, RM_SIB);
     set_sib(&opcode_bytes[3], SCALE_1, reg_index, reg_base);
     opcode_bytes[3 + need_sib] = 0x00;
 

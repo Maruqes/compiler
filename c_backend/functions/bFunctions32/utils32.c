@@ -823,3 +823,327 @@ void not32_mr(uint8_t reg_base, uint8_t reg_index)
     }
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
+
+// INC operations: INC r, INC [r], INC [r+disp], INC [r_base+index]
+
+void inc32_r(uint8_t reg)
+{
+    uint8_t regs[] = {reg};
+    cant_use_rx(regs, 1);
+
+    char *opcode_bytes = malloc(2);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xFF;                              // INC r32
+    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, 0, reg); // /0 for INC
+
+    OpCode new_opcode;
+    new_opcode.size = 2;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void inc32_m(uint8_t reg)
+{
+    uint8_t regs[] = {reg};
+    cant_use_rx(regs, 1);
+
+    if (reg == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as a memory register in 32-bit mode.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (reg == RM_SIB) // R12 equivalent
+    {
+        fprintf(stderr, "Error: Cannot use R12 as base register in 32-bit mode without proper SIB handling.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    int sib_needed = 0; // No SIB for basic subset
+    char *opcode_bytes = malloc(3);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xFF; // INC r/m32
+    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, 0, reg);
+    opcode_bytes[2] = 0x00; // 1-byte displacement
+
+    OpCode new_opcode;
+    new_opcode.size = 3;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void inc32_mi(uint8_t reg, uint32_t offset)
+{
+    uint8_t regs[] = {reg};
+    cant_use_rx(regs, 1);
+
+    if (reg == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as a memory register in 32-bit mode.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (reg == RM_SIB) // R12 equivalent
+    {
+        fprintf(stderr, "Error: Cannot use R12 as base register in 32-bit mode without proper SIB handling.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    int sib_needed = 0; // No SIB for basic subset
+    char *opcode_bytes = malloc(6);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xFF; // INC r/m32
+    set_modrm(&opcode_bytes[1], MOD_4BYTE_DISP, 0, reg);
+    memcpy(&opcode_bytes[2], &offset, sizeof(offset));
+
+    OpCode new_opcode;
+    new_opcode.size = 6;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void inc32_mr(uint8_t reg_base, uint8_t reg_index)
+{
+    uint8_t regs[] = {reg_base, reg_index};
+    cant_use_rx(regs, 2);
+
+    if (reg_base == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as base register in 32-bit mode.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (reg_index == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as index register in 32-bit mode.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (reg_base == RM_SIB) // R12 equivalent
+    {
+        fprintf(stderr, "Error: Cannot use R12 as base register in 32-bit mode without proper SIB handling.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char *opcode_bytes = malloc(4);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xFF; // INC r/m32
+    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, 0, RM_SIB);
+    set_sib(&opcode_bytes[2], SCALE_1, reg_index, reg_base);
+    opcode_bytes[3] = 0x00;
+
+    OpCode new_opcode;
+    new_opcode.size = 4;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+// DEC operations: DEC r, DEC [r], DEC [r+disp], DEC [r_base+index]
+
+void dec32_r(uint8_t reg)
+{
+    uint8_t regs[] = {reg};
+    cant_use_rx(regs, 1);
+
+    char *opcode_bytes = malloc(2);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xFF;                              // DEC r32
+    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, 1, reg); // /1 for DEC
+
+    OpCode new_opcode;
+    new_opcode.size = 2;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void dec32_m(uint8_t reg)
+{
+    uint8_t regs[] = {reg};
+    cant_use_rx(regs, 1);
+
+    if (reg == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as a memory register in 32-bit mode.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (reg == RM_SIB) // R12 equivalent
+    {
+        fprintf(stderr, "Error: Cannot use R12 as base register in 32-bit mode without proper SIB handling.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    int sib_needed = 0; // No SIB for basic subset
+    char *opcode_bytes = malloc(3);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xFF; // DEC r/m32
+    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, 1, reg);
+    opcode_bytes[2] = 0x00; // 1-byte displacement
+
+    OpCode new_opcode;
+    new_opcode.size = 3;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void dec32_mi(uint8_t reg, uint32_t offset)
+{
+    uint8_t regs[] = {reg};
+    cant_use_rx(regs, 1);
+
+    if (reg == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as a memory register in 32-bit mode.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (reg == RM_SIB) // R12 equivalent
+    {
+        fprintf(stderr, "Error: Cannot use R12 as base register in 32-bit mode without proper SIB handling.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    int sib_needed = 0; // No SIB for basic subset
+    char *opcode_bytes = malloc(6);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xFF; // DEC r/m32
+    set_modrm(&opcode_bytes[1], MOD_4BYTE_DISP, 1, reg);
+    memcpy(&opcode_bytes[2], &offset, sizeof(offset));
+
+    OpCode new_opcode;
+    new_opcode.size = 6;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void dec32_mr(uint8_t reg_base, uint8_t reg_index)
+{
+    uint8_t regs[] = {reg_base, reg_index};
+    cant_use_rx(regs, 2);
+
+    if (reg_base == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as base register in 32-bit mode.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (reg_index == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as index register in 32-bit mode.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (reg_base == RM_SIB) // R12 equivalent
+    {
+        fprintf(stderr, "Error: Cannot use R12 as base register in 32-bit mode without proper SIB handling.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char *opcode_bytes = malloc(4);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    opcode_bytes[0] = 0xFF; // DEC r/m32
+    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, 1, RM_SIB);
+    set_sib(&opcode_bytes[2], SCALE_1, reg_index, reg_base);
+    opcode_bytes[3] = 0x00;
+
+    OpCode new_opcode;
+    new_opcode.size = 4;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
