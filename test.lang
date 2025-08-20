@@ -3,6 +3,7 @@ global{
     dq globalVar2 = globalVar+5;
     db testdb = 9;
     dq testString = "Hello, World!";
+    ptr testPtrGlobalVar = &globalVar;
 }
 
 
@@ -190,9 +191,7 @@ func main(){
     globalVar = globalVar + 5 - testdb;
     printHex(globalVar);
 
-    ptr testPtrGlobal = &globalVar;
-    printHex(testPtrGlobal);
-    dq testPtrDereference = *testPtrGlobal;
+    dq testPtrDereference = *testPtrGlobalVar;
     printHex(testPtrDereference);
 
     return;

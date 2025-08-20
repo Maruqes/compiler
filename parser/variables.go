@@ -138,6 +138,12 @@ func (vl *VarsList) SetVar(variable *Variable) error {
 	return nil
 }
 func (vl *VarsList) GetVariable(name string, reg byte) error {
+	//in case of global var return it
+	if doesPublicVarExist(name) {
+		getPublicVar(name, reg)
+		return nil
+	}
+
 	for _, v := range vl.vars {
 		if v.Name == name {
 			fmt.Println("Loading variable:", v.Name, "of type:", v.Type, "at position:", v.Position)
