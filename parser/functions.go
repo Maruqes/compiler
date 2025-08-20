@@ -109,7 +109,7 @@ func parseFunctionCall(parser *Parser, funcName string) error {
 	}
 
 	if len(functype.Params) != n_params {
-		return fmt.Errorf("Function '%s' expects %d parameters, got %d on line %d", funcName, len(functype.Params), n_params, parser.lineNumber)
+		return fmt.Errorf("Function '%s' expects %d parameters, got %d on line %d", funcName, len(functype.Params), n_params, parser.LineNumber)
 	}
 
 	backend.Call(funcName)
@@ -118,8 +118,8 @@ func parseFunctionCall(parser *Parser, funcName string) error {
 }
 
 func parseDefer(parser *Parser) error {
-	startDeferLabel := fmt.Sprintf("defer_start_%d", parser.lineNumber)
-	endDeferLabel := fmt.Sprintf("defer_end_%d", parser.lineNumber)
+	startDeferLabel := fmt.Sprintf("defer_start_%d", parser.LineNumber)
+	endDeferLabel := fmt.Sprintf("defer_end_%d", parser.LineNumber)
 	backend.Jmp(endDeferLabel)
 	backend.Create_label(startDeferLabel)
 	err := parseCodeBlock(parser)
@@ -249,7 +249,7 @@ func parseVariableDeclaration(parser *Parser, token string) (bool, error) {
 			return false, err
 		}
 	default:
-		return false, fmt.Errorf("Unknown token: '%s' found at line %d", token, parser.lineNumber)
+		return false, nil
 	}
 
 	return true, nil
@@ -349,7 +349,15 @@ func parseCodeBlock(parser *Parser) error {
 				continue
 			}
 
-			return fmt.Errorf("Unknown token: '%s' found at line %d", token, parser.lineNumber)
+			parsed, err = parseGlobalVarDeclaration(parser, token)
+			if err != nil {
+				return err
+			}
+			if parsed {
+				continue
+			}
+
+			return fmt.Errorf("parseCodeBlock unknown token: '%s' found at line %d", token, parser.LineNumber)
 		}
 	}
 }

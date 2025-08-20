@@ -86,6 +86,12 @@ func SubStack(n int) {
 func (vl *VarsList) AddVariable(name string, varType int) error {
 	// PushStack64(byte(backend.REG_RAX))
 
+	//check if global var exists with that name
+	_, exists := publicVarList.GetVar(name)
+	if exists {
+		return fmt.Errorf("Already exists global variable '%s'", name)
+	}
+
 	switch varType {
 	case DB:
 		backend.Sub64_r_i(byte(backend.REG_RSP), 1)
@@ -219,13 +225,13 @@ func (vl *VarsList) sumVar(parser *Parser, varName string, variable *Variable) e
 	// First, load the current variable value into RAX
 	err = vl.GetVariable(varName, byte(backend.REG_RAX))
 	if err != nil {
-		return fmt.Errorf("Error getting variable %s in line %d: %s", varName, parser.lineNumber, err.Error())
+		return fmt.Errorf("Error getting variable %s in line %d: %s", varName, parser.LineNumber, err.Error())
 	}
 
 	// Parse the expression to add and put result in RBX
 	err, _, parsed := getUntilSymbol(parser, []string{";"}, byte(backend.REG_RBX))
 	if !parsed {
-		return fmt.Errorf("Error parsing sum variable in line %d", parser.lineNumber)
+		return fmt.Errorf("Error parsing sum variable in line %d", parser.LineNumber)
 	}
 
 	// Add the values based on variable type
@@ -256,13 +262,13 @@ func (vl *VarsList) subVar(parser *Parser, varName string, variable *Variable) e
 	// First, load the current variable value into RAX
 	err = vl.GetVariable(varName, byte(backend.REG_RAX))
 	if err != nil {
-		return fmt.Errorf("Error getting variable %s in line %d: %s", varName, parser.lineNumber, err.Error())
+		return fmt.Errorf("Error getting variable %s in line %d: %s", varName, parser.LineNumber, err.Error())
 	}
 
 	// Parse the expression to subtract and put result in RBX
 	err, _, parsed := getUntilSymbol(parser, []string{";"}, byte(backend.REG_RBX))
 	if !parsed {
-		return fmt.Errorf("Error parsing sub variable in line %d", parser.lineNumber)
+		return fmt.Errorf("Error parsing sub variable in line %d", parser.LineNumber)
 	}
 
 	// Subtract the values based on variable type
@@ -313,7 +319,7 @@ func (vl *VarsList) setVarStruct(parser *Parser, varName string) error {
 	case "-=":
 		return vl.subVar(parser, varName, variable)
 	default:
-		return fmt.Errorf("Unexpected token '%s' after '--' in line %d", peekToken, parser.lineNumber)
+		return fmt.Errorf("Unexpected token '%s' after '--' in line %d", peekToken, parser.LineNumber)
 	}
 
 	return nil
@@ -331,7 +337,7 @@ func createPointerVar(parser *Parser) error {
 	}
 
 	if varList.DoesVarExist(name) {
-		return fmt.Errorf("Variable '%s' already exists in scope '%s' in line %d", name, SCOPE, parser.lineNumber)
+		return fmt.Errorf("Variable '%s' already exists in scope '%s' in line %d", name, SCOPE, parser.LineNumber)
 	}
 
 	// get the value after the equal sign in RAX
@@ -361,7 +367,7 @@ func createVarStruct(parser *Parser, varType int) error {
 	}
 
 	if varList.DoesVarExist(name) {
-		return fmt.Errorf("Variable '%s' already exists in scope '%s' in line %d", name, SCOPE, parser.lineNumber)
+		return fmt.Errorf("Variable '%s' already exists in scope '%s' in line %d", name, SCOPE, parser.LineNumber)
 	}
 
 	// get the value after the equal sign in RAX
@@ -385,7 +391,7 @@ func createVarWithReg(parser *Parser, reg byte, varType int, name string) error 
 	}
 
 	if varList.DoesVarExist(name) {
-		return fmt.Errorf("Variable '%s' already exists in scope '%s' in line %d", name, SCOPE, parser.lineNumber)
+		return fmt.Errorf("Variable '%s' already exists in scope '%s' in line %d", name, SCOPE, parser.LineNumber)
 	}
 
 	if reg != byte(backend.REG_RAX) {

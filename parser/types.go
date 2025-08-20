@@ -42,6 +42,15 @@ func isTypeToken(token string) bool {
 	}
 }
 
+func isType(size int) bool {
+	switch size {
+	case DQ, DD, DW, DB:
+		return true
+	default:
+		return false
+	}
+}
+
 func parseRawNumbers(token string, reg byte) (bool, error) {
 	if len(token) > 2 && token[:2] == "0x" {
 		num, err := strconv.ParseUint(token[2:], 16, 64)
@@ -101,14 +110,22 @@ func parsePointer(parser *Parser, token string, reg byte) (bool, error) {
 				return false, err
 			}
 
-			//check if token is a variable
-			varStruct, err := varList.GetVariableStruct(token, reg)
-			if err != nil {
-				return false, err
-			}
+			if doesPublicVarExist(token) {
+				_, err := returnPointerFromPublicVar(token, reg)
+				if err != nil {
+					return false, err
+				}
+			} else {
+				//check if token is a variable
+				varStruct, err := varList.GetVariableStruct(token, reg)
+				if err != nil {
+					return false, err
+				}
 
-			backend.Mov64_r_i(reg, uint64(varStruct.Position))
-			backend.Sum64_r_r(reg, byte(backend.REG_RBP))
+				backend.Mov64_r_i(reg, uint64(varStruct.Position))
+				backend.Sum64_r_r(reg, byte(backend.REG_RBP))
+
+			}
 
 			return true, nil
 		case '*':
@@ -287,7 +304,7 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 			case DB:
 				backend.Mov8_mi_r(byte(backend.REG_R13), offset, reg)
 			default:
-				return false, fmt.Errorf("Unknown array type: %d on line %d", arrType, parser.lineNumber)
+				return false, fmt.Errorf("Unknown array type: %d on line %d", arrType, parser.LineNumber)
 			}
 			count++
 		}
@@ -325,19 +342,24 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 		return false, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
 	}
 
-	if !varList.DoesVarExist(token) {
-		return false, nil
-	}
-
-	err := varList.GetVariable(token, reg)
-	if err != nil {
-		return false, err
+	if varList.DoesVarExist(token) {
+		err := varList.GetVariable(token, reg)
+		if err != nil {
+			return false, err
+		}
+	} else if doesPublicVarExist(token) {
+		_, err := getPublicVar(token, reg)
+		if err != nil {
+			return false, err
+		}
+	} else {
+		return false, fmt.Errorf("Variable '%s' not found in scope '%s'", token, SCOPE)
 	}
 
 	parsedOne := false
 
 	for {
-		token, err = parser.NextToken()
+		token, err := parser.NextToken()
 		if err != nil {
 			return false, err
 		}
@@ -366,7 +388,7 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 		case DB:
 			backend.Mov8_r_mr(reg, reg, byte(backend.REG_RCX))
 		default:
-			return false, fmt.Errorf("Unknown array type: %d on line %d", arrType, parser.lineNumber)
+			return false, fmt.Errorf("Unknown array type: %d on line %d", arrType, parser.LineNumber)
 		}
 		parsedOne = true
 	}
@@ -460,6 +482,10 @@ func parseTypeFuncs(parser *Parser, token string, reg byte) (bool, error) {
 	return true, nil
 }
 
+func parseGlobalVars(token string, reg byte) (bool, error) {
+	return getPublicVar(token, reg)
+}
+
 // may uses r8
 // uses 64 bit registers to get the value of the token
 func getValueFromToken(parser *Parser, token string, reg byte) error {
@@ -533,5 +559,13 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 		return nil
 	}
 
-	return fmt.Errorf("Unknown token '%s' at line %d", token, parser.lineNumber)
+	parsed, err = parseGlobalVars(token, reg)
+	if err != nil {
+		return err
+	}
+	if parsed {
+		return nil
+	}
+
+	return fmt.Errorf("Unknown token '%s' at line %d", token, parser.LineNumber)
 }

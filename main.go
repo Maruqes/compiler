@@ -20,22 +20,21 @@ strings
 structs
 vars globais
 asm funcs
-i++
-i+=1
-tirar o ; do ultimo no for
 
 */
 
 func main() {
+
 	var par parser.Parser
 	par.StartParse("test.lang")
 
+	backend.Call("global")
 	backend.Call("main")
 	wrapper.Exit(0)
 
 	err := parser.StartParsing(&par)
 	if err != nil {
-		panic(fmt.Sprintf("Error during parsing: %v", err))
+		panic(fmt.Sprintf("Error during parsing on line %d: %v", par.LineNumber, err))
 	}
 
 	// .data

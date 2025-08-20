@@ -10,7 +10,7 @@ import (
 
 type Parser struct {
 	file       *os.File
-	lineNumber int
+	LineNumber int
 }
 
 var comparisonOperators = []string{"==", "!=", "<=", ">=", "<", ">"}
@@ -39,7 +39,7 @@ func (p *Parser) readNextChar() (string, error) {
 		return "", err
 	}
 	if buf[0] == '\n' {
-		p.lineNumber++
+		p.LineNumber++
 	}
 	return string(buf), nil
 }
@@ -67,7 +67,7 @@ func (p *Parser) SeekBack(number int64) error {
 
 	for _, b := range buf {
 		if b == '\n' {
-			p.lineNumber--
+			p.LineNumber--
 		}
 	}
 
@@ -231,8 +231,7 @@ func (p *Parser) Peek() (string, error) {
 	return token, nil
 }
 
-
-func (p *Parser) Mark() (int64,error) {
+func (p *Parser) Mark() (int64, error) {
 	return p.file.Seek(0, io.SeekCurrent)
 }
 
@@ -241,7 +240,6 @@ func (p *Parser) Restore(mark int64) error {
 	return err
 }
 
-
 func eatEqual(parser *Parser) {
 	//parse = else panic
 	equal, err := parser.NextToken()
@@ -249,11 +247,11 @@ func eatEqual(parser *Parser) {
 		panic("Error eating equal: " + err.Error())
 	}
 	if equal != "=" {
-		panic(fmt.Sprintf("Expected '=', got '%s' on line %d", equal, parser.lineNumber))
+		panic(fmt.Sprintf("Expected '=', got '%s' on line %d", equal, parser.LineNumber))
 	}
 }
 
-//(
+// (
 func eatFirstBrace(parser *Parser) {
 	//parse ( else panic
 	firstBrace, err := parser.NextToken()
@@ -261,7 +259,7 @@ func eatFirstBrace(parser *Parser) {
 		panic("Error eating first brace: " + err.Error())
 	}
 	if firstBrace != "(" {
-		panic(fmt.Sprintf("Expected '(', got '%s' on line %d", firstBrace, parser.lineNumber))
+		panic(fmt.Sprintf("Expected '(', got '%s' on line %d", firstBrace, parser.LineNumber))
 	}
 }
 
@@ -272,7 +270,29 @@ func eatLastBrace(parser *Parser) {
 		panic("Error eating last brace: " + err.Error())
 	}
 	if lastBrace != ")" {
-		panic(fmt.Sprintf("Expected ')', got '%s' on line %d", lastBrace, parser.lineNumber))
+		panic(fmt.Sprintf("Expected ')', got '%s' on line %d", lastBrace, parser.LineNumber))
+	}
+}
+
+func eatFirstCurlBrace(parser *Parser) {
+	//parse { else panic
+	firstCurlBrace, err := parser.NextToken()
+	if err != nil {
+		panic("Error eating first curl brace: " + err.Error())
+	}
+	if firstCurlBrace != "{" {
+		panic(fmt.Sprintf("Expected '{', got '%s' on line %d", firstCurlBrace, parser.LineNumber))
+	}
+}
+
+func eatLastCurlBrace(parser *Parser) {
+	//parse } else panic
+	lastCurlBrace, err := parser.NextToken()
+	if err != nil {
+		panic("Error eating last curl brace: " + err.Error())
+	}
+	if lastCurlBrace != "}" {
+		panic(fmt.Sprintf("Expected '}', got '%s' on line %d", lastCurlBrace, parser.LineNumber))
 	}
 }
 
@@ -283,7 +303,7 @@ func eatSemicolon(parser *Parser) {
 		panic("Error eating semicolon: " + err.Error())
 	}
 	if semicolon != ";" {
-		panic(fmt.Sprintf("Expected ';', got '%s' on line %d", semicolon, parser.lineNumber))
+		panic(fmt.Sprintf("Expected ';', got '%s' on line %d", semicolon, parser.LineNumber))
 	}
 }
 
@@ -302,7 +322,7 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 
 	err = getValueFromToken(parser, token, reg)
 	if err != nil {
-		panic("Error getting value from token in line " + fmt.Sprintf("%d: %s", parser.lineNumber, err.Error()))
+		panic("Error getting value from token in line " + fmt.Sprintf("%d: %s", parser.LineNumber, err.Error()))
 	}
 
 	for {
@@ -325,7 +345,7 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 
 		err = getValueFromToken(parser, token, byte(backend.REG_RBX))
 		if err != nil {
-			panic("Error getting value from token in line " + fmt.Sprintf("%d: %s", parser.lineNumber, err.Error()))
+			panic("Error getting value from token in line " + fmt.Sprintf("%d: %s", parser.LineNumber, err.Error()))
 		}
 
 		switch symbol {
@@ -343,8 +363,8 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 			backend.Xor64_r_r(byte(backend.REG_RDX), byte(backend.REG_RDX)) // clear RDX before division
 			backend.Div64_r(byte(backend.REG_RBX))
 		default:
-			fmt.Printf("Current line is %d\n", parser.lineNumber)
-			return fmt.Errorf("Unknown symbol '%s' found at line %d", symbol, parser.lineNumber), nil, false
+			fmt.Printf("Current line is %d\n", parser.LineNumber)
+			return fmt.Errorf("Unknown symbol '%s' found at line %d", symbol, parser.LineNumber), nil, false
 		}
 	}
 }
@@ -376,8 +396,14 @@ func StartParsing(parser *Parser) error {
 			if err != nil {
 				return err
 			}
+		case "global":
+			_, err := checkPublicVars(parser)
+			if err != nil {
+				return err
+			}
 		default:
-			return fmt.Errorf("Unknown token: '%s' found at line %d", token, parser.lineNumber)
+
+			return fmt.Errorf("Unknown token: '%s' found at line %d", token, parser.LineNumber)
 		}
 	}
 }

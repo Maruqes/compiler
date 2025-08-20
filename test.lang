@@ -1,8 +1,17 @@
+global{
+    dq globalVar = 5;
+    dq globalVar2 = globalVar+5;
+    db testdb = 9;
+    dq testString = "Hello, World!";
+}
+
+
 // helper
 func test(dq a){
     printHex(a);
 	return;
 }
+
 
 func main(){
     dq arr = dq{1,2,3,dq{10,11,12,dq{0xaa, dq{0x2020, 0x2021, 0x2022, 0x23, 0x24}, 0xcc, 0xdd}}, dq{}};
@@ -175,6 +184,16 @@ func main(){
     printHex(add);
     printHex(adw);
     printHex(adb);
+
+
+    printHex(db(testString[0]));
+    globalVar = globalVar + 5 - testdb;
+    printHex(globalVar);
+
+    ptr testPtrGlobal = &globalVar;
+    printHex(testPtrGlobal);
+    dq testPtrDereference = *testPtrGlobal;
+    printHex(testPtrDereference);
 
     return;
 }
