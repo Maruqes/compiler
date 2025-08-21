@@ -364,7 +364,7 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 			backend.Div64_r(byte(backend.REG_RBX))
 		default:
 			fmt.Printf("Current line is %d\n", parser.LineNumber)
-			return fmt.Errorf("Unknown symbol '%s' found at line %d", symbol, parser.LineNumber), nil, false
+			return fmt.Errorf("unknown symbol '%s' found at line %d", symbol, parser.LineNumber), nil, false
 		}
 	}
 }
@@ -401,9 +401,14 @@ func StartParsing(parser *Parser) error {
 			if err != nil {
 				return err
 			}
+		case "struct":
+			err := createStructType(parser)
+			if err != nil {
+				return err
+			}
 		default:
 
-			return fmt.Errorf("Unknown token: '%s' found at line %d", token, parser.LineNumber)
+			return fmt.Errorf("unknown token: '%s' found at line %d", token, parser.LineNumber)
 		}
 	}
 }

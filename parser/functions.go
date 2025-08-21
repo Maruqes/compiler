@@ -81,7 +81,7 @@ func parseFunctionCall(parser *Parser, funcName string) error {
 	}
 
 	if token != "(" {
-		return fmt.Errorf("Expected '(', got '%s'", token)
+		return fmt.Errorf("expected '(', got '%s'", token)
 	}
 
 	//falta checkar tipos e numero de parametros
@@ -89,7 +89,7 @@ func parseFunctionCall(parser *Parser, funcName string) error {
 	for {
 		err, symbol, parsed := getUntilSymbol(parser, []string{")", ","}, byte(backend.REG_RAX))
 		if err != nil {
-			return fmt.Errorf("Error getting parameters for function '%s': %v", funcName, err)
+			return fmt.Errorf("error getting parameters for function '%s': %v", funcName, err)
 		}
 
 		if parsed {
@@ -97,7 +97,6 @@ func parseFunctionCall(parser *Parser, funcName string) error {
 			n_params++
 		}
 
-		fmt.Println("Symbol:", string(*symbol))
 		if *symbol == ")" {
 			break
 		}
@@ -105,11 +104,11 @@ func parseFunctionCall(parser *Parser, funcName string) error {
 
 	functype := getFunction(funcName)
 	if functype == nil {
-		return fmt.Errorf("Function '%s' not found", funcName)
+		return fmt.Errorf("function '%s' not found", funcName)
 	}
 
 	if len(functype.Params) != n_params {
-		return fmt.Errorf("Function '%s' expects %d parameters, got %d on line %d", funcName, len(functype.Params), n_params, parser.LineNumber)
+		return fmt.Errorf("function '%s' expects %d parameters, got %d on line %d", funcName, len(functype.Params), n_params, parser.LineNumber)
 	}
 
 	backend.Call(funcName)
@@ -161,7 +160,7 @@ func temporaryPrintVar(parser *Parser) error {
 	}
 
 	if token != "(" {
-		return fmt.Errorf("Expected '(', got '%s'", token)
+		return fmt.Errorf("expected '(', got '%s'", token)
 	}
 
 	varName, err := parser.NextToken()
@@ -175,7 +174,7 @@ func temporaryPrintVar(parser *Parser) error {
 	}
 
 	if token != ")" {
-		return fmt.Errorf("Expected ')', got '%s'", token)
+		return fmt.Errorf("expected ')', got '%s'", token)
 	}
 	PrintVar(varName)
 	eatSemicolon(parser)
@@ -194,7 +193,7 @@ func temporaryPrintHexVar(parser *Parser) error {
 	}
 
 	if token != "(" {
-		return fmt.Errorf("Expected '(', got '%s'", token)
+		return fmt.Errorf("expected '(', got '%s'", token)
 	}
 
 	err, _, _ = getUntilSymbol(parser, []string{")"}, byte(backend.REG_RAX))
@@ -274,7 +273,7 @@ func parseCodeBlock(parser *Parser) error {
 	}
 
 	if token != "{" {
-		return fmt.Errorf("Expected '{' at the beginning of code block, got '%s'", token)
+		return fmt.Errorf("expected '{' at the beginning of code block, got '%s'", token)
 	}
 
 	for {
@@ -357,6 +356,14 @@ func parseCodeBlock(parser *Parser) error {
 				continue
 			}
 
+			parsed, err = parseStructDeclaration(parser, token)
+			if err != nil {
+				return err
+			}
+			if parsed {
+				continue
+			}
+
 			return fmt.Errorf("parseCodeBlock unknown token: '%s' found at line %d", token, parser.LineNumber)
 		}
 	}
@@ -371,7 +378,7 @@ func getParams(parser *Parser) ([]ParamType, error) {
 	}
 
 	if token != "(" {
-		return nil, fmt.Errorf("Expected '(', got '%s'", token)
+		return nil, fmt.Errorf("expected '(', got '%s'", token)
 	}
 
 	for {
@@ -391,7 +398,7 @@ func getParams(parser *Parser) ([]ParamType, error) {
 		if token == "dq" || token == "dd" || token == "dw" || token == "db" || token == "ptr" {
 			paramType, err := getTypeFromToken(token)
 			if err != nil {
-				return nil, fmt.Errorf("Error getting type from token '%s': %v", token, err)
+				return nil, fmt.Errorf("error getting type from token '%s': %v", token, err)
 			}
 			token, err = parser.NextToken()
 			if err != nil {
@@ -399,7 +406,7 @@ func getParams(parser *Parser) ([]ParamType, error) {
 			}
 			params = append(params, ParamType{Name: token, Type: paramType})
 		} else {
-			return nil, fmt.Errorf("Expected type (dq, dd, dw, db), got '%s'", token)
+			return nil, fmt.Errorf("expected type (dq, dd, dw, db), got '%s'", token)
 		}
 
 	}

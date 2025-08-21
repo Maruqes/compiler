@@ -20,7 +20,7 @@ strings
 structs
 vars globais
 asm funcs
-
+inputs na main-> args    ./main <args>
 */
 
 func main() {

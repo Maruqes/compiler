@@ -37,7 +37,7 @@ func (p *PublicVarList) GetVar(name string) (PublicVar, bool) {
 func getPublicVar(token string, reg byte) (bool, error) {
 	varPublic, exists := publicVarList.GetVar(token)
 	if !exists {
-		return false, fmt.Errorf("Global variable '%s' not found", token)
+		return false, fmt.Errorf("global variable '%s' not found", token)
 	}
 
 	backend.Create_variable_reference(token, reg)
@@ -48,11 +48,11 @@ func getPublicVar(token string, reg byte) (bool, error) {
 
 func setPublicVar(token string, reg byte) (bool, error) {
 	if reg == byte(backend.REG_RBX) {
-		return false, fmt.Errorf("Cannot set global variable with RBX register")
+		return false, fmt.Errorf("cannot set global variable with RBX register")
 	}
 	_, exists := publicVarList.GetVar(token)
 	if !exists {
-		return false, fmt.Errorf("Global variable '%s' not found", token)
+		return false, fmt.Errorf("global variable '%s' not found", token)
 	}
 
 	backend.Create_variable_reference(token, byte(backend.REG_RBX))
@@ -68,7 +68,7 @@ func doesPublicVarExist(token string) bool {
 func returnPointerFromPublicVar(token string, reg byte) (bool, error) {
 	_, exists := publicVarList.GetVar(token)
 	if !exists {
-		return false, fmt.Errorf("Global variable '%s' not found", token)
+		return false, fmt.Errorf("global variable '%s' not found", token)
 	}
 
 	backend.Create_variable_reference(token, reg)
@@ -77,7 +77,7 @@ func returnPointerFromPublicVar(token string, reg byte) (bool, error) {
 
 func createPublicVar(parser *Parser, size int) error {
 	if !isType(size) {
-		return fmt.Errorf("Invalid type token '%d' on line %d", size, parser.LineNumber)
+		return fmt.Errorf("invalid type token '%d' on line %d", size, parser.LineNumber)
 	}
 
 	name, err := parser.NextToken()
@@ -150,7 +150,7 @@ func checkPublicVars(parser *Parser) (bool, error) {
 	}
 
 	if typeTokenStr != "}" {
-		return false, fmt.Errorf("Expected '}' after global variables, got '%s' at line %d", typeTokenStr, parser.LineNumber)
+		return false, fmt.Errorf("expected '}' after global variables, got '%s' at line %d", typeTokenStr, parser.LineNumber)
 	}
 
 	LeaveStack()
@@ -159,6 +159,11 @@ func checkPublicVars(parser *Parser) (bool, error) {
 }
 
 func parseGlobalVarDeclaration(parser *Parser, token string) (bool, error) {
+
+	//check if token is a public var
+	if !doesPublicVarExist(token) {
+		return false, nil
+	}
 
 	err := getAfterEqual(parser)
 	if err != nil {

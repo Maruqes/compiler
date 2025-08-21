@@ -29,7 +29,7 @@ func getTypeFromToken(token string) (int, error) {
 	case "db":
 		return DB, nil // 8-bit variable
 	default:
-		return -1, fmt.Errorf("Unknown type: '%s'", token)
+		return -1, fmt.Errorf("unknown type: '%s'", token)
 	}
 }
 
@@ -260,7 +260,6 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	fmt.Println(numberOfElements)
 
 	createdShadow := false
 	if !r15Stack {
@@ -304,7 +303,7 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 			case DB:
 				backend.Mov8_mi_r(byte(backend.REG_R13), offset, reg)
 			default:
-				return false, fmt.Errorf("Unknown array type: %d on line %d", arrType, parser.LineNumber)
+				return false, fmt.Errorf("unknown array type: %d on line %d", arrType, parser.LineNumber)
 			}
 			count++
 		}
@@ -375,7 +374,7 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 		}
 
 		if !parsed {
-			return false, fmt.Errorf("Array index not found for variable '%s' in scope '%s'", token, SCOPE)
+			return false, fmt.Errorf("array index not found for variable '%s' in scope '%s'", token, SCOPE)
 		}
 
 		switch arrType {
@@ -388,7 +387,7 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 		case DB:
 			backend.Mov8_r_mr(reg, reg, byte(backend.REG_RCX))
 		default:
-			return false, fmt.Errorf("Unknown array type: %d on line %d", arrType, parser.LineNumber)
+			return false, fmt.Errorf("unknown array type: %d on line %d", arrType, parser.LineNumber)
 		}
 		parsedOne = true
 	}
@@ -567,5 +566,5 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 		return nil
 	}
 
-	return fmt.Errorf("Unknown token '%s' at line %d", token, parser.LineNumber)
+	return fmt.Errorf("unknown token '%s' at line %d", token, parser.LineNumber)
 }
