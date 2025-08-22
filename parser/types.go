@@ -543,7 +543,7 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 	}
 
 	parsed, err = parseGetArrayIndex(parser, token, reg)
-	if err != nil {
+	if err != nil && parsed {
 		return err
 	}
 	if parsed {
@@ -559,7 +559,15 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 	}
 
 	parsed, err = parseGlobalVars(token, reg)
-	if err != nil {
+	if err != nil && parsed{
+		return err
+	}
+	if parsed {
+		return nil
+	}
+
+	parsed, err = parseStructsCreation(parser, token, reg)
+	if err != nil && parsed {
 		return err
 	}
 	if parsed {
