@@ -4,14 +4,35 @@ global{
 
 struct MyStruct {
     dq field1;
-    db field2;
+    dq field2;
+    db field3;
 }
+
+
 
 func main(){
 
-    MyStruct structName = MyStruct{1,2};
+    MyStruct structName = MyStruct{1,2,3};
 
     printHex(structName);
+    printHex(structName[0]);
+    printHex(structName.field1);
+    printHex(structName.field2);
+    printHex(structName.field3);
 
+    structName.field1 = 10;
+    structName.field2 = 11;
+    structName.field3 = 12;
+
+    dq testpls = &structName.field1;
+
+    dq testpls2 = 5;
+    structName.field2 = &testpls2;
+
+    printHex(*testpls);
+    printHex(*structName.field2);
+    printHex(structName.field3);
+    
+ 
     return;
 }

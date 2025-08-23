@@ -23,6 +23,12 @@ asm funcs
 inputs na main-> args    ./main <args>
 */
 
+/*
+known bugs->
+	dd b = 1;
+	a = &b;
+*/
+
 func main() {
 
 	var par parser.Parser

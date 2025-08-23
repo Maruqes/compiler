@@ -115,9 +115,14 @@ func parsePointer(parser *Parser, token string, reg byte) (bool, error) {
 				if err != nil {
 					return false, err
 				}
+			} else if exists, err := doesStructVarFieldExist(token); err == nil && exists {
+				parsed, err := getPointerOfStruct(token, reg)
+				if err != nil && parsed {
+					return false, err
+				}
 			} else {
 				//check if token is a variable
-				varStruct, err := varList.GetVariableStruct(token, reg)
+				varStruct, err := varList.GetVariableStruct(token)
 				if err != nil {
 					return false, err
 				}
@@ -144,10 +149,20 @@ func parsePointer(parser *Parser, token string, reg byte) (bool, error) {
 				}
 			}
 
-			//check if token is a variable
-			err = varList.GetVariable(token, reg)
-			if err != nil {
-				return false, err
+			if varList.DoesVarExist(token) {
+				//check if token is a variable
+				err = varList.GetVariable(token, reg)
+				if err != nil {
+					return false, err
+				}
+			} else if exists, err := doesStructVarFieldExist(token); err == nil && exists {
+
+				parsed, err := parseStructsGetParam(token, reg)
+				if err != nil && parsed {
+					return false, err
+				}
+			} else {
+				return false, fmt.Errorf("Variable '%s' not found in scope0 '%s'", token, SCOPE)
 			}
 
 			for i := 0; i < numberOfDereferences; i++ {
@@ -352,7 +367,7 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 			return false, err
 		}
 	} else {
-		return false, fmt.Errorf("Variable '%s' not found in scope '%s'", token, SCOPE)
+		return false, fmt.Errorf("Variable '%s' not found in scope0 '%s'", token, SCOPE)
 	}
 
 	parsedOne := false
@@ -559,7 +574,7 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 	}
 
 	parsed, err = parseGlobalVars(token, reg)
-	if err != nil && parsed{
+	if err != nil && parsed {
 		return err
 	}
 	if parsed {
@@ -567,6 +582,14 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 	}
 
 	parsed, err = parseStructsCreation(parser, token, reg)
+	if err != nil && parsed {
+		return err
+	}
+	if parsed {
+		return nil
+	}
+
+	parsed, err = parseStructsGetParam(token, reg)
 	if err != nil && parsed {
 		return err
 	}

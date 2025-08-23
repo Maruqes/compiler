@@ -19,6 +19,7 @@ type Variable struct {
 	Name     string
 	Type     int // DQ for 64-bit, DB for 8-bit, etc.
 	Position int // relative to RBP
+	Extra    any
 }
 
 type VarsList struct {
@@ -83,7 +84,7 @@ func SubStack(n int) {
 }
 
 // var should be in rax
-func (vl *VarsList) AddVariable(name string, varType int) error {
+func (vl *VarsList) AddVariable(name string, varType int, extra any) error {
 	// PushStack64(byte(backend.REG_RAX))
 
 	//check if global var exists with that name
@@ -115,6 +116,7 @@ func (vl *VarsList) AddVariable(name string, varType int) error {
 		Name:     name,
 		Type:     varType,
 		Position: vl.lastPos,
+		Extra:    extra,
 	})
 
 	return nil
@@ -143,7 +145,6 @@ func (vl *VarsList) GetVariable(name string, reg byte) error {
 		getPublicVar(name, reg)
 		return nil
 	}
-
 	for _, v := range vl.vars {
 		if v.Name == name {
 			switch v.Type {
@@ -159,16 +160,16 @@ func (vl *VarsList) GetVariable(name string, reg byte) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("Variable %s not found in scope %s in line", name, SCOPE)
+	return fmt.Errorf("Variable %s not found in scope1 %s in line", name, SCOPE)
 }
 
-func (vl *VarsList) GetVariableStruct(name string, reg byte) (*Variable, error) {
+func (vl *VarsList) GetVariableStruct(name string) (*Variable, error) {
 	for _, v := range vl.vars {
 		if v.Name == name {
 			return &v, nil
 		}
 	}
-	return nil, fmt.Errorf("Variable %s not found in scope %s", name, SCOPE)
+	return nil, fmt.Errorf("Variable %s not found in scope2 %s", name, SCOPE)
 }
 
 func (vl *VarsList) DoesVarExist(name string) bool {
@@ -296,7 +297,7 @@ func (vl *VarsList) subVar(parser *Parser, varName string, variable *Variable) e
 }
 
 func (vl *VarsList) setVarStruct(parser *Parser, varName string) error {
-	variable, err := vl.GetVariableStruct(varName, byte(backend.REG_RAX))
+	variable, err := vl.GetVariableStruct(varName)
 	if err != nil {
 		return err
 	}
@@ -349,7 +350,7 @@ func createPointerVar(parser *Parser) error {
 		return err
 	}
 
-	err = varList.AddVariable(name, DQ)
+	err = varList.AddVariable(name, DQ, nil)
 	if err != nil {
 		return err
 	}
@@ -358,7 +359,7 @@ func createPointerVar(parser *Parser) error {
 }
 
 // push whats after the equal and save position in the stack compared to BASE POINTER (BP)
-func createVarStruct(parser *Parser, varType int) error {
+func createVarStruct(parser *Parser, varType int, extra any) error {
 	//create var is get space on heap and get the after equal
 	name, err := parser.NextToken()
 	if err != nil {
@@ -381,14 +382,14 @@ func createVarStruct(parser *Parser, varType int) error {
 
 	clearReg(byte(backend.REG_RAX), varType)
 
-	err = varList.AddVariable(name, varType)
+	err = varList.AddVariable(name, varType, extra)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func createVarWithReg(parser *Parser, reg byte, varType int, name string) error {
+func createVarWithReg(parser *Parser, reg byte, varType int, name string, extra any) error {
 	varList := GetVarList(SCOPE)
 	if varList == nil {
 		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
@@ -402,7 +403,7 @@ func createVarWithReg(parser *Parser, reg byte, varType int, name string) error 
 		backend.Mov64_r_r(byte(backend.REG_RAX), reg)
 	}
 
-	err := varList.AddVariable(name, varType)
+	err := varList.AddVariable(name, varType,extra)
 	if err != nil {
 		return err
 	}

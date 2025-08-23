@@ -224,22 +224,22 @@ func parseVariableDeclaration(parser *Parser, token string) (bool, error) {
 	switch token {
 	case "dq":
 		// create 64-bit variable
-		if err := createVarStruct(parser, DQ); err != nil {
+		if err := createVarStruct(parser, DQ, nil); err != nil {
 			return false, err
 		}
 	case "dd":
 		// create 32-bit variable
-		if err := createVarStruct(parser, DD); err != nil {
+		if err := createVarStruct(parser, DD, nil); err != nil {
 			return false, err
 		}
 	case "dw":
 		// create 16-bit variable
-		if err := createVarStruct(parser, DW); err != nil {
+		if err := createVarStruct(parser, DW, nil); err != nil {
 			return false, err
 		}
 	case "db":
 		// create 8-bit variable
-		if err := createVarStruct(parser, DB); err != nil {
+		if err := createVarStruct(parser, DB, nil); err != nil {
 			return false, err
 		}
 	case "ptr":
@@ -357,6 +357,14 @@ func parseCodeBlock(parser *Parser) error {
 			}
 
 			parsed, err = parseStructDeclaration(parser, token)
+			if err != nil && parsed {
+				return err
+			}
+			if parsed {
+				continue
+			}
+
+			parsed, err = parseStructParamRedeclaration(parser, token)
 			if err != nil {
 				return err
 			}
@@ -420,7 +428,7 @@ func createVariablesFromParams(parser *Parser, params []ParamType) error {
 	paramLength := len(params) * 8
 	for i, param := range params {
 		backend.Mov64_r_mi(byte(backend.REG_RAX), byte(backend.REG_RBP), paramLength-((i-1)*8))
-		createVarWithReg(parser, byte(backend.REG_RAX), param.Type, param.Name)
+		createVarWithReg(parser, byte(backend.REG_RAX), param.Type, param.Name, nil)
 	}
 
 	return nil
@@ -436,11 +444,11 @@ func createFunc(parser *Parser) error {
 
 	params, err := getParams(parser)
 	if err != nil {
-		return fmt.Errorf("Error getting parameters for function '%s': %v", name, err)
+		return fmt.Errorf("error getting parameters for function '%s': %v", name, err)
 	}
 
 	if isFunctionCall(name) {
-		return fmt.Errorf("Function '%s' already exists", name)
+		return fmt.Errorf("function '%s' already exists", name)
 	}
 
 	setScope(name)
@@ -451,14 +459,14 @@ func createFunc(parser *Parser) error {
 
 	err = createVariablesFromParams(parser, params)
 	if err != nil {
-		return fmt.Errorf("Error creating variables from parameters for function '%s': %v", name, err)
+		return fmt.Errorf("error creating variables from parameters for function '%s': %v", name, err)
 	}
 
 	functions = append(functions, FunctionType{Name: name, Params: params})
 
 	err = parseCodeBlock(parser)
 	if err != nil {
-		return fmt.Errorf("Error parsing code block for function '%s': %w", name, err)
+		return fmt.Errorf("error parsing code block for function '%s': %w", name, err)
 	}
 
 	return nil
