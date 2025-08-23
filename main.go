@@ -21,17 +21,28 @@ structs
 vars globais
 asm funcs
 inputs na main-> args    ./main <args>
+bitwise -> e = e & 3; // AND NOT OR XOR etc etc etc left shift right shift
 */
 
 /*
 known bugs->
+	1.
 	dd b = 1;
 	a = &b;
+
+	2.
+	printHex(dq(-a));
+	printHex(dd(-b));
+	printHex(dw(-c));
+	printHex(db(-d));
+
+
 */
 
 func main() {
 
 	var par parser.Parser
+	// par.StartParse("features.lang")
 	par.StartParse("test.lang")
 
 	backend.Call("global")

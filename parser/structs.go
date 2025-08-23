@@ -32,6 +32,73 @@ func GetStructByName(name string) *StructType {
 	return nil
 }
 
+var ErrNotStructParam = fmt.Errorf("not a struct param")
+
+// parseStructParam parses "structVar.field" and returns:
+// - the struct variable name,
+// - a pointer to the StructType,
+// - the cumulative size from the target field to the end of the struct (spacer),
+// - the field index within the struct.
+func parseStructParam(token string) (string, *StructType, int, int, error) {
+	varList := GetVarList(SCOPE)
+	if varList == nil {
+		return "", nil, -1, -1, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+	}
+
+	token = strings.TrimSpace(token)
+	if token == "" {
+		return "", nil, -1, -1, ErrNotStructParam
+	}
+
+	parts := strings.SplitN(token, ".", 2)
+	if len(parts) != 2 {
+		return "", nil, -1, -1, ErrNotStructParam
+	}
+	structName := strings.TrimSpace(parts[0])
+	fieldName := strings.TrimSpace(parts[1])
+	if structName == "" || fieldName == "" {
+		return "", nil, -1, -1, ErrNotStructParam
+	}
+
+	variableS, err := varList.GetVariableStruct(structName)
+	if err != nil {
+		return "", nil, -1, -1, fmt.Errorf("error getting variable %s: %v", structName, err)
+	}
+
+	var structTypeName string
+	switch v := variableS.Extra.(type) {
+	case string:
+		structTypeName = v
+	case []byte:
+		structTypeName = string(v)
+	default:
+		return "", nil, -1, -1, fmt.Errorf("expected struct name as string in variable '%s', got %T", structName, variableS.Extra)
+	}
+
+	st := GetStructByName(structTypeName)
+	if st == nil {
+		return "", nil, -1, -1, fmt.Errorf("struct '%s' not found1", structTypeName)
+	}
+
+	fieldIndex := -1
+	for i := range st.Fields {
+		if st.Fields[i].Name == fieldName {
+			fieldIndex = i
+			break
+		}
+	}
+	if fieldIndex == -1 {
+		return "", nil, -1, -1, fmt.Errorf("field '%s' not found in struct '%s'", fieldName, structName)
+	}
+
+	spacer := 0
+	for i := len(st.Fields) - 1; i >= fieldIndex; i-- {
+		spacer += st.Fields[i].Type
+	}
+
+	return structName, st, spacer, fieldIndex, nil
+}
+
 func createStructType(parser *Parser) error {
 
 	//parse struct name
@@ -109,73 +176,114 @@ func parseStructParamRedeclaration(parser *Parser, token string) (bool, error) {
 
 	varList := GetVarList(SCOPE)
 	if varList == nil {
-		return true, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+		return false, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
 	}
 
-	//divide token in the . if it exists
-	parts := strings.Split(token, ".")
-	if len(parts) != 2 {
-		return false, fmt.Errorf("invalid struct access token: %s", token)
-	}
-
-	structName := parts[0]
-	fieldName := parts[1]
-
-	variableS, err := varList.GetVariableStruct(structName)
+	fmt.Println(token)
+	fmt.Println(token)
+	fmt.Println(token)
+	structName, structType, currentSpacer, fieldIndex, err := parseStructParam(token)
 	if err != nil {
-		return false, fmt.Errorf("error getting variable %s: %v", structName, err)
+		return false, err
 	}
 
-	var structNameFromExtra string
-	switch v := variableS.Extra.(type) {
-	case string:
-		structNameFromExtra = v
-	case []byte:
-		structNameFromExtra = string(v)
-	default:
-		return false, fmt.Errorf("expected struct name as string in variable '%s', got %T", structName, variableS.Extra)
-	}
-
-	structType := GetStructByName(structNameFromExtra)
-	if structType == nil {
-		return true, fmt.Errorf("struct '%s' not found1", structNameFromExtra)
-	}
-
-	// Find the field in the struct
-	var fieldIndex int = -1
-	for i, field := range structType.Fields {
-		if field.Name == fieldName {
-			fieldIndex = i
-			break
-		}
-	}
-	if fieldIndex == -1 {
-		return true, fmt.Errorf("field '%s' not found in struct '%s'", fieldName, structName)
-	}
-
-	currentSpacer := 0
-	for i := len(structType.Fields) - 1; i >= fieldIndex; i-- {
-		currentSpacer += structType.Fields[i].Type
-	}
-
-	// int(currentSpacer-structType.Fields[fieldIndex].Type)
-	err = getAfterEqual(parser)
+	peekString, err := parser.Peek()
 	if err != nil {
-		return true, err
+		return false, err
 	}
+
 	varList.GetVariable(structName, byte(backend.REG_RBX))
 
-	switch structType.Fields[fieldIndex].Type {
-	case DQ:
-		backend.Mov64_mi_r(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type), byte(backend.REG_RAX))
-	case DD:
-		backend.Mov32_mi_r(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type), byte(backend.REG_RAX))
-	case DW:
-		backend.Mov16_mi_r(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type), byte(backend.REG_RAX))
-	case DB:
-		backend.Mov8_mi_r(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type), byte(backend.REG_RAX))
+	switch peekString {
+	case "=":
+		err = getAfterEqual(parser)
+		if err != nil {
+			return true, err
+		}
+
+		switch structType.Fields[fieldIndex].Type {
+		case DQ:
+			backend.Mov64_mi_r(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type), byte(backend.REG_RAX))
+		case DD:
+			backend.Mov32_mi_r(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type), byte(backend.REG_RAX))
+		case DW:
+			backend.Mov16_mi_r(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type), byte(backend.REG_RAX))
+		case DB:
+			backend.Mov8_mi_r(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type), byte(backend.REG_RAX))
+		default:
+			return true, fmt.Errorf("unknown struct field type: %d", structType.Fields[fieldIndex].Type)
+		}
+	case "++":
+		_, err = parser.NextToken() //consume token
+		if err != nil {
+			return true, err
+		}
+
+		switch structType.Fields[fieldIndex].Type {
+		case DB:
+			backend.Inc8_mi(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type))
+		case DW:
+			backend.Inc16_mi(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type))
+		case DD:
+			backend.Inc32_mi(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type))
+		case DQ:
+			backend.Inc64_mi(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type))
+		}
+		eatSemicolon(parser)
+	case "--":
+		_, err = parser.NextToken() //consume token
+		if err != nil {
+			return true, err
+		}
+
+		switch structType.Fields[fieldIndex].Type {
+		case DB:
+			backend.Dec8_mi(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type))
+		case DW:
+			backend.Dec16_mi(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type))
+		case DD:
+			backend.Dec32_mi(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type))
+		case DQ:
+			backend.Dec64_mi(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type))
+		}
+		eatSemicolon(parser)
+
+	case "+=":
+		_, err = parser.NextToken() //consume token
+		if err != nil {
+			return true, err
+		}
+
+		err, _, parsed := getUntilSymbol(parser, []string{";"}, byte(backend.REG_RCX))
+		if !parsed {
+			return parsed, fmt.Errorf("error parsing sum variable in line %d", parser.LineNumber)
+		}
+		if err != nil {
+			return parsed, fmt.Errorf("error parsing sum variable in line %d: %v", parser.LineNumber, err)
+		}
+
+		switch structType.Fields[fieldIndex].Type {
+		case DQ:
+			backend.Mov64_r_mi(byte(backend.REG_RAX), byte(backend.REG_RBX), int(currentSpacer-structType.Fields[fieldIndex].Type))
+			backend.Sum64_r_r(byte(backend.REG_RAX), byte(backend.REG_RCX))
+			backend.Mov64_mi_r(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type), byte(backend.REG_RAX))
+		case DD:
+			backend.Mov32_r_mi(byte(backend.REG_RAX), byte(backend.REG_RBX), int(currentSpacer-structType.Fields[fieldIndex].Type))
+			backend.Sum32_r_r(byte(backend.REG_RAX), byte(backend.REG_RCX))
+			backend.Mov32_mi_r(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type), byte(backend.REG_RAX))
+		case DW:
+			backend.Mov16_r_mi(byte(backend.REG_RAX), byte(backend.REG_RBX), int(currentSpacer-structType.Fields[fieldIndex].Type))
+			backend.Sum16_r_r(byte(backend.REG_RAX), byte(backend.REG_RCX))
+			backend.Mov16_mi_r(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type), byte(backend.REG_RAX))
+		case DB:
+			backend.Mov8_r_mi(byte(backend.REG_RAX), byte(backend.REG_RBX), int(currentSpacer-structType.Fields[fieldIndex].Type))
+			backend.Sum8_r_r(byte(backend.REG_RAX), byte(backend.REG_RCX))
+			backend.Mov8_mi_r(byte(backend.REG_RBX), uint(currentSpacer-structType.Fields[fieldIndex].Type), byte(backend.REG_RAX))
+		default:
+			return true, fmt.Errorf("unknown struct field type: %d", structType.Fields[fieldIndex].Type)
+		}
 	default:
-		return true, fmt.Errorf("unknown struct field type: %d", structType.Fields[fieldIndex].Type)
+		return true, fmt.Errorf("unknown operator '%s' for struct field redeclaration at line %d", peekString, parser.LineNumber)
 	}
 
 	return true, nil
@@ -241,53 +349,12 @@ func parseStructsGetParam(token string, reg byte) (bool, error) {
 
 	varList := GetVarList(SCOPE)
 	if varList == nil {
-		return true, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+		return false, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
 	}
 
-	//divide token in the . if it exists
-	parts := strings.Split(token, ".")
-	if len(parts) != 2 {
-		return false, fmt.Errorf("invalid struct access token: %s", token)
-	}
-
-	structName := parts[0]
-	fieldName := parts[1]
-
-	variableS, err := varList.GetVariableStruct(structName)
+	structName, structType, currentSpacer, fieldIndex, err := parseStructParam(token)
 	if err != nil {
-		return true, fmt.Errorf("error getting variable %s: %v", structName, err)
-	}
-
-	var structNameFromExtra string
-	switch v := variableS.Extra.(type) {
-	case string:
-		structNameFromExtra = v
-	case []byte:
-		structNameFromExtra = string(v)
-	default:
-		return true, fmt.Errorf("expected struct name as string in variable '%s', got %T", structName, variableS.Extra)
-	}
-
-	structType := GetStructByName(structNameFromExtra)
-	if structType == nil {
-		return true, fmt.Errorf("struct '%s' not found3", structNameFromExtra)
-	}
-
-	// Find the field in the struct
-	var fieldIndex int = -1
-	for i, field := range structType.Fields {
-		if field.Name == fieldName {
-			fieldIndex = i
-			break
-		}
-	}
-	if fieldIndex == -1 {
-		return true, fmt.Errorf("field '%s' not found in struct '%s'", fieldName, structName)
-	}
-
-	currentSpacer := 0
-	for i := len(structType.Fields) - 1; i >= fieldIndex; i-- {
-		currentSpacer += structType.Fields[i].Type
+		return false, err
 	}
 
 	varList.GetVariable(structName, reg)
@@ -312,58 +379,16 @@ func parseStructsGetParam(token string, reg byte) (bool, error) {
 // token = <structName.fieldName>
 func getPointerOfStruct(token string, reg byte) (bool, error) {
 
-	// token = structName.field1
-
 	varList := GetVarList(SCOPE)
 	if varList == nil {
-		return true, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+		return false, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
 	}
 
-	//divide token in the . if it exists
-	parts := strings.Split(token, ".")
-	if len(parts) != 2 {
-		return false, fmt.Errorf("invalid struct access token: %s", token)
-	}
-
-	structName := parts[0]
-	fieldName := parts[1]
-
-	variableS, err := varList.GetVariableStruct(structName)
+	structName, structType, currentSpacer, fieldIndex, err := parseStructParam(token)
 	if err != nil {
-		return false, fmt.Errorf("error getting variable %s: %v", structName, err)
+		return false, err
 	}
 
-	var structNameFromExtra string
-	switch v := variableS.Extra.(type) {
-	case string:
-		structNameFromExtra = v
-	case []byte:
-		structNameFromExtra = string(v)
-	default:
-		return false, fmt.Errorf("expected struct name as string in variable '%s', got %T", structName, variableS.Extra)
-	}
-
-	structType := GetStructByName(structNameFromExtra)
-	if structType == nil {
-		return true, fmt.Errorf("struct '%s' not found1", structNameFromExtra)
-	}
-
-	// Find the field in the struct
-	var fieldIndex int = -1
-	for i, field := range structType.Fields {
-		if field.Name == fieldName {
-			fieldIndex = i
-			break
-		}
-	}
-	if fieldIndex == -1 {
-		return true, fmt.Errorf("field '%s' not found in struct '%s'", fieldName, structName)
-	}
-
-	currentSpacer := 0
-	for i := len(structType.Fields) - 1; i >= fieldIndex; i-- {
-		currentSpacer += structType.Fields[i].Type
-	}
 	varList.GetVariable(structName, reg)
 	backend.Sum64_r_i(reg, uint(currentSpacer-structType.Fields[fieldIndex].Type))
 
@@ -378,41 +403,10 @@ func doesStructVarFieldExist(varName string) (bool, error) {
 		return false, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
 	}
 
-	// divide token in the . if it exists
-	parts := strings.Split(varName, ".")
-	if len(parts) != 2 {
-		return false, fmt.Errorf("invalid struct access token: %s", varName)
-	}
-
-	structName := parts[0]
-	fieldName := parts[1]
-
-	variableS, err := varList.GetVariableStruct(structName)
+	_, _, _, fieldIndex, err := parseStructParam(varName)
 	if err != nil {
-		return false, fmt.Errorf("error getting variable %s: %v", structName, err)
+		return false, err
 	}
 
-	var structNameFromExtra string
-	switch v := variableS.Extra.(type) {
-	case string:
-		structNameFromExtra = v
-	case []byte:
-		structNameFromExtra = string(v)
-	default:
-		return false, fmt.Errorf("expected struct name as string in variable '%s', got %T", structName, variableS.Extra)
-	}
-
-	structType := GetStructByName(structNameFromExtra)
-	if structType == nil {
-		return false, fmt.Errorf("struct '%s' not found1", structNameFromExtra)
-	}
-
-	// Find the field in the struct
-	for _, field := range structType.Fields {
-		if field.Name == fieldName {
-			return true, nil
-		}
-	}
-
-	return false, nil
+	return fieldIndex >= 0, nil
 }

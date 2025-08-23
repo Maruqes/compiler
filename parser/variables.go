@@ -181,7 +181,7 @@ func (vl *VarsList) DoesVarExist(name string) bool {
 	return false
 }
 
-func (vl *VarsList) incrementVar(parser *Parser, varName string, variable *Variable) error {
+func (vl *VarsList) incrementVar(parser *Parser, variable *Variable) error {
 	//consume the token
 	_, err := parser.NextToken()
 	if err != nil {
@@ -203,7 +203,7 @@ func (vl *VarsList) incrementVar(parser *Parser, varName string, variable *Varia
 	return nil
 }
 
-func (vl *VarsList) decrementVar(parser *Parser, varName string, variable *Variable) error {
+func (vl *VarsList) decrementVar(parser *Parser, variable *Variable) error {
 	_, err := parser.NextToken()
 	if err != nil {
 		return err
@@ -316,9 +316,9 @@ func (vl *VarsList) setVarStruct(parser *Parser, varName string) error {
 
 		clearReg(byte(backend.REG_RAX), variable.Type)
 	case "++":
-		return vl.incrementVar(parser, varName, variable)
+		return vl.incrementVar(parser, variable)
 	case "--":
-		return vl.decrementVar(parser, varName, variable)
+		return vl.decrementVar(parser, variable)
 	case "+=":
 		return vl.sumVar(parser, varName, variable)
 	case "-=":

@@ -116,7 +116,13 @@ func createPublicVar(parser *Parser, size int) error {
 func checkPublicVars(parser *Parser) (bool, error) {
 	name := "global"
 	setScope(name)
-	CreateVarList(name)
+
+	vl := GetVarList(name)
+	if vl == nil {
+		CreateVarList(name)
+	}else{
+		return false, fmt.Errorf("variable list for scope '%s' already exists", name)
+	}
 
 	backend.Create_label(name)
 	CreateStack()

@@ -14,6 +14,16 @@ func main(){
 
     MyStruct structName = MyStruct{1,2,3};
 
+    structName.field1++;
+    structName.field1--;
+    structName.field2++;
+    structName.field3++;
+
+
+    structName.field1 += 5;
+    structName.field2 += 5;
+    structName.field3 += 5;
+
     printHex(structName);
     printHex(structName[0]);
     printHex(structName.field1);

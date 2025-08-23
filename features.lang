@@ -1,0 +1,227 @@
+global{
+    dq aGlob = 5;
+}
+
+
+struct MyStruct {
+    dq field1;
+    dq field2;
+    db field3;
+}
+
+
+func structsT(){
+	MyStruct structName = MyStruct{1,2,3};
+
+    printHex(structName);
+    printHex(structName.field1);
+    printHex(structName.field2);
+    printHex(structName.field3);
+	return;
+}
+
+func vars(){
+	dq a = 10;
+	dd b = 5;
+	dw c = 2;
+	db d = 1;
+
+	a++;
+	a++;
+	a--;
+
+	b++;
+	b++;
+	b--;
+
+	c++;
+	c++;
+	c--;
+
+	d++;
+	d++;
+	d--;
+
+	printHex(a);
+	printHex(b);
+	printHex(c);
+	printHex(d);
+
+	//negative symbol and type affirmation
+	printHex(-dq(a));
+	printHex(-dd(b));
+	printHex(-dw(c));
+	printHex(-db(d));
+
+	return;
+}
+
+
+func flow(){
+	//whiles
+	dd a = 0;
+	while a < 5 {
+		printHex(a);
+		a++;
+	}
+
+	//fors
+	for dq i = 0; i < 5; i++; {
+		printHex(i);
+	}
+	//ifs
+
+	if a == 5 {
+		printHex(a);
+	}
+
+	if a != 6 {
+		printHex(a);
+	}
+
+	if a > 4 {
+		printHex(a);
+	}
+
+	if a < 6 {
+		printHex(a);
+	}
+
+
+	if a != 5{
+		printHex(0xff);
+	}elif a == 5{
+		printHex(0xff00);
+	}
+
+	if a != 5{
+		printHex(0xff);
+	}elif a == 6{
+		printHex(0xff00);
+	}else {
+		printHex(0xff0000);
+	}
+
+	while a > 0 {
+		printHex(a);
+		break;
+	}
+
+	for i = 0; i < 5; i++; {
+		if i >= 1 {
+			continue;
+		}
+		printHex(i);
+	}
+
+	return;
+}
+
+func pointers(){
+	dq a = 5;
+	dd b = 6;
+	dw c = 7;
+	db d = 8;
+
+	ptr aP = &a;
+	ptr bP = &b;
+	ptr cP = &c;
+	ptr dP = &d;
+
+	printHex(*aP);
+	printHex(*bP);
+	printHex(*cP);
+	printHex(*dP);
+
+	return;
+}
+
+func strings(){
+	ptr str = "Hello, World!";
+	printHex(str);
+	
+	for dq i = 0; i < 13; i++; {
+		db letter = db(str[i]);
+		print(letter);
+	}
+	return;
+}
+
+func funcionParams(dq a, dd b, dw c, db d, ptr e){
+	printHex(a);
+	printHex(b);
+	printHex(c);
+	printHex(d);
+	printHex(*e);
+	return;
+}
+
+func globalVars(){
+	printHex(aGlob);
+	aGlob = 10;
+	printHex(aGlob);
+	return;
+}
+
+func arraysT(){
+
+	dq arr = dq{1,2,3,4,5};
+	printHex(arr);
+	printHex(arr[0]);
+	printHex(arr[1*8]);
+	printHex(arr[2*8]);
+	printHex(arr[3*8]);
+	printHex(arr[4*8]);
+
+	dq matrix = dq{dq{1, 2}, dq{3, 4}};
+    printHex(matrix[0][0]);
+    printHex(matrix[0][1*8]);
+    printHex(matrix[1*8][0]);
+    printHex(matrix[1*8][1*8]);
+
+	return;
+}
+
+func arithmetics(){
+	dq a = 5;
+	dd b = 10;
+	dw c = 15;
+	db d = 20;
+
+	printHex(a + b);
+	printHex(b - c);
+	printHex(c * d);
+	printHex(d / a);
+
+	return;
+}
+
+func main(){
+
+	defer {
+		printHex(0xffffffffffffffff);
+	}
+
+	structsT();
+	print(10);
+	vars();
+	print(10);
+	flow();
+	print(10);
+	pointers();
+	print(10);
+	strings();
+	print(10);
+
+	dq e = 5;
+	funcionParams(1, 2, 3, 4, &e);
+
+	print(10);
+	globalVars();
+	print(10);
+	arraysT();
+	print(10);
+	arithmetics();
+
+    return;
+}
