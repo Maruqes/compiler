@@ -147,7 +147,7 @@ func strings(){
 	return;
 }
 
-func funcionParams(dq a, dd b, dw c, db d, ptr e){
+func functionParams(dq a, dd b, dw c, db d, ptr e){
 	printHex(a);
 	printHex(b);
 	printHex(c);

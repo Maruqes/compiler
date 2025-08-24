@@ -133,7 +133,7 @@ func checkPublicVars(parser *Parser) (bool, error) {
 
 	typeTokenStr, err := parser.NextToken()
 	if err != nil {
-		return false, err
+		return true, err
 	}
 
 	for isTypeToken(typeTokenStr) {

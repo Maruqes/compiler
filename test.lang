@@ -8,6 +8,14 @@ struct MyStruct {
     db field3;
 }
 
+func test(dq aa){
+    MyStruct structName2 = aa;
+    printHex(structName2.field1);
+    printHex(*structName2.field2);
+    printHex(structName2.field3);
+    return;
+}
+
 
 
 func main(){
@@ -42,7 +50,26 @@ func main(){
     printHex(*testpls);
     printHex(*structName.field2);
     printHex(structName.field3);
-    
- 
+
+    if structName.field3 == 12 {
+        printHex(0xff00ff);
+    }
+
+    if *structName.field2 == 5 {
+        printHex(0xff00ff);
+    }
+
+    printHex(structName);
+    test(structName);
+
+
+    dq arr = dq{structName, structName.field1, *structName.field2, structName.field3};
+
+    printHex(arr);
+    printHex(arr[0]);
+    printHex(arr[1*8]);
+    printHex(*arr[2*8]);
+    printHex(arr[3*8]);
+
     return;
 }

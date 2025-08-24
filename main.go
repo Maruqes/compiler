@@ -16,9 +16,6 @@ import (
 
 /*
 todo->
-strings
-structs
-vars globais
 asm funcs
 inputs na main-> args    ./main <args>
 bitwise -> e = e & 3; // AND NOT OR XOR etc etc etc left shift right shift
@@ -36,7 +33,7 @@ known bugs->
 	printHex(dw(-c));
 	printHex(db(-d));
 
-
+	printHex(*arr[2*8]);
 */
 
 func main() {

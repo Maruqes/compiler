@@ -412,6 +412,10 @@ func getParams(parser *Parser) ([]ParamType, error) {
 			if err != nil {
 				return nil, err
 			}
+
+			if doesPublicVarExist(token){
+				return nil, fmt.Errorf("parameter name '%s' already used as public variable", token)
+			}
 			params = append(params, ParamType{Name: token, Type: paramType})
 		} else {
 			return nil, fmt.Errorf("expected type (dq, dd, dw, db), got '%s'", token)
