@@ -163,7 +163,7 @@ func parseStructDeclaration(parser *Parser, token string) (bool, error) {
 		return false, err
 	}
 
-	createVarWithReg(parser, byte(backend.REG_RAX), DQ, varname, token, ORIGIN_STRUCT)
+	createVarWithReg(parser, byte(backend.REG_RAX), DQ, varname, token, ORIGIN_RBP)
 
 	return true, nil
 }

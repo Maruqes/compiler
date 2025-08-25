@@ -341,13 +341,20 @@ func parseCodeBlock(parser *Parser) error {
 			}
 
 			parsed, err := parseVariableDeclaration(parser, token)
-			if err != nil {
+			if err != nil && parsed{
 				return err
 			}
 			if parsed {
 				continue
 			}
 
+			parsed, err = parseGlobalVarDeclaration(parser, token)
+			if err != nil && parsed {
+				return err
+			}
+			if parsed {
+				continue
+			}
 
 			parsed, err = parseStructDeclaration(parser, token)
 			if err != nil && parsed {
@@ -406,7 +413,7 @@ func getParams(parser *Parser) ([]ParamType, error) {
 				return nil, err
 			}
 
-			if doesPublicVarExist(token){
+			if doesPublicVarExist(token) {
 				return nil, fmt.Errorf("parameter name '%s' already used as public variable", token)
 			}
 			params = append(params, ParamType{Name: token, Type: paramType})

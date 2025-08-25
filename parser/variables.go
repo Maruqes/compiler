@@ -42,28 +42,11 @@ type VarsList struct {
 var VarList []VarsList
 
 func CreateVarList(scope string) {
-	// If the scope already exists, do nothing.
-	if GetVarList(scope) != nil {
-		panic(fmt.Sprintf("Variable list for scope '%s' already exists", scope))
-	}
-
-	varListGlobal := GetVarList("global")
-	if varListGlobal == nil {
-		varListGlobal = &VarsList{
-			vars:    make([]Variable, 0),
-			lastPos: 0,
-			Scope:   "global",
-		}
-	}
-
-	// Create a fresh variable list for the given scope.
-	varList := &VarsList{
-		vars:    varListGlobal.vars,
+	VarList = append(VarList, VarsList{
+		vars:    make([]Variable, 0),
 		lastPos: 0,
 		Scope:   scope,
-	}
-
-	VarList = append(VarList, *varList)
+	})
 }
 
 func GetVarList(scope string) *VarsList {

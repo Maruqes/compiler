@@ -158,7 +158,6 @@ func functionParams(dq a, dd b, dw c, db d, ptr e){
 
 func globalVars(){
 	printHex(aGlob);
-	aGlob = 10;
 	printHex(aGlob);
 	return;
 }
@@ -214,7 +213,7 @@ func main(){
 	print(10);
 
 	dq e = 5;
-	funcionParams(1, 2, 3, 4, &e);
+	functionParams(1, 2, 3, 4, &e);
 
 	print(10);
 	globalVars();
