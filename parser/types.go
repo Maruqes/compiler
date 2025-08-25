@@ -8,6 +8,9 @@ import (
 	backend "github.com/Maruqes/compiler/swig"
 )
 
+// Global counter for unique label generation
+var labelCounter int
+
 const (
 	DQ  = 8
 	DD  = 4
@@ -209,7 +212,6 @@ var depth int = 0
 
 const maxDepth = 8 // shadow stack de 8 níveis (8*8 bytes)
 
-// precisa de refactor e pensamentos foda
 func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 
 	arrType, err := getTypeFromToken(token)
@@ -320,11 +322,6 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 		if err != nil {
 			return false, err
 		}
-	} else if doesPublicVarExist(token) {
-		_, err := getPublicVar(token, reg)
-		if err != nil {
-			return false, err
-		}
 	} else {
 		return false, fmt.Errorf("Variable '%s' not found in scope0 '%s'", token, SCOPE)
 	}
@@ -367,6 +364,59 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 	}
 
 	return parsedOne, nil
+}
+
+func parseParentheses(parser *Parser, token string, reg byte) (bool, error) {
+	if token != "(" {
+		return false, nil
+	}
+
+	err, endToken, _ := getUntilSymbol(parser, []string{")"}, reg)
+	if err != nil {
+		return false, err
+	}
+
+	// Verify we got the closing parenthesis
+	if endToken == nil || *endToken != ")" {
+		return false, fmt.Errorf("expected closing parenthesis ')' at line %d", parser.LineNumber)
+	}
+
+	return true, nil
+}
+
+func parseLogicalNot(parser *Parser, token string, reg byte) (bool, error) {
+	if token != "!" {
+		return false, nil
+	}
+
+	nextToken, err := parser.NextToken()
+	if err != nil {
+		return false, err
+	}
+
+	err = getValueFromToken(parser, nextToken, reg)
+	if err != nil {
+		return false, err
+	}
+
+	backend.Cmp64_r_i(reg, 0)
+
+	// Use global counter for unique labels
+	labelCounter++
+	trueLabel := fmt.Sprintf("logical_not_true_%d", labelCounter)
+	endLabel := fmt.Sprintf("logical_not_end_%d", labelCounter)
+
+	backend.Jcc(trueLabel, byte(backend.JE_OPCODE))
+
+	backend.Mov64_r_i(reg, 0)
+	backend.Jmp(endLabel)
+
+	backend.Create_label(trueLabel)
+	backend.Mov64_r_i(reg, 1)
+
+	backend.Create_label(endLabel)
+
+	return true, nil
 }
 
 func parseNegValues(parser *Parser, token string, reg byte) (bool, error) {
@@ -455,10 +505,6 @@ func parseTypeFuncs(parser *Parser, token string, reg byte) (bool, error) {
 	return true, nil
 }
 
-func parseGlobalVars(token string, reg byte) (bool, error) {
-	return getPublicVar(token, reg)
-}
-
 // may uses r8
 // uses 64 bit registers to get the value of the token
 func getValueFromToken(parser *Parser, token string, reg byte) error {
@@ -468,7 +514,23 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
 	}
 
-	parsed, err := parseNegValues(parser, token, reg)
+	parsed, err := parseParentheses(parser, token, reg)
+	if err != nil {
+		return err
+	}
+	if parsed {
+		return nil
+	}
+
+	parsed, err = parseLogicalNot(parser, token, reg)
+	if err != nil {
+		return err
+	}
+	if parsed {
+		return nil
+	}
+
+	parsed, err = parseNegValues(parser, token, reg)
 	if err != nil {
 		return err
 	}
@@ -532,29 +594,6 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 		return nil
 	}
 
-	parsed, err = parseGlobalVars(token, reg)
-	if err != nil && parsed {
-		return err
-	}
-	if parsed {
-		return nil
-	}
-
-	parsed, err = parseStructsCreation(parser, token, reg)
-	if err != nil && parsed {
-		return err
-	}
-	if parsed {
-		return nil
-	}
-
-	parsed, err = parseStructsGetParam(token, reg)
-	if err != nil && parsed {
-		return err
-	}
-	if parsed {
-		return nil
-	}
 
 	return fmt.Errorf("unknown token '%s' at line %d", token, parser.LineNumber)
 }

@@ -306,26 +306,6 @@ func parseCodeBlock(parser *Parser) error {
 			if err := parseReturn(parser); err != nil {
 				return err
 			}
-		case "if":
-			if err := parseIf(parser); err != nil {
-				return err
-			}
-		case "for":
-			if err := parseFor(parser); err != nil {
-				return err
-			}
-		case "while":
-			if err := parseWhile(parser); err != nil {
-				return err
-			}
-		case "break":
-			if err := ParseNewBreak(parser); err != nil {
-				return err
-			}
-		case "continue":
-			if err := ParseNewContinue(parser); err != nil {
-				return err
-			}
 		case "defer":
 			if err := parseDefer(parser); err != nil {
 				return err
@@ -341,30 +321,6 @@ func parseCodeBlock(parser *Parser) error {
 			}
 
 			parsed, err := parseVariableDeclaration(parser, token)
-			if err != nil && parsed{
-				return err
-			}
-			if parsed {
-				continue
-			}
-
-			parsed, err = parseGlobalVarDeclaration(parser, token)
-			if err != nil && parsed {
-				return err
-			}
-			if parsed {
-				continue
-			}
-
-			parsed, err = parseStructDeclaration(parser, token)
-			if err != nil && parsed {
-				return err
-			}
-			if parsed {
-				continue
-			}
-
-			parsed, err = parseStructParamRedeclaration(parser, token)
 			if err != nil && parsed {
 				return err
 			}
@@ -413,9 +369,6 @@ func getParams(parser *Parser) ([]ParamType, error) {
 				return nil, err
 			}
 
-			if doesPublicVarExist(token) {
-				return nil, fmt.Errorf("parameter name '%s' already used as public variable", token)
-			}
 			params = append(params, ParamType{Name: token, Type: paramType})
 		} else {
 			return nil, fmt.Errorf("expected type (dq, dd, dw, db), got '%s'", token)

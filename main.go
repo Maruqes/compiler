@@ -23,17 +23,15 @@ bitwise -> e = e & 3; // AND NOT OR XOR etc etc etc left shift right shift
 
 /*
 known bugs->
-	1.
-	dd b = 1;
-	a = &b;
+	a++; //a is a global var -- += -=
 
-	2.
-	printHex(dq(-a));
-	printHex(dd(-b));
-	printHex(dw(-c));
-	printHex(db(-d));
+	if 1 == 1 && 2 == 2 {
+        printHex(0xdeadbeef);
+    }
 
-	printHex(*arr[2*8]);
+
+
+	APAGAMOS STRUCTS/GLOBAL/FORS/WHILES/IFS/continue/break
 */
 
 func main() {
@@ -42,7 +40,7 @@ func main() {
 	// par.StartParse("features.lang")
 	par.StartParse("test.lang")
 
-	backend.Call("global")
+	// backend.Call("global")
 	backend.Call("main")
 	wrapper.Exit(0)
 

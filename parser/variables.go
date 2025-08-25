@@ -2,7 +2,6 @@ package parser
 
 import (
 	"fmt"
-	"strings"
 
 	backend "github.com/Maruqes/compiler/swig"
 	"github.com/Maruqes/compiler/wrapper"
@@ -149,11 +148,6 @@ func (vl *VarsList) SetVar(variable *Variable) error {
 	return nil
 }
 func (vl *VarsList) GetVariable(name string, reg byte) error {
-	//in case of global var return it
-	if doesPublicVarExist(name) {
-		getPublicVar(name, reg)
-		return nil
-	}
 	for _, v := range vl.vars {
 		if v.Name == name {
 			switch v.Type {
@@ -187,19 +181,7 @@ func (vl *VarsList) GetVariableStruct(name string) (*Variable, error) {
 // global vars   "globalVarName"
 func (vl *VarsList) GetVariableAddress(name string, reg byte) error {
 
-	varName := name
-	fullVarName := name
-	//checking . usage for struct vars   struct.field1
-	if strings.Contains(name, ".") {
-		//divide and get first part to name
-		parts := strings.Split(name, ".")
-		if len(parts) != 2 {
-			return fmt.Errorf("invalid struct variable name: %s", name)
-		}
-		varName = parts[0]
-	}
-
-	varStruct, err := vl.GetVariableStruct(varName)
+	varStruct, err := vl.GetVariableStruct(name)
 	if err != nil {
 		return err
 	}
@@ -208,18 +190,7 @@ func (vl *VarsList) GetVariableAddress(name string, reg byte) error {
 	case ORIGIN_RBP:
 		backend.Mov64_r_i(reg, uint64(varStruct.Position))
 		backend.Sum64_r_r(reg, byte(backend.REG_RBP))
-	case ORIGIN_STRUCT:
-		parsed, err := getPointerOfStruct(fullVarName, reg)
-		if err != nil && parsed {
-			return err
-		}
-	case ORIGIN_GLOBAL:
-		_, err := returnPointerFromPublicVar(name, reg)
-		if err != nil {
-			return err
-		}
 	}
-
 	return nil
 }
 

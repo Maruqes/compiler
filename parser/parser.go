@@ -16,7 +16,7 @@ type Parser struct {
 var comparisonOperators = []string{"==", "!=", "<=", ">=", "<", ">"}
 
 // contains solo char that compose predefined tokens
-var composingTokens = append([]string{"{", "}", "(", ")", "[", "]", ";", ",", "+", "-", "*", "%", "=", "!", "&", "|", "?", "/",
+var composingTokens = append([]string{"{", "}", "(", ")", "[", "]", ";", ",", "+", "-", "*", "%", "=", "!", "&", "&&", "|", "||", "^", "?", "/",
 	"++", "--", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "//"}, comparisonOperators...)
 
 func (p *Parser) StartParse(fileName string) error {
@@ -307,8 +307,69 @@ func eatSemicolon(parser *Parser) {
 	}
 }
 
-// uses RBX and RDX in division
+// Reserved scratch registers to avoid clobber across recursive parses
+var reservedTmpRegs []byte
+
+func pushReserved(regs ...byte) {
+	reservedTmpRegs = append(reservedTmpRegs, regs...)
+}
+
+func popReserved(n int) {
+	if n <= 0 {
+		return
+	}
+	if n > len(reservedTmpRegs) {
+		reservedTmpRegs = reservedTmpRegs[:0]
+		return
+	}
+	reservedTmpRegs = reservedTmpRegs[:len(reservedTmpRegs)-n]
+}
+
+func isReserved(r byte) bool {
+	for i := len(reservedTmpRegs) - 1; i >= 0; i-- { // check from top for locality
+		if reservedTmpRegs[i] == r {
+			return true
+		}
+	}
+	// Never use special regs for temps
+	switch r {
+	case byte(backend.REG_RAX), byte(backend.REG_RDX), byte(backend.REG_RSP), byte(backend.REG_RBP):
+		return true
+	}
+	return false
+}
+
+func pickTmpReg(dest byte) (byte, error) {
+	candidates := []byte{
+		byte(backend.REG_R8),
+		byte(backend.REG_R9),
+		byte(backend.REG_R10),
+		byte(backend.REG_R11),
+		byte(backend.REG_R12),
+		byte(backend.REG_R13),
+		byte(backend.REG_R14),
+		byte(backend.REG_R15),
+	}
+	for _, c := range candidates {
+		if c != dest && !isReserved(c) {
+			return c,nil
+		}
+	}
+	return 0, fmt.Errorf("no available temporary registers, dont use that much (...(...(...(...(...(...)))))), the limit is 8 levels")
+}
+
+// uses RDX and funnels dividend through RAX for division
 func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *string, bool) {
+	// Temporary register for RHS values in binary operations; must differ from reg
+	tmp, err := pickTmpReg(reg)
+	if err != nil {
+		return err, nil, false
+	}
+
+	// Reserve our accumulator so nested calls won't use it as a temp
+	pushReserved(reg)
+	defer popReserved(1)
+
 	token, err := parser.NextToken()
 	if err != nil {
 		return err, nil, false
@@ -343,25 +404,82 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 			return err, nil, false
 		}
 
-		err = getValueFromToken(parser, token, byte(backend.REG_RBX))
+		// Compute RHS into our temporary register
+		pushReserved(tmp)
+		err = getValueFromToken(parser, token, tmp)
+		popReserved(1)
 		if err != nil {
 			panic("Error getting value from token in line " + fmt.Sprintf("%d: %s", parser.LineNumber, err.Error()))
 		}
 
+		fmt.Println(symbol)
 		switch symbol {
 		case "+":
 			// handle addition
-			backend.Sum64_r_r(reg, byte(backend.REG_RBX))
+			backend.Sum64_r_r(reg, tmp)
 		case "-":
 			// handle subtraction
-			backend.Sub64_r_r(reg, byte(backend.REG_RBX))
+			backend.Sub64_r_r(reg, tmp)
 		case "*":
 			// handle multiplication
-			backend.Mul64_r_r(reg, byte(backend.REG_RBX))
+			backend.Mul64_r_r(reg, tmp)
 		case "/":
 			// handle division
+			// x86-64 div uses RDX:RAX / r/m64 -> quotient in RAX, remainder in RDX
+			// Move current accumulator (reg) into RAX, clear RDX, divide by tmp, then move result back to reg
+			if reg != byte(backend.REG_RAX) {
+				backend.Mov64_r_r(byte(backend.REG_RAX), reg)
+			}
 			backend.Xor64_r_r(byte(backend.REG_RDX), byte(backend.REG_RDX)) // clear RDX before division
-			backend.Div64_r(byte(backend.REG_RBX))
+			backend.Div64_r(tmp)
+			if reg != byte(backend.REG_RAX) {
+				backend.Mov64_r_r(reg, byte(backend.REG_RAX))
+			}
+		case "&":
+			backend.And64_r_r(reg, tmp)
+		case "|":
+			backend.Or64_r_r(reg, tmp)
+		case "^":
+			// XOR operation
+			backend.Xor64_r_r(reg, tmp)
+		case "&&":
+			// Use global counter for unique labels
+			labelCounter++
+			falseLabel := fmt.Sprintf("logical_and_false_%d", labelCounter)
+			endLabel := fmt.Sprintf("logical_and_end_%d", labelCounter)
+
+			backend.Cmp64_r_i(reg, 0)
+			backend.Jcc(falseLabel, byte(backend.JE_OPCODE))
+
+			backend.Cmp64_r_i(tmp, 0)
+			backend.Jcc(falseLabel, byte(backend.JE_OPCODE))
+
+			backend.Mov64_r_i(reg, 1)
+			backend.Jmp(endLabel)
+
+			backend.Create_label(falseLabel)
+			backend.Mov64_r_i(reg, 0)
+
+			backend.Create_label(endLabel)
+		case "||":
+			// Use global counter for unique labels
+			labelCounter++
+			trueLabel := fmt.Sprintf("logical_or_true_%d", labelCounter)
+			endLabel := fmt.Sprintf("logical_or_end_%d", labelCounter)
+
+			backend.Cmp64_r_i(reg, 0)
+			backend.Jcc(trueLabel, byte(backend.JNE_OPCODE))
+
+			backend.Cmp64_r_i(tmp, 0)
+			backend.Jcc(trueLabel, byte(backend.JNE_OPCODE))
+
+			backend.Mov64_r_i(reg, 0)
+			backend.Jmp(endLabel)
+
+			backend.Create_label(trueLabel)
+			backend.Mov64_r_i(reg, 1)
+
+			backend.Create_label(endLabel)
 		default:
 			fmt.Printf("Current line is %d\n", parser.LineNumber)
 			return fmt.Errorf("unknown symbol '%s' found at line %d", symbol, parser.LineNumber), nil, false
@@ -397,15 +515,9 @@ func StartParsing(parser *Parser) error {
 				return err
 			}
 		case "global":
-			_, err := checkPublicVars(parser)
-			if err != nil {
-				return err
-			}
+
 		case "struct":
-			err := createStructType(parser)
-			if err != nil {
-				return err
-			}
+
 		default:
 
 			return fmt.Errorf("unknown token: '%s' found at line %d", token, parser.LineNumber)
