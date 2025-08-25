@@ -348,13 +348,6 @@ func parseCodeBlock(parser *Parser) error {
 				continue
 			}
 
-			parsed, err = parseGlobalVarDeclaration(parser, token)
-			if err != nil {
-				return err
-			}
-			if parsed {
-				continue
-			}
 
 			parsed, err = parseStructDeclaration(parser, token)
 			if err != nil && parsed {
@@ -365,7 +358,7 @@ func parseCodeBlock(parser *Parser) error {
 			}
 
 			parsed, err = parseStructParamRedeclaration(parser, token)
-			if err != nil {
+			if err != nil && parsed {
 				return err
 			}
 			if parsed {
@@ -432,13 +425,12 @@ func createVariablesFromParams(parser *Parser, params []ParamType) error {
 	paramLength := len(params) * 8
 	for i, param := range params {
 		backend.Mov64_r_mi(byte(backend.REG_RAX), byte(backend.REG_RBP), paramLength-((i-1)*8))
-		createVarWithReg(parser, byte(backend.REG_RAX), param.Type, param.Name, nil)
+		createVarWithReg(parser, byte(backend.REG_RAX), param.Type, param.Name, nil, ORIGIN_RBP)
 	}
 
 	return nil
 }
 
-// for now is -> func name {}
 func createFunc(parser *Parser) error {
 	//get name of the function
 	name, err := parser.NextToken()

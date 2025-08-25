@@ -76,6 +76,11 @@ func returnPointerFromPublicVar(token string, reg byte) (bool, error) {
 }
 
 func createPublicVar(parser *Parser, size int) error {
+	varList := GetVarList(SCOPE)
+	if varList == nil {
+		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+	}
+
 	if !isType(size) {
 		return fmt.Errorf("invalid type token '%d' on line %d", size, parser.LineNumber)
 	}
@@ -110,6 +115,12 @@ func createPublicVar(parser *Parser, size int) error {
 	}
 
 	publicVarList.AddVar(name, size)
+
+	err = varList.AddVariable(name, size, nil, ORIGIN_GLOBAL)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -120,7 +131,7 @@ func checkPublicVars(parser *Parser) (bool, error) {
 	vl := GetVarList(name)
 	if vl == nil {
 		CreateVarList(name)
-	}else{
+	} else {
 		return false, fmt.Errorf("variable list for scope '%s' already exists", name)
 	}
 

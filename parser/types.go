@@ -110,64 +110,23 @@ func parsePointer(parser *Parser, token string, reg byte) (bool, error) {
 				return false, err
 			}
 
-			if doesPublicVarExist(token) {
-				_, err := returnPointerFromPublicVar(token, reg)
-				if err != nil {
-					return false, err
-				}
-			} else if exists, err := doesStructVarFieldExist(token); err == nil && exists {
-				parsed, err := getPointerOfStruct(token, reg)
-				if err != nil && parsed {
-					return false, err
-				}
-			} else {
-				//check if token is a variable
-				varStruct, err := varList.GetVariableStruct(token)
-				if err != nil {
-					return false, err
-				}
-
-				backend.Mov64_r_i(reg, uint64(varStruct.Position))
-				backend.Sum64_r_r(reg, byte(backend.REG_RBP))
-
+			err = varList.GetVariableAddress(token, reg)
+			if err != nil {
+				return false, err
 			}
-
 			return true, nil
 		case '*':
-			numberOfDereferences := 1
-			//create pointer
+
 			token, err := parser.NextToken()
 			if err != nil {
 				return false, err
 			}
 
-			for token == "*" {
-				numberOfDereferences++
-				token, err = parser.NextToken()
-				if err != nil {
-					return false, err
-				}
+			err = getValueFromToken(parser, token, reg)
+			if err != nil {
+				return false, err
 			}
-
-			if varList.DoesVarExist(token) {
-				//check if token is a variable
-				err = varList.GetVariable(token, reg)
-				if err != nil {
-					return false, err
-				}
-			} else if exists, err := doesStructVarFieldExist(token); err == nil && exists {
-
-				parsed, err := parseStructsGetParam(token, reg)
-				if err != nil && parsed {
-					return false, err
-				}
-			} else {
-				return false, fmt.Errorf("Variable '%s' not found in scope0 '%s'", token, SCOPE)
-			}
-
-			for i := 0; i < numberOfDereferences; i++ {
-				backend.Mov64_r_m(reg, reg)
-			}
+			backend.Mov64_r_m(reg, reg)
 			return true, nil
 		}
 	}

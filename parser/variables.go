@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strings"
 
 	backend "github.com/Maruqes/compiler/swig"
 	"github.com/Maruqes/compiler/wrapper"
@@ -15,9 +16,19 @@ func setScope(scope string) {
 	SCOPE = scope
 }
 
+// conjunto de tipos de origens, ficheiro, etc etc
+type OriginType int
+
+const (
+	ORIGIN_RBP OriginType = iota
+	ORIGIN_STRUCT
+	ORIGIN_GLOBAL
+)
+
 type Variable struct {
 	Name     string
 	Type     int // DQ for 64-bit, DB for 8-bit, etc.
+	Origin   OriginType
 	Position int // relative to RBP
 	Extra    any
 }
@@ -31,11 +42,28 @@ type VarsList struct {
 var VarList []VarsList
 
 func CreateVarList(scope string) {
-	VarList = append(VarList, VarsList{
-		vars:    make([]Variable, 0),
+	// If the scope already exists, do nothing.
+	if GetVarList(scope) != nil {
+		panic(fmt.Sprintf("Variable list for scope '%s' already exists", scope))
+	}
+
+	varListGlobal := GetVarList("global")
+	if varListGlobal == nil {
+		varListGlobal = &VarsList{
+			vars:    make([]Variable, 0),
+			lastPos: 0,
+			Scope:   "global",
+		}
+	}
+
+	// Create a fresh variable list for the given scope.
+	varList := &VarsList{
+		vars:    varListGlobal.vars,
 		lastPos: 0,
 		Scope:   scope,
-	})
+	}
+
+	VarList = append(VarList, *varList)
 }
 
 func GetVarList(scope string) *VarsList {
@@ -84,40 +112,38 @@ func SubStack(n int) {
 }
 
 // var should be in rax
-func (vl *VarsList) AddVariable(name string, varType int, extra any) error {
+func (vl *VarsList) AddVariable(name string, varType int, extra any, origin OriginType) error {
 	// PushStack64(byte(backend.REG_RAX))
 
-	//check if global var exists with that name
-	_, exists := publicVarList.GetVar(name)
-	if exists {
-		return fmt.Errorf("already exists global variable '%s'", name)
+	if origin == ORIGIN_RBP {
+		switch varType {
+		case DB:
+			backend.Sub64_r_i(byte(backend.REG_RSP), 1)
+			backend.Mov8_m_r(byte(backend.REG_RSP), byte(backend.REG_RAX))
+			vl.lastPos -= 1
+		case DW:
+			backend.Sub64_r_i(byte(backend.REG_RSP), 2)
+			backend.Mov16_m_r(byte(backend.REG_RSP), byte(backend.REG_RAX))
+			vl.lastPos -= 2
+		case DD:
+			backend.Sub64_r_i(byte(backend.REG_RSP), 4)
+			backend.Mov32_m_r(byte(backend.REG_RSP), byte(backend.REG_RAX))
+			vl.lastPos -= 4
+		case DQ:
+			backend.Sub64_r_i(byte(backend.REG_RSP), 8)
+			backend.Mov64_m_r(byte(backend.REG_RSP), byte(backend.REG_RAX))
+			vl.lastPos -= 8
+		}
 	}
-
-	switch varType {
-	case DB:
-		backend.Sub64_r_i(byte(backend.REG_RSP), 1)
-		backend.Mov8_m_r(byte(backend.REG_RSP), byte(backend.REG_RAX))
-		vl.lastPos -= 1
-	case DW:
-		backend.Sub64_r_i(byte(backend.REG_RSP), 2)
-		backend.Mov16_m_r(byte(backend.REG_RSP), byte(backend.REG_RAX))
-		vl.lastPos -= 2
-	case DD:
-		backend.Sub64_r_i(byte(backend.REG_RSP), 4)
-		backend.Mov32_m_r(byte(backend.REG_RSP), byte(backend.REG_RAX))
-		vl.lastPos -= 4
-	case DQ:
-		backend.Sub64_r_i(byte(backend.REG_RSP), 8)
-		backend.Mov64_m_r(byte(backend.REG_RSP), byte(backend.REG_RAX))
-		vl.lastPos -= 8
-	}
-
 	vl.vars = append(vl.vars, Variable{
 		Name:     name,
 		Type:     varType,
 		Position: vl.lastPos,
 		Extra:    extra,
+		Origin:   origin,
 	})
+
+	fmt.Println(vl.vars)
 
 	return nil
 }
@@ -170,6 +196,48 @@ func (vl *VarsList) GetVariableStruct(name string) (*Variable, error) {
 		}
 	}
 	return nil, fmt.Errorf("Variable %s not found in scope2 %s", name, SCOPE)
+}
+
+// need to check for
+// normal vars   "varName"
+// struct vars   "structName.fieldName"
+// global vars   "globalVarName"
+func (vl *VarsList) GetVariableAddress(name string, reg byte) error {
+
+	varName := name
+	fullVarName := name
+	//checking . usage for struct vars   struct.field1
+	if strings.Contains(name, ".") {
+		//divide and get first part to name
+		parts := strings.Split(name, ".")
+		if len(parts) != 2 {
+			return fmt.Errorf("invalid struct variable name: %s", name)
+		}
+		varName = parts[0]
+	}
+
+	varStruct, err := vl.GetVariableStruct(varName)
+	if err != nil {
+		return err
+	}
+
+	switch varStruct.Origin {
+	case ORIGIN_RBP:
+		backend.Mov64_r_i(reg, uint64(varStruct.Position))
+		backend.Sum64_r_r(reg, byte(backend.REG_RBP))
+	case ORIGIN_STRUCT:
+		parsed, err := getPointerOfStruct(fullVarName, reg)
+		if err != nil && parsed {
+			return err
+		}
+	case ORIGIN_GLOBAL:
+		_, err := returnPointerFromPublicVar(name, reg)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (vl *VarsList) DoesVarExist(name string) bool {
@@ -297,6 +365,8 @@ func (vl *VarsList) subVar(parser *Parser, varName string, variable *Variable) e
 }
 
 func (vl *VarsList) setVarStruct(parser *Parser, varName string) error {
+
+	fmt.Println("Setting variable:", varName)
 	variable, err := vl.GetVariableStruct(varName)
 	if err != nil {
 		return err
@@ -350,7 +420,7 @@ func createPointerVar(parser *Parser) error {
 		return err
 	}
 
-	err = varList.AddVariable(name, DQ, nil)
+	err = varList.AddVariable(name, DQ, nil, ORIGIN_RBP)
 	if err != nil {
 		return err
 	}
@@ -382,14 +452,14 @@ func createVarStruct(parser *Parser, varType int, extra any) error {
 
 	clearReg(byte(backend.REG_RAX), varType)
 
-	err = varList.AddVariable(name, varType, extra)
+	err = varList.AddVariable(name, varType, extra, ORIGIN_RBP)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func createVarWithReg(parser *Parser, reg byte, varType int, name string, extra any) error {
+func createVarWithReg(parser *Parser, reg byte, varType int, name string, extra any, origin OriginType) error {
 	varList := GetVarList(SCOPE)
 	if varList == nil {
 		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
@@ -403,7 +473,7 @@ func createVarWithReg(parser *Parser, reg byte, varType int, name string, extra 
 		backend.Mov64_r_r(byte(backend.REG_RAX), reg)
 	}
 
-	err := varList.AddVariable(name, varType,extra)
+	err := varList.AddVariable(name, varType, extra, origin)
 	if err != nil {
 		return err
 	}

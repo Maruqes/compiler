@@ -158,14 +158,12 @@ func parseStructDeclaration(parser *Parser, token string) (bool, error) {
 		return false, err
 	}
 
-	fmt.Println(varname)
-
 	err = getAfterEqual(parser)
 	if err != nil {
 		return false, err
 	}
 
-	createVarWithReg(parser, byte(backend.REG_RAX), DQ, varname, token)
+	createVarWithReg(parser, byte(backend.REG_RAX), DQ, varname, token, ORIGIN_STRUCT)
 
 	return true, nil
 }
@@ -179,9 +177,6 @@ func parseStructParamRedeclaration(parser *Parser, token string) (bool, error) {
 		return false, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
 	}
 
-	fmt.Println(token)
-	fmt.Println(token)
-	fmt.Println(token)
 	structName, structType, currentSpacer, fieldIndex, err := parseStructParam(token)
 	if err != nil {
 		return false, err
