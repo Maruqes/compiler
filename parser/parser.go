@@ -209,6 +209,7 @@ func (p *Parser) NextToken() (string, error) {
 		}
 
 		if char == " " || char == "\n" || char == "\t" {
+			_ = p.SeekBack(1) // não comer o separador
 			break
 		}
 		res += char
@@ -221,12 +222,23 @@ func (p *Parser) Peek() (string, error) {
 		return "", os.ErrInvalid
 	}
 
-	// peek the next character without advancing the cursor
-	token, err := p.NextToken()
+	// guarda posição e linha
+	pos, err := p.file.Seek(0, io.SeekCurrent)
 	if err != nil {
 		return "", err
 	}
-	p.SeekBack(int64(len(token)))
+	line := p.LineNumber
+
+	token, err := p.NextToken()
+	if err != nil && err != io.EOF {
+		return "", err
+	}
+
+	// repõe posição e linha
+	if _, sErr := p.file.Seek(pos, io.SeekStart); sErr != nil {
+		return "", sErr
+	}
+	p.LineNumber = line
 
 	return token, nil
 }
@@ -339,10 +351,10 @@ func isReserved(r byte) bool {
 	return false
 }
 
+//r9 is reserved for loops
 func pickTmpReg(dest byte) (byte, error) {
 	candidates := []byte{
 		byte(backend.REG_R8),
-		byte(backend.REG_R9),
 		byte(backend.REG_R10),
 		byte(backend.REG_R11),
 		byte(backend.REG_R12),
@@ -352,10 +364,43 @@ func pickTmpReg(dest byte) (byte, error) {
 	}
 	for _, c := range candidates {
 		if c != dest && !isReserved(c) {
-			return c,nil
+			return c, nil
 		}
 	}
-	return 0, fmt.Errorf("no available temporary registers, dont use that much (...(...(...(...(...(...)))))), the limit is 8 levels")
+	return 0, fmt.Errorf("no available temporary registers, dont use that much (...(...(...(...(...))))), the limit is 7 levels")
+}
+
+func parseConditionals(token string, reg byte, tmp byte) error {
+	falseLabel := fmt.Sprintf("equal_false_%d", labelCounter)
+	trueLabel := fmt.Sprintf("equal_true_%d", labelCounter)
+	endLabel := fmt.Sprintf("equal_end_%d", labelCounter)
+
+	backend.Cmp64_r_r(reg, tmp)
+	switch token {
+	case "==":
+		backend.Jcc(trueLabel, byte(backend.JE_OPCODE))
+	case "!=":
+		backend.Jcc(trueLabel, byte(backend.JNE_OPCODE))
+	case "<":
+		backend.Jcc(trueLabel, byte(backend.JG_OPCODE))
+	case "<=":
+		backend.Jcc(trueLabel, byte(backend.JGE_OPCODE))
+	case ">":
+		backend.Jcc(trueLabel, byte(backend.JL_OPCODE))
+	case ">=":
+		backend.Jcc(trueLabel, byte(backend.JLE_OPCODE))
+	default:
+		return fmt.Errorf("unexpected token '%s' in conditional expression", token)
+	}
+
+	backend.Create_label(falseLabel)
+	backend.Mov64_r_i(reg, 0)
+	backend.Jmp(endLabel)
+
+	backend.Create_label(trueLabel)
+	backend.Mov64_r_i(reg, 1)
+	backend.Create_label(endLabel)
+	return nil
 }
 
 // uses RDX and funnels dividend through RAX for division
@@ -413,20 +458,16 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 		}
 
 		fmt.Println(symbol)
+		printRegs(int(reg))
+		printRegs(int(tmp))
 		switch symbol {
 		case "+":
-			// handle addition
 			backend.Sum64_r_r(reg, tmp)
 		case "-":
-			// handle subtraction
 			backend.Sub64_r_r(reg, tmp)
 		case "*":
-			// handle multiplication
 			backend.Mul64_r_r(reg, tmp)
 		case "/":
-			// handle division
-			// x86-64 div uses RDX:RAX / r/m64 -> quotient in RAX, remainder in RDX
-			// Move current accumulator (reg) into RAX, clear RDX, divide by tmp, then move result back to reg
 			if reg != byte(backend.REG_RAX) {
 				backend.Mov64_r_r(byte(backend.REG_RAX), reg)
 			}
@@ -480,6 +521,12 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 			backend.Mov64_r_i(reg, 1)
 
 			backend.Create_label(endLabel)
+		case "==", "!=", "<", "<=", ">", ">=":
+			labelCounter++
+			if err := parseConditionals(symbol, reg, tmp); err != nil {
+				return err, nil, false
+			}
+
 		default:
 			fmt.Printf("Current line is %d\n", parser.LineNumber)
 			return fmt.Errorf("unknown symbol '%s' found at line %d", symbol, parser.LineNumber), nil, false

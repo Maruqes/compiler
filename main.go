@@ -23,14 +23,6 @@ bitwise -> e = e & 3; // AND NOT OR XOR etc etc etc left shift right shift
 
 /*
 known bugs->
-	a++; //a is a global var -- += -=
-
-	if 1 == 1 && 2 == 2 {
-        printHex(0xdeadbeef);
-    }
-
-
-
 	APAGAMOS STRUCTS/GLOBAL/FORS/WHILES/IFS/continue/break
 */
 

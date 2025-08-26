@@ -57,6 +57,25 @@ func GetVarList(scope string) *VarsList {
 	return nil
 }
 
+func CopyVarListState() *VarsList {
+	varL := GetVarList(SCOPE)
+	if varL == nil {
+		panic(fmt.Sprintf("Variable list for scope '%s' not found", SCOPE))
+	}
+
+	newVarList := *varL
+	return &newVarList
+}
+
+func SetVarListState(newState *VarsList) {
+	varL := GetVarList(SCOPE)
+	if varL == nil {
+		panic(fmt.Sprintf("Variable list for scope '%s' not found", SCOPE))
+	}
+
+	*varL = *newState
+}
+
 func PushStack64(reg byte) {
 	backend.Push64(reg)
 	varL := GetVarList(SCOPE)

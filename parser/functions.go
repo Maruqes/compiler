@@ -225,27 +225,27 @@ func parseVariableDeclaration(parser *Parser, token string) (bool, error) {
 	case "dq":
 		// create 64-bit variable
 		if err := createVarStruct(parser, DQ, nil); err != nil {
-			return false, err
+			return true, err
 		}
 	case "dd":
 		// create 32-bit variable
 		if err := createVarStruct(parser, DD, nil); err != nil {
-			return false, err
+			return true, err
 		}
 	case "dw":
 		// create 16-bit variable
 		if err := createVarStruct(parser, DW, nil); err != nil {
-			return false, err
+			return true, err
 		}
 	case "db":
 		// create 8-bit variable
 		if err := createVarStruct(parser, DB, nil); err != nil {
-			return false, err
+			return true, err
 		}
 	case "ptr":
 		// create pointer variable
 		if err := createPointerVar(parser); err != nil {
-			return false, err
+			return true, err
 		}
 	default:
 		return false, nil
@@ -308,6 +308,26 @@ func parseCodeBlock(parser *Parser) error {
 			}
 		case "defer":
 			if err := parseDefer(parser); err != nil {
+				return err
+			}
+		case "if":
+			if err := parseIf(parser); err != nil {
+				return err
+			}
+		case "while":
+			if err := parseWhiles(parser); err != nil {
+				return err
+			}
+		case "for":
+			if err := parseFors(parser); err != nil {
+				return err
+			}
+		case "break":
+			if err := ParseNewBreak(parser); err != nil {
+				return err
+			}
+		case "continue":
+			if err := ParseNewContinue(parser); err != nil {
 				return err
 			}
 		default:

@@ -1,5 +1,34 @@
 func main() {
-	printHex(1*2 - (3 + 4));
-	printHex((2 + (2*(3*(4+(5+(6+(7+(8*1)+(1+1)+(1+1)))))))));
+    // dq arr = db{1,2,3,4};
+	//problema nos arrays arr[0]
+	// printHex(1*2 - (3 + 4));
+	// printHex((2 + (2*(3*(4+(5+(6+(7+(8*1)+(1+1)+(1+1)))))))));
+	// printHex(arr[0]);
+
+	
+	if (5 > 4) && (1 == 1){
+		printHex(0xff0000);
+	}
+
+	//problema em criacao de variaveis ao acabr o loop tem de voltar a stack
+	
+
+	dq a = 0;
+	while a < 10 {
+		printHex(a);
+		a++;
+	}
+
+
+	for dq i = 0; (i < 10) && (1==1) ; i++; {
+
+		if i == 5 {
+			continue;
+		}
+		printHex(i);
+	}
+
+	
+
 	return;
 }
