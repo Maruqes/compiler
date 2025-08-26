@@ -355,6 +355,7 @@ func isReserved(r byte) bool {
 func pickTmpReg(dest byte) (byte, error) {
 	candidates := []byte{
 		byte(backend.REG_R8),
+		byte(backend.REG_R9),
 		byte(backend.REG_R10),
 		byte(backend.REG_R11),
 		byte(backend.REG_R12),
@@ -367,7 +368,7 @@ func pickTmpReg(dest byte) (byte, error) {
 			return c, nil
 		}
 	}
-	return 0, fmt.Errorf("no available temporary registers, dont use that much (...(...(...(...(...))))), the limit is 7 levels")
+	return 0, fmt.Errorf("no available temporary registers, dont use that much (...(...(...(...(...))))), the limit is 8 levels")
 }
 
 func parseConditionals(token string, reg byte, tmp byte) error {

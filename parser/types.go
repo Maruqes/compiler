@@ -304,6 +304,7 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 		return false, fmt.Errorf("nesting de arrays excede maxDepth=%d", maxDepth)
 	}
 
+
 	SubStack(arrType * numberOfElements)
 	our_depth := depth
 	backend.Mov64_mi_r(byte(backend.REG_R15), uint(our_depth*8), byte(backend.REG_RSP))
@@ -316,25 +317,26 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 	count := 0
 
 	for *symbol == "}" || *symbol == "," {
-		backend.Mov64_r_mi(byte(backend.REG_R13), byte(backend.REG_R15), int(our_depth*8))
+		backend.Mov64_r_mi(byte(backend.REG_RDI), byte(backend.REG_R15), int(our_depth*8))
 		offset := uint(count * arrType)
+		//
 		if parsed {
 			switch arrType {
 			case DQ:
-				backend.Mov64_mi_r(byte(backend.REG_R13), offset, reg)
+				backend.Mov64_mi_r(byte(backend.REG_RDI), offset, reg)
 			case DD:
-				backend.Mov32_mi_r(byte(backend.REG_R13), offset, reg)
+				backend.Mov32_mi_r(byte(backend.REG_RDI), offset, reg)
 			case DW:
-				backend.Mov16_mi_r(byte(backend.REG_R13), offset, reg)
+				backend.Mov16_mi_r(byte(backend.REG_RDI), offset, reg)
 			case DB:
-				backend.Mov8_mi_r(byte(backend.REG_R13), offset, reg)
+				backend.Mov8_mi_r(byte(backend.REG_RDI), offset, reg)
 			default:
 				return false, fmt.Errorf("unknown array type: %d on line %d", arrType, parser.LineNumber)
 			}
 			count++
 		}
 		if *symbol == "}" {
-			backend.Mov64_r_r(reg, byte(backend.REG_R13))
+			backend.Mov64_r_r(reg, byte(backend.REG_RDI))
 			break
 		}
 
@@ -376,6 +378,7 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 		return false, fmt.Errorf("Variable '%s' not found in scope0 '%s'", token, SCOPE)
 	}
 
+
 	parsedOne := false
 
 	for {
@@ -412,6 +415,8 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 		}
 		parsedOne = true
 	}
+
+	clearReg(reg, arrType)
 
 	return parsedOne, nil
 }
