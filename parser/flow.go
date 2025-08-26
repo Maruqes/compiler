@@ -6,6 +6,25 @@ import (
 	backend "github.com/Maruqes/compiler/swig"
 )
 
+func copyStackImage() (*VarsList, error) {
+	varList := CopyVarListState()
+	if varList == nil {
+		return nil, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+	}
+	return varList, nil
+}
+
+func setStackImage(varList *VarsList) {
+	// Absolute restore: RSP = RBP + lastPos (lastPos <= 0 for locals)
+	if varList == nil {
+		return
+	}
+	backend.Mov64_r_r(byte(backend.REG_RSP), byte(backend.REG_RBP))
+	backend.Sum64_r_i(byte(backend.REG_RSP), uint(varList.lastPos))
+
+	SetVarListState(varList)
+}
+
 var ifCount int
 
 /*
@@ -14,12 +33,18 @@ if condition {
 }
 */
 func parseIf(parser *Parser) error {
+
+	vlImage, err := copyStackImage()
+	if err != nil {
+		return err
+	}
+
 	ifCount++
 
 	ifleave := fmt.Sprintf("if_leave%d", ifCount)
 	ifelse := fmt.Sprintf("if_else%d", ifCount)
 
-	err, _, _ := getUntilSymbol(parser, []string{"{"}, byte(backend.REG_RAX))
+	err, _, _ = getUntilSymbol(parser, []string{"{"}, byte(backend.REG_RAX))
 	if err != nil {
 		return err
 	}
@@ -42,12 +67,16 @@ func parseIf(parser *Parser) error {
 	if err != nil {
 		return err
 	}
-
+	fmt.Println(token)
 	switch token {
 	case "else":
-		_, err := parser.NextToken()
+		tok, err := parser.NextToken()
 		if err != nil {
 			return err
+		}
+
+		if tok != "else" {
+			return fmt.Errorf("expected 'else', got '%s'", tok)
 		}
 
 		err = parseCodeBlock(parser)
@@ -55,14 +84,24 @@ func parseIf(parser *Parser) error {
 			return err
 		}
 	case "elif":
-		_, err := parser.NextToken()
+		tok, err := parser.NextToken()
 		if err != nil {
 			return err
 		}
-		parseIf(parser)
+		if tok != "elif" {
+			return fmt.Errorf("expected 'elif', got '%s'", tok)
+		}
+
+		setStackImage(vlImage)
+		err = parseIf(parser)
+		if err != nil {
+			return err
+		}
 	}
 
 	backend.Create_label(ifleave)
+
+	setStackImage(vlImage)
 	return nil
 }
 
@@ -140,22 +179,22 @@ var whileCount int
 
 func parseWhiles(parser *Parser) error {
 	//save old
-	varList := CopyVarListState()
-	if varList == nil {
-		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+	vlImage, err := copyStackImage()
+	if err != nil {
+		return err
 	}
-	oldStackSize := varList.lastPos
-	backend.Mov64_r_r(byte(backend.REG_R9), byte(backend.REG_RSP))
 
 	whileCount++
 
 	//label creation
 	whileCond := fmt.Sprintf("while_cond%d", whileCount)
 	whileEnd := fmt.Sprintf("while_end%d", whileCount)
-	PushLoopBreaks(whileEnd, whileCond)
+	whileContinue := fmt.Sprintf("while_continue%d", whileCount)
+	// continue should jump to a handler that restores stack, then re-checks condition
+	PushLoopBreaks(whileEnd, whileContinue)
 
 	backend.Create_label(whileCond)
-	err, _, _ := getUntilSymbol(parser, []string{"{"}, byte(backend.REG_RAX))
+	err, _, _ = getUntilSymbol(parser, []string{"{"}, byte(backend.REG_RAX))
 	if err != nil {
 		return err
 	}
@@ -172,28 +211,28 @@ func parseWhiles(parser *Parser) error {
 		return err
 	}
 
-	backend.Mov64_r_r(byte(backend.REG_RSP), byte(backend.REG_R9))
+	// unify normal fall-through and `continue` path here
+	backend.Create_label(whileContinue)
+	setStackImage(vlImage) // Restore stack pointer for next iteration
 	backend.Jmp(whileCond)
 	backend.Create_label(whileEnd)
 	PopLoopBreaks()
 
-	backend.Mov64_r_r(byte(backend.REG_RSP), byte(backend.REG_R9))
-	varList.lastPos = oldStackSize
-
-	SetVarListState(varList)
+	setStackImage(vlImage)
 	return nil
 }
 
 var forCount int
 
 func parseFors(parser *Parser) error {
-	//save old
-	varList := CopyVarListState()
-	if varList == nil {
-		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+	// Snapshot before init 
+	preImage, err := copyStackImage()
+	if err != nil {
+		return err
 	}
-	oldStackSize := varList.lastPos
-	backend.Mov64_r_r(byte(backend.REG_R9), byte(backend.REG_RSP))
+
+	// Snapshot after init 
+	var postImage *VarsList
 
 	forCount++
 	//label creation
@@ -201,8 +240,9 @@ func parseFors(parser *Parser) error {
 	forSecond := fmt.Sprintf("for_second%d", forCount)
 	forBody := fmt.Sprintf("for_body%d", forCount)
 	forEnd := fmt.Sprintf("for_end%d", forCount)
+	forContinue := fmt.Sprintf("for_continue%d", forCount)
 
-	PushLoopBreaks(forEnd, forSecond)
+	PushLoopBreaks(forEnd, forContinue)
 
 	/*
 		PARSE FIRST VAR DECLARATION    dq i = 0;
@@ -212,9 +252,14 @@ func parseFors(parser *Parser) error {
 		return err
 	}
 
-	parsed, err := parseVariableDeclaration(parser, token)
+	parsed, _, err := parseVariableDeclaration(parser, token)
 	if err != nil || !parsed {
 		return fmt.Errorf("error parsing variable declaration for 'for' loop: %v", err)
+	}
+	// Capture stack/vars image after init so it includes loop variables
+	postImage, err = copyStackImage()
+	if err != nil {
+		return err
 	}
 
 	/*
@@ -239,7 +284,7 @@ func parseFors(parser *Parser) error {
 	}
 	backend.Create_label(forSecond)
 
-	parsed, err = parseVariableDeclaration(parser, token)
+	parsed, _, err = parseVariableDeclaration(parser, token)
 	if err != nil || !parsed {
 		return fmt.Errorf("error parsing variable declaration for 'for' loop: %v", err)
 	}
@@ -253,14 +298,13 @@ func parseFors(parser *Parser) error {
 	if err != nil {
 		return err
 	}
-	backend.Mov64_r_r(byte(backend.REG_RSP), byte(backend.REG_R9)) // Restore stack pointer for next iteration
-	backend.Jmp(forSecond)                                         //we jump to second var declaration (i++)
+	backend.Create_label(forContinue)
+	setStackImage(postImage)
+	backend.Jmp(forSecond)
 	backend.Create_label(forEnd)
 
 	PopLoopBreaks()
-	backend.Mov64_r_r(byte(backend.REG_RSP), byte(backend.REG_R9)) //restore stack pointer for continue program
-	varList.lastPos = oldStackSize
-
-	SetVarListState(varList)
+	// restore to pre-init image so 'i' (and other init vars) are removed
+	setStackImage(preImage)
 	return nil
 }

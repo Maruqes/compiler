@@ -458,8 +458,6 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 		}
 
 		fmt.Println(symbol)
-		printRegs(int(reg))
-		printRegs(int(tmp))
 		switch symbol {
 		case "+":
 			backend.Sum64_r_r(reg, tmp)

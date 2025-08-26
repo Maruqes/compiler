@@ -63,7 +63,12 @@ func CopyVarListState() *VarsList {
 		panic(fmt.Sprintf("Variable list for scope '%s' not found", SCOPE))
 	}
 
+	// Deep copy to avoid aliasing the vars slice across snapshots
+	varsCopy := make([]Variable, len(varL.vars))
+	copy(varsCopy, varL.vars)
+
 	newVarList := *varL
+	newVarList.vars = varsCopy
 	return &newVarList
 }
 
@@ -113,7 +118,7 @@ func SubStack(n int) {
 }
 
 // var should be in rax
-func (vl *VarsList) AddVariable(name string, varType int, extra any, origin OriginType) error {
+func (vl *VarsList) AddVariable(name string, varType int, extra any, origin OriginType) (*Variable, error) {
 	// PushStack64(byte(backend.REG_RAX))
 
 	if origin == ORIGIN_RBP {
@@ -146,7 +151,23 @@ func (vl *VarsList) AddVariable(name string, varType int, extra any, origin Orig
 
 	fmt.Println(vl.vars)
 
-	return nil
+	return &vl.vars[len(vl.vars)-1], nil
+}
+
+// if its last on the stack sum rsp else just leave it
+func (vl *VarsList) RemoveVariable(variableName string) error {
+	if len(vl.vars) == 0 {
+		return fmt.Errorf("no variables to remove")
+	}
+
+	// Find the variable in the list by name
+	for i, v := range vl.vars {
+		if v.Name == variableName {
+			vl.vars = append(vl.vars[:i], vl.vars[i+1:]...)
+			return nil
+		}
+	}
+	return fmt.Errorf("variable %s not found", variableName)
 }
 
 // sets the variable to the value in RAX
@@ -186,9 +207,9 @@ func (vl *VarsList) GetVariable(name string, reg byte) error {
 }
 
 func (vl *VarsList) GetVariableStruct(name string) (*Variable, error) {
-	for _, v := range vl.vars {
-		if v.Name == name {
-			return &v, nil
+	for i := range vl.vars {
+		if vl.vars[i].Name == name {
+			return &vl.vars[i], nil
 		}
 	}
 	return nil, fmt.Errorf("Variable %s not found in scope2 %s", name, SCOPE)
@@ -337,121 +358,121 @@ func (vl *VarsList) subVar(parser *Parser, varName string, variable *Variable) e
 	return nil
 }
 
-func (vl *VarsList) setVarStruct(parser *Parser, varName string) error {
+func (vl *VarsList) setVarStruct(parser *Parser, varName string) (*Variable, error) {
 
 	fmt.Println("Setting variable:", varName)
 	variable, err := vl.GetVariableStruct(varName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	peekToken, err := parser.Peek()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	switch peekToken {
 	case "=":
 		err = getAfterEqual(parser)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		vl.SetVar(variable)
 
 		clearReg(byte(backend.REG_RAX), variable.Type)
 	case "++":
-		return vl.incrementVar(parser, variable)
+		return variable, vl.incrementVar(parser, variable)
 	case "--":
-		return vl.decrementVar(parser, variable)
+		return variable, vl.decrementVar(parser, variable)
 	case "+=":
-		return vl.sumVar(parser, varName, variable)
+		return variable, vl.sumVar(parser, varName, variable)
 	case "-=":
-		return vl.subVar(parser, varName, variable)
+		return variable, vl.subVar(parser, varName, variable)
 	default:
-		return fmt.Errorf("unexpected token '%s' after '--' in line %d", peekToken, parser.LineNumber)
+		return variable, fmt.Errorf("unexpected token '%s' after '--' in line %d", peekToken, parser.LineNumber)
 	}
 
-	return nil
+	return nil, nil
 }
 
-func createPointerVar(parser *Parser) error {
+func createPointerVar(parser *Parser) (*Variable, error) {
 	name, err := parser.NextToken()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	varList := GetVarList(SCOPE)
 	if varList == nil {
-		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+		return nil, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
 	}
 
 	if varList.DoesVarExist(name) {
-		return fmt.Errorf("Variable '%s' already exists in scope '%s' in line %d", name, SCOPE, parser.LineNumber)
+		return nil, fmt.Errorf("Variable '%s' already exists in scope '%s' in line %d", name, SCOPE, parser.LineNumber)
 	}
 
 	// get the value after the equal sign in RAX
 	if err := getAfterEqual(parser); err != nil {
-		return err
+		return nil, err
 	}
 
-	err = varList.AddVariable(name, DQ, nil, ORIGIN_RBP)
+	variable, err := varList.AddVariable(name, DQ, nil, ORIGIN_RBP)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return variable, nil
 }
 
 // push whats after the equal and save position in the stack compared to BASE POINTER (BP)
-func createVarStruct(parser *Parser, varType int, extra any) error {
+func createVarStruct(parser *Parser, varType int, extra any) (*Variable, error) {
 	//create var is get space on heap and get the after equal
 	name, err := parser.NextToken()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	varList := GetVarList(SCOPE)
 	if varList == nil {
-		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+		return nil, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
 	}
 
 	if varList.DoesVarExist(name) {
-		return fmt.Errorf("Variable '%s' already exists in scope '%s' in line %d", name, SCOPE, parser.LineNumber)
+		return nil, fmt.Errorf("Variable '%s' already exists in scope '%s' in line %d", name, SCOPE, parser.LineNumber)
 	}
 
 	// get the value after the equal sign in RAX
 	if err := getAfterEqual(parser); err != nil {
-		return err
+		return nil, err
 	}
 
 	clearReg(byte(backend.REG_RAX), varType)
 
-	err = varList.AddVariable(name, varType, extra, ORIGIN_RBP)
+	variable, err := varList.AddVariable(name, varType, extra, ORIGIN_RBP)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return variable, nil
 }
 
-func createVarWithReg(parser *Parser, reg byte, varType int, name string, extra any, origin OriginType) error {
+func createVarWithReg(parser *Parser, reg byte, varType int, name string, extra any, origin OriginType) (*Variable, error) {
 	varList := GetVarList(SCOPE)
 	if varList == nil {
-		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+		return nil, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
 	}
 
 	if varList.DoesVarExist(name) {
-		return fmt.Errorf("Variable '%s' already exists in scope '%s' in line %d", name, SCOPE, parser.LineNumber)
+		return nil, fmt.Errorf("Variable '%s' already exists in scope '%s' in line %d", name, SCOPE, parser.LineNumber)
 	}
 
 	if reg != byte(backend.REG_RAX) {
 		backend.Mov64_r_r(byte(backend.REG_RAX), reg)
 	}
 
-	err := varList.AddVariable(name, varType, extra, origin)
+	variable, err := varList.AddVariable(name, varType, extra, origin)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return variable, nil
 }
 
 // print a numeros de 48-122 ascii

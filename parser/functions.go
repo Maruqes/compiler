@@ -210,48 +210,42 @@ func temporaryPrintHexVar(parser *Parser) error {
 dq a = 20
 a=30
 */
-func parseVariableDeclaration(parser *Parser, token string) (bool, error) {
+func parseVariableDeclaration(parser *Parser, token string) (bool, *Variable, error) {
 	varList := GetVarList(SCOPE)
 	if varList == nil {
-		return false, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+		return false, nil, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
 	}
 
 	//if its a var redefenition
 	if varList.DoesVarExist(token) {
-		return true, varList.setVarStruct(parser, token)
+		v, err := varList.setVarStruct(parser, token)
+		return true, v, err
 	}
 
 	switch token {
 	case "dq":
 		// create 64-bit variable
-		if err := createVarStruct(parser, DQ, nil); err != nil {
-			return true, err
-		}
+		variable, err := createVarStruct(parser, DQ, nil)
+		return true, variable, err
 	case "dd":
 		// create 32-bit variable
-		if err := createVarStruct(parser, DD, nil); err != nil {
-			return true, err
-		}
+		variable, err := createVarStruct(parser, DD, nil)
+		return true, variable, err
 	case "dw":
 		// create 16-bit variable
-		if err := createVarStruct(parser, DW, nil); err != nil {
-			return true, err
-		}
+		variable, err := createVarStruct(parser, DW, nil)
+		return true, variable, err
 	case "db":
 		// create 8-bit variable
-		if err := createVarStruct(parser, DB, nil); err != nil {
-			return true, err
-		}
+		variable, err := createVarStruct(parser, DB, nil)
+		return true, variable, err
 	case "ptr":
 		// create pointer variable
-		if err := createPointerVar(parser); err != nil {
-			return true, err
-		}
+		variable, err := createPointerVar(parser)
+		return true, variable, err
 	default:
-		return false, nil
+		return true, nil, fmt.Errorf("unknown variable declaration type: '%s'", token)
 	}
-
-	return true, nil
 }
 
 func parseCodeBlock(parser *Parser) error {
@@ -340,7 +334,7 @@ func parseCodeBlock(parser *Parser) error {
 				continue
 			}
 
-			parsed, err := parseVariableDeclaration(parser, token)
+			parsed, _, err := parseVariableDeclaration(parser, token)
 			if err != nil && parsed {
 				return err
 			}
