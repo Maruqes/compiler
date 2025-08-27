@@ -1,7 +1,7 @@
 func main() {
-    ptr arr = db{1,2,3,4};
+    dq arr<dd> = dd{1,2,3,4};
 	// problema nos arrays arr[0]
-	dq a = arr[0];
+	dq a = arr[2];
 	printHex(a);
 
 	

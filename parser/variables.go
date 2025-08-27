@@ -394,6 +394,40 @@ func (vl *VarsList) setVarStruct(parser *Parser, varName string) (*Variable, err
 	return nil, nil
 }
 
+func parseCoisoEstranho(parser *Parser, extra *any) error {
+	//eat <db> if it exists
+	peekToken, err := parser.Peek()
+	if err != nil {
+		return err
+	}
+	switch peekToken {
+	case "<":
+		parser.NextToken()                    //eat <
+		typeString, err := parser.NextToken() //db,dw,dd,dq
+		if err != nil {
+			return err
+		}
+		nextCoisoEstranho, err := parser.NextToken() //db,dw,dd,dq
+		if err != nil {
+			return err
+		}
+
+		if nextCoisoEstranho != ">" {
+			return fmt.Errorf("expected '>' after type declaration in line %d", parser.LineNumber)
+		}
+
+		typeRaw, err := getTypeFromToken(typeString)
+		if err != nil {
+			return err
+		}
+		if *extra != nil {
+			return fmt.Errorf("extra should be nil for arrays on line %d", parser.LineNumber)
+		}
+		*extra = typeRaw
+	}
+	return nil
+}
+
 func createPointerVar(parser *Parser) (*Variable, error) {
 	name, err := parser.NextToken()
 	if err != nil {
@@ -409,12 +443,18 @@ func createPointerVar(parser *Parser) (*Variable, error) {
 		return nil, fmt.Errorf("Variable '%s' already exists in scope '%s' in line %d", name, SCOPE, parser.LineNumber)
 	}
 
+	var extra any
+
+	if err := parseCoisoEstranho(parser, &extra); err != nil {
+		return nil, err
+	}
+
 	// get the value after the equal sign in RAX
 	if err := getAfterEqual(parser); err != nil {
 		return nil, err
 	}
 
-	variable, err := varList.AddVariable(name, DQ, nil, ORIGIN_RBP)
+	variable, err := varList.AddVariable(name, DQ, extra, ORIGIN_RBP)
 	if err != nil {
 		return nil, err
 	}
@@ -439,11 +479,14 @@ func createVarStruct(parser *Parser, varType int, extra any) (*Variable, error) 
 		return nil, fmt.Errorf("Variable '%s' already exists in scope '%s' in line %d", name, SCOPE, parser.LineNumber)
 	}
 
+	if err := parseCoisoEstranho(parser, &extra); err != nil {
+		return nil, err
+	}
+
 	// get the value after the equal sign in RAX
 	if err := getAfterEqual(parser); err != nil {
 		return nil, err
 	}
-
 	clearReg(byte(backend.REG_RAX), varType)
 
 	variable, err := varList.AddVariable(name, varType, extra, ORIGIN_RBP)

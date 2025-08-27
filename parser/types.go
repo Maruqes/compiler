@@ -378,6 +378,27 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 		return false, fmt.Errorf("Variable '%s' not found in scope0 '%s'", token, SCOPE)
 	}
 
+	varStruct, err := varList.GetVariableStruct(token)
+	if err != nil {
+		return false, err
+	}
+
+	if varStruct.Extra != nil {
+		switch v := varStruct.Extra.(type) {
+		case string:
+			if isTypeToken(v) {
+				t, err := getTypeFromToken(v)
+				if err != nil {
+					return false, err
+				}
+				arrType = t
+			}
+		case int:
+			if isType(v) {
+				arrType = v
+			}
+		}
+	}
 
 	parsedOne := false
 
@@ -403,10 +424,13 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 
 		switch arrType {
 		case DQ:
+			backend.Mul64_r_i(byte(backend.REG_RCX), 8)
 			backend.Mov64_r_mr(reg, reg, byte(backend.REG_RCX))
 		case DD:
+			backend.Mul64_r_i(byte(backend.REG_RCX), 4)
 			backend.Mov32_r_mr(reg, reg, byte(backend.REG_RCX))
 		case DW:
+			backend.Mul64_r_i(byte(backend.REG_RCX), 2)
 			backend.Mov16_r_mr(reg, reg, byte(backend.REG_RCX))
 		case DB:
 			backend.Mov8_r_mr(reg, reg, byte(backend.REG_RCX))
