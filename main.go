@@ -23,7 +23,7 @@ bitwise -> e = e & 3; // AND NOT OR XOR etc etc etc left shift right shift
 
 /*
 known bugs->
-	APAGAMOS STRUCTS/GLOBAL/FORS/WHILES/IFS/continue/break
+	APAGAMOS STRUCTS/GLOBAL
 */
 
 func main() {
@@ -32,7 +32,7 @@ func main() {
 	// par.StartParse("features.lang")
 	par.StartParse("test.lang")
 
-	// backend.Call("global")
+	backend.Call("global")
 	backend.Call("main")
 	wrapper.Exit(0)
 

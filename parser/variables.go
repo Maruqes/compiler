@@ -40,14 +40,6 @@ type VarsList struct {
 
 var VarList []VarsList
 
-func CreateVarList(scope string) {
-	VarList = append(VarList, VarsList{
-		vars:    make([]Variable, 0),
-		lastPos: 0,
-		Scope:   scope,
-	})
-}
-
 func GetVarList(scope string) *VarsList {
 	for i := range VarList {
 		if VarList[i].Scope == scope {
@@ -55,6 +47,28 @@ func GetVarList(scope string) *VarsList {
 		}
 	}
 	return nil
+}
+
+func CreateVarList(scope string) {
+
+	if existing := GetVarList(scope); existing != nil {
+		panic(fmt.Sprintf("Variable list for scope '%s' already exists", scope))
+	}
+
+	// inherit variables from the global scope if it exists and we're creating a non-global scope
+	var newVarList []Variable
+	if scope != GLOBAL_SCOPE {
+		if global := GetVarList(GLOBAL_SCOPE); global != nil {
+			newVarList = make([]Variable, len(global.vars))
+			copy(newVarList, global.vars)
+		}
+	}
+
+	VarList = append(VarList, VarsList{
+		vars:    newVarList,
+		lastPos: 0,
+		Scope:   scope,
+	})
 }
 
 func CopyVarListState() *VarsList {
@@ -149,8 +163,6 @@ func (vl *VarsList) AddVariable(name string, varType int, extra any, origin Orig
 		Origin:   origin,
 	})
 
-	fmt.Println(vl.vars)
-
 	return &vl.vars[len(vl.vars)-1], nil
 }
 
@@ -174,15 +186,20 @@ func (vl *VarsList) RemoveVariable(variableName string) error {
 func (vl *VarsList) SetVar(variable *Variable) error {
 	// PushStack64(byte(backend.REG_RAX))
 
-	switch variable.Type {
-	case DB:
-		backend.Mov8_mi_r(byte(backend.REG_RBP), uint(variable.Position), byte(backend.REG_RAX))
-	case DW:
-		backend.Mov16_mi_r(byte(backend.REG_RBP), uint(variable.Position), byte(backend.REG_RAX))
-	case DD:
-		backend.Mov32_mi_r(byte(backend.REG_RBP), uint(variable.Position), byte(backend.REG_RAX))
-	case DQ:
-		backend.Mov64_mi_r(byte(backend.REG_RBP), uint(variable.Position), byte(backend.REG_RAX))
+	switch variable.Origin {
+	case ORIGIN_RBP:
+		switch variable.Type {
+		case DB:
+			backend.Mov8_mi_r(byte(backend.REG_RBP), uint(variable.Position), byte(backend.REG_RAX))
+		case DW:
+			backend.Mov16_mi_r(byte(backend.REG_RBP), uint(variable.Position), byte(backend.REG_RAX))
+		case DD:
+			backend.Mov32_mi_r(byte(backend.REG_RBP), uint(variable.Position), byte(backend.REG_RAX))
+		case DQ:
+			backend.Mov64_mi_r(byte(backend.REG_RBP), uint(variable.Position), byte(backend.REG_RAX))
+		}
+	case ORIGIN_GLOBAL:
+		setPublicVar(variable.Name, byte(backend.REG_RAX))
 	}
 
 	return nil
@@ -190,15 +207,20 @@ func (vl *VarsList) SetVar(variable *Variable) error {
 func (vl *VarsList) GetVariable(name string, reg byte) error {
 	for _, v := range vl.vars {
 		if v.Name == name {
-			switch v.Type {
-			case DB:
-				backend.Mov8_r_mi(reg, byte(backend.REG_RBP), int(v.Position))
-			case DW:
-				backend.Mov16_r_mi(reg, byte(backend.REG_RBP), int(v.Position))
-			case DD:
-				backend.Mov32_r_mi(reg, byte(backend.REG_RBP), int(v.Position))
-			case DQ:
-				backend.Mov64_r_mi(reg, byte(backend.REG_RBP), int(v.Position))
+			switch v.Origin {
+			case ORIGIN_RBP:
+				switch v.Type {
+				case DB:
+					backend.Mov8_r_mi(reg, byte(backend.REG_RBP), int(v.Position))
+				case DW:
+					backend.Mov16_r_mi(reg, byte(backend.REG_RBP), int(v.Position))
+				case DD:
+					backend.Mov32_r_mi(reg, byte(backend.REG_RBP), int(v.Position))
+				case DQ:
+					backend.Mov64_r_mi(reg, byte(backend.REG_RBP), int(v.Position))
+				}
+			case ORIGIN_GLOBAL:
+				getPublicVar(v.Name, reg)
 			}
 			return nil
 		}
@@ -230,6 +252,8 @@ func (vl *VarsList) GetVariableAddress(name string, reg byte) error {
 	case ORIGIN_RBP:
 		backend.Mov64_r_i(reg, uint64(varStruct.Position))
 		backend.Sum64_r_r(reg, byte(backend.REG_RBP))
+	case ORIGIN_GLOBAL:
+		returnPointerFromPublicVar(varStruct.Name, reg)
 	}
 	return nil
 }
@@ -250,15 +274,30 @@ func (vl *VarsList) incrementVar(parser *Parser, variable *Variable) error {
 		return err
 	}
 
-	switch variable.Type {
-	case DB:
-		backend.Inc8_mi(byte(backend.REG_RBP), uint(variable.Position))
-	case DW:
-		backend.Inc16_mi(byte(backend.REG_RBP), uint(variable.Position))
-	case DD:
-		backend.Inc32_mi(byte(backend.REG_RBP), uint(variable.Position))
-	case DQ:
-		backend.Inc64_mi(byte(backend.REG_RBP), uint(variable.Position))
+	switch variable.Origin {
+	case ORIGIN_RBP:
+		switch variable.Type {
+		case DB:
+			backend.Inc8_mi(byte(backend.REG_RBP), uint(variable.Position))
+		case DW:
+			backend.Inc16_mi(byte(backend.REG_RBP), uint(variable.Position))
+		case DD:
+			backend.Inc32_mi(byte(backend.REG_RBP), uint(variable.Position))
+		case DQ:
+			backend.Inc64_mi(byte(backend.REG_RBP), uint(variable.Position))
+		}
+	case ORIGIN_GLOBAL:
+		backend.Create_variable_reference(variable.Name, byte(backend.REG_RAX))
+		switch variable.Type {
+		case DB:
+			backend.Inc8_m(byte(backend.REG_RAX))
+		case DW:
+			backend.Inc16_m(byte(backend.REG_RAX))
+		case DD:
+			backend.Inc32_m(byte(backend.REG_RAX))
+		case DQ:
+			backend.Inc64_m(byte(backend.REG_RAX))
+		}
 	}
 
 	eatSemicolon(parser)
@@ -270,15 +309,30 @@ func (vl *VarsList) decrementVar(parser *Parser, variable *Variable) error {
 	if err != nil {
 		return err
 	}
-	switch variable.Type {
-	case DB:
-		backend.Dec8_mi(byte(backend.REG_RBP), uint(variable.Position))
-	case DW:
-		backend.Dec16_mi(byte(backend.REG_RBP), uint(variable.Position))
-	case DD:
-		backend.Dec32_mi(byte(backend.REG_RBP), uint(variable.Position))
-	case DQ:
-		backend.Dec64_mi(byte(backend.REG_RBP), uint(variable.Position))
+	switch variable.Origin {
+	case ORIGIN_RBP:
+		switch variable.Type {
+		case DB:
+			backend.Dec8_mi(byte(backend.REG_RBP), uint(variable.Position))
+		case DW:
+			backend.Dec16_mi(byte(backend.REG_RBP), uint(variable.Position))
+		case DD:
+			backend.Dec32_mi(byte(backend.REG_RBP), uint(variable.Position))
+		case DQ:
+			backend.Dec64_mi(byte(backend.REG_RBP), uint(variable.Position))
+		}
+	case ORIGIN_GLOBAL:
+		backend.Create_variable_reference(variable.Name, byte(backend.REG_RAX))
+		switch variable.Type {
+		case DB:
+			backend.Dec8_m(byte(backend.REG_RAX))
+		case DW:
+			backend.Dec16_m(byte(backend.REG_RAX))
+		case DD:
+			backend.Dec32_m(byte(backend.REG_RAX))
+		case DQ:
+			backend.Dec64_m(byte(backend.REG_RAX))
+		}
 	}
 	eatSemicolon(parser)
 	return nil
@@ -314,7 +368,6 @@ func (vl *VarsList) sumVar(parser *Parser, varName string, variable *Variable) e
 		backend.Sum64_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
 	}
 
-	// Clear the register based on variable type and store result
 	clearReg(byte(backend.REG_RAX), variable.Type)
 	vl.SetVar(variable)
 

@@ -1,9 +1,15 @@
+global{
+	dq aGlobal = 10;
+}
+
 func main() {
-    dq arr<dd> = dd{1,2,3,4};
+    ptr arr<dd> = dd{1,2,3,4};
 	// problema nos arrays arr[0]
 	dq a = arr[2];
 	printHex(a);
-
+	aGlobal--;
+	aGlobal-=10;
+	printHex(aGlobal);
 	
 	// if (5 > 4) && (1 == 1){
 	// 	printHex(0xff0000);

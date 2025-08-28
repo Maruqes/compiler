@@ -351,7 +351,7 @@ func isReserved(r byte) bool {
 	return false
 }
 
-//r9 is reserved for loops
+// r9 is reserved for loops
 func pickTmpReg(dest byte) (byte, error) {
 	candidates := []byte{
 		byte(backend.REG_R8),
@@ -561,7 +561,10 @@ func StartParsing(parser *Parser) error {
 				return err
 			}
 		case "global":
-
+			_,err := checkPublicVars(parser)
+			if err != nil {
+				return err
+			}
 		case "struct":
 
 		default:
