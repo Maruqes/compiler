@@ -2,6 +2,15 @@ global{
 	dq aGlobal = 10;
 }
 
+
+struct MyStruct {
+    dq field1;
+    dq field2;
+    db field3;
+}
+
+
+
 func main() {
     ptr arr<dd> = dd{1,2,3,4};
 	// problema nos arrays arr[0]
@@ -11,6 +20,9 @@ func main() {
 	aGlobal-=10;
 	printHex(aGlobal);
 	
+
+	ptr structTest<MyStruct> = MyStruct{1,2,3};
+
 	// if (5 > 4) && (1 == 1){
 	// 	printHex(0xff0000);
 	// }

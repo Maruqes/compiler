@@ -561,11 +561,15 @@ func StartParsing(parser *Parser) error {
 				return err
 			}
 		case "global":
-			_,err := checkPublicVars(parser)
+			_, err := checkPublicVars(parser)
 			if err != nil {
 				return err
 			}
 		case "struct":
+			err := createStructType(parser)
+			if err != nil {
+				return err
+			}
 
 		default:
 
