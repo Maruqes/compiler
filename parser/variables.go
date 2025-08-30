@@ -447,38 +447,48 @@ func (vl *VarsList) setVarStruct(parser *Parser, varName string) (*Variable, err
 	return nil, nil
 }
 
-func parseCoisoEstranho(parser *Parser, extra *any) error {
+func parseCoisoEstranho(parser *Parser, extra *any) (OriginType, error) {
 	//eat <db> if it exists
 	peekToken, err := parser.Peek()
 	if err != nil {
-		return err
+		return 0, err
 	}
 	switch peekToken {
 	case "<":
 		parser.NextToken()                    //eat <
 		typeString, err := parser.NextToken() //db,dw,dd,dq
 		if err != nil {
-			return err
+			return 0, err
 		}
 		nextCoisoEstranho, err := parser.NextToken() //db,dw,dd,dq
 		if err != nil {
-			return err
+			return 0, err
 		}
 
 		if nextCoisoEstranho != ">" {
-			return fmt.Errorf("expected '>' after type declaration in line %d", parser.LineNumber)
+			return 0, fmt.Errorf("expected '>' after type declaration in line %d", parser.LineNumber)
 		}
 
 		typeRaw, err := getTypeFromToken(typeString)
-		if err != nil {
-			return err
+		structRaw := GetStructByName(typeString)
+
+		if structRaw == nil && err != nil {
+			return 0, fmt.Errorf("unknown struct or type '%s' in line %d", typeString, parser.LineNumber)
 		}
+
 		if *extra != nil {
-			return fmt.Errorf("extra should be nil for arrays on line %d", parser.LineNumber)
+			return 0, fmt.Errorf("extra should be nil for arrays on line %d", parser.LineNumber)
 		}
-		*extra = typeRaw
+
+		if structRaw != nil { //checking struct
+			*extra = structRaw.Name
+			return ORIGIN_STRUCT, nil
+		} else if err == nil { //checking normal vars
+			*extra = typeRaw
+			return ORIGIN_RBP, nil
+		}
 	}
-	return nil
+	return ORIGIN_RBP, nil //default is RBP
 }
 
 func createPointerVar(parser *Parser) (*Variable, error) {
@@ -498,7 +508,8 @@ func createPointerVar(parser *Parser) (*Variable, error) {
 
 	var extra any
 
-	if err := parseCoisoEstranho(parser, &extra); err != nil {
+	varOriginType, err := parseCoisoEstranho(parser, &extra)
+	if err != nil {
 		return nil, err
 	}
 
@@ -507,7 +518,7 @@ func createPointerVar(parser *Parser) (*Variable, error) {
 		return nil, err
 	}
 
-	variable, err := varList.AddVariable(name, DQ, extra, ORIGIN_RBP)
+	variable, err := varList.AddVariable(name, DQ, extra, varOriginType)
 	if err != nil {
 		return nil, err
 	}
@@ -532,7 +543,8 @@ func createVarStruct(parser *Parser, varType int, extra any) (*Variable, error) 
 		return nil, fmt.Errorf("Variable '%s' already exists in scope '%s' in line %d", name, SCOPE, parser.LineNumber)
 	}
 
-	if err := parseCoisoEstranho(parser, &extra); err != nil {
+	varOriginType, err := parseCoisoEstranho(parser, &extra)
+	if err != nil {
 		return nil, err
 	}
 
@@ -542,7 +554,7 @@ func createVarStruct(parser *Parser, varType int, extra any) (*Variable, error) 
 	}
 	clearReg(byte(backend.REG_RAX), varType)
 
-	variable, err := varList.AddVariable(name, varType, extra, ORIGIN_RBP)
+	variable, err := varList.AddVariable(name, varType, extra, varOriginType)
 	if err != nil {
 		return nil, err
 	}
