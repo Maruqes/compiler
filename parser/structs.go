@@ -3,6 +3,8 @@ package parser
 import (
 	"fmt"
 	"strings"
+
+	backend "github.com/Maruqes/compiler/swig"
 )
 
 type structField struct {
@@ -12,8 +14,7 @@ type structField struct {
 }
 
 type StructType struct {
-	Name string
-
+	Name   string
 	Fields []structField
 }
 
@@ -144,5 +145,79 @@ func createStructType(parser *Parser) error {
 	fmt.Println("Created struct:", structType)
 	AddStructType(structType)
 
+	return nil
+}
+
+// parse ... = StructName{1,2,3}
+func parseStructsCreation(parser *Parser, token string, reg byte) (bool, error) {
+
+	structType := GetStructByName(token)
+	if structType == nil {
+		return false, fmt.Errorf("struct '%s' not found2", token)
+	}
+
+	structFieldCount := len(structType.Fields)
+	eatFirstCurlBrace(parser)
+
+	//falta checkar tipos e numero de parametros
+	n_params := 0
+	for {
+		err, symbol, parsed := getUntilSymbol(parser, []string{"}", ","}, byte(backend.REG_RAX))
+		if err != nil {
+			return true, fmt.Errorf("error getting parameters for struct '%s': %v", structType.Name, err)
+		}
+
+		if parsed {
+			if n_params >= structFieldCount {
+				return true, fmt.Errorf("struct '%s' expects %d fields, got more", structType.Name, structFieldCount)
+			}
+
+			// PushStack64(byte(backend.REG_RAX))
+			SubStack(structType.Fields[n_params].Type)
+			switch structType.Fields[n_params].Type {
+			case DQ:
+				backend.Mov64_m_r(byte(backend.REG_RSP), byte(backend.REG_RAX))
+			case DD:
+				backend.Mov32_m_r(byte(backend.REG_RSP), byte(backend.REG_RAX))
+			case DW:
+				backend.Mov16_m_r(byte(backend.REG_RSP), byte(backend.REG_RAX))
+			case DB:
+				backend.Mov8_m_r(byte(backend.REG_RSP), byte(backend.REG_RAX))
+			default:
+				return true, fmt.Errorf("unknown struct field type: %d", structType.Fields[n_params].Type)
+			}
+			n_params++
+		}
+		if *symbol == "}" {
+			break
+		}
+	}
+
+	if n_params != structFieldCount {
+		return true, fmt.Errorf("struct '%s' expects %d fields, got %d", structType.Name, structFieldCount, n_params)
+	}
+
+	backend.Mov64_r_r(reg, byte(backend.REG_RSP))
+
+	return true, nil
+}
+
+/*
+	struct MyStruct {
+	    dq field1;
+	    dq field2;
+	    db field3;
+	}
+
+ptr structTest<MyStruct> = MyStruct{1,2,3};
+
+createVarsFromStruct should create variables for each field in the struct
+structTest.field1   should be structTest + 8
+structTest.field2   should be structTest + 8 + sizeof(structTest.field1)
+structTest.field3   should be structTest + 8 + sizeof(structTest.field1) + sizeof(structTest.field2)
+*/
+func createVarsFromStruct(structType *StructType) error {
+
+	
 	return nil
 }

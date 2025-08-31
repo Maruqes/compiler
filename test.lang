@@ -21,7 +21,7 @@ func main() {
 	printHex(aGlobal);
 	
 
-	ptr structTest<MyStruct> = 5;
+	ptr structTest<MyStruct> = MyStruct{1,2,3};
 
 	// if (5 > 4) && (1 == 1){
 	// 	printHex(0xff0000);

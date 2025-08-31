@@ -362,7 +362,7 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 // uses r8
 func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 
-	arrType := DQ
+	arrType := DB
 
 	varList := GetVarList(SCOPE)
 	if varList == nil {
@@ -667,6 +667,14 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 
 	parsed, err = parseVariablesFuncCalls(parser, token, reg)
 	if err != nil {
+		return err
+	}
+	if parsed {
+		return nil
+	}
+
+	parsed, err = parseStructsCreation(parser, token, reg)
+	if err != nil && parsed {
 		return err
 	}
 	if parsed {
