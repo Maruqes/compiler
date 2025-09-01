@@ -96,7 +96,7 @@ func parseStructParam(token string) (string, *StructType, int, int, error) {
 	}
 
 	spacer := 0
-	for i := len(st.Fields) - 1; i >= fieldIndex; i-- {
+	for i := len(st.Fields) - 1; i > fieldIndex; i-- {
 		spacer += st.Fields[i].Type
 	}
 	return structName, st, spacer, fieldIndex, nil
@@ -216,8 +216,101 @@ structTest.field1   should be structTest + 8
 structTest.field2   should be structTest + 8 + sizeof(structTest.field1)
 structTest.field3   should be structTest + 8 + sizeof(structTest.field1) + sizeof(structTest.field2)
 */
-func createVarsFromStruct(structType *StructType) error {
+func createVarsFromStruct(structType *StructType, varName string) error {
+	varList := GetVarList(SCOPE)
+	if varList == nil {
+		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+	}
 
-	
+	for _, field := range structType.Fields {
+		varNameFull := fmt.Sprintf("%s.%s", varName, field.Name)
+		varList.AddVariable(varNameFull, field.Type, *structType, ORIGIN_STRUCT)
+	}
+
+	return nil
+}
+
+func setStructVar(variable *Variable, reg byte) error {
+
+	varList := GetVarList(SCOPE)
+	if varList == nil {
+		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+	}
+
+	structName, _, spacer, _, err := parseStructParam(variable.Name)
+	if err != nil {
+		return err
+	}
+
+	if err := varList.GetVariable(structName, byte(backend.REG_RBX)); err != nil {
+		return err
+	}
+
+	switch variable.Type {
+	case DB:
+		backend.Mov8_mi_r(byte(backend.REG_RBX), uint(spacer), reg)
+	case DW:
+		backend.Mov16_mi_r(byte(backend.REG_RBX), uint(spacer), reg)
+	case DD:
+		backend.Mov32_mi_r(byte(backend.REG_RBX), uint(spacer), reg)
+	case DQ:
+		backend.Mov64_mi_r(byte(backend.REG_RBX), uint(spacer), reg)
+	default:
+		return fmt.Errorf("unknown field type %d for '%s'", variable.Type, variable.Name)
+	}
+
+	return nil
+}
+
+func getStructVar(variable *Variable, reg byte) error {
+
+	varList := GetVarList(SCOPE)
+	if varList == nil {
+		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+	}
+
+	structName, _, spacer, _, err := parseStructParam(variable.Name)
+	if err != nil {
+		return err
+	}
+
+	if err := varList.GetVariable(structName, byte(backend.REG_RBX)); err != nil {
+		return err
+	}
+
+	switch variable.Type {
+	case DB:
+		backend.Mov8_r_mi(reg, byte(backend.REG_RBX), int(spacer))
+	case DW:
+		backend.Mov16_r_mi(reg, byte(backend.REG_RBX), int(spacer))
+	case DD:
+		backend.Mov32_r_mi(reg, byte(backend.REG_RBX), int(spacer))
+	case DQ:
+		backend.Mov64_r_mi(reg, byte(backend.REG_RBX), int(spacer))
+	default:
+		return fmt.Errorf("unknown field type %d for '%s'", variable.Type, variable.Name)
+	}
+
+	return nil
+}
+
+func returnPointerFromStructVar(variable *Variable, reg byte) error {
+
+	varList := GetVarList(SCOPE)
+	if varList == nil {
+		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+	}
+
+	structName, _, spacer, _, err := parseStructParam(variable.Name)
+	if err != nil {
+		return err
+	}
+
+	if err := varList.GetVariable(structName, reg); err != nil {
+		return err
+	}
+
+	backend.Sum64_r_i(reg, uint(spacer))
+
 	return nil
 }

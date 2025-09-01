@@ -6,7 +6,7 @@ global{
 struct MyStruct {
     dq field1;
     dq field2;
-    db field3;
+    dq field3;
 }
 
 
@@ -23,6 +23,22 @@ func main() {
 
 	ptr structTest<MyStruct> = MyStruct{1,2,3};
 
+	structTest.field1 = 0;
+	structTest.field2 = 5;
+	structTest.field3 = 10;
+
+	structTest.field1++;
+	structTest.field1+=5;
+
+	structTest.field2--;
+	structTest.field2-=5;
+
+	structTest.field3-=10;
+
+	printHex(structTest);
+	printHex(structTest.field1);
+	printHex(structTest.field2);
+	printHex(structTest.field3);
 	// if (5 > 4) && (1 == 1){
 	// 	printHex(0xff0000);
 	// }

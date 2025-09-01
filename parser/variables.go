@@ -199,7 +199,15 @@ func (vl *VarsList) SetVar(variable *Variable) error {
 			backend.Mov64_mi_r(byte(backend.REG_RBP), uint(variable.Position), byte(backend.REG_RAX))
 		}
 	case ORIGIN_GLOBAL:
-		setPublicVar(variable.Name, byte(backend.REG_RAX))
+		_, err := setPublicVar(variable.Name, byte(backend.REG_RAX))
+		if err != nil {
+			return err
+		}
+	case ORIGIN_STRUCT:
+		err := setStructVar(variable, byte(backend.REG_RAX))
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -220,8 +228,17 @@ func (vl *VarsList) GetVariable(name string, reg byte) error {
 					backend.Mov64_r_mi(reg, byte(backend.REG_RBP), int(v.Position))
 				}
 			case ORIGIN_GLOBAL:
-				getPublicVar(v.Name, reg)
+				_, err := getPublicVar(v.Name, reg)
+				if err != nil {
+					return err
+				}
+			case ORIGIN_STRUCT:
+				err := getStructVar(&v, reg)
+				if err != nil {
+					return err
+				}
 			}
+
 			return nil
 		}
 	}
@@ -253,7 +270,15 @@ func (vl *VarsList) GetVariableAddress(name string, reg byte) error {
 		backend.Mov64_r_i(reg, uint64(varStruct.Position))
 		backend.Sum64_r_r(reg, byte(backend.REG_RBP))
 	case ORIGIN_GLOBAL:
-		returnPointerFromPublicVar(varStruct.Name, reg)
+		_, err := returnPointerFromPublicVar(varStruct.Name, reg)
+		if err != nil {
+			return err
+		}
+	case ORIGIN_STRUCT:
+		err := returnPointerFromStructVar(varStruct, reg)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -298,6 +323,21 @@ func (vl *VarsList) incrementVar(parser *Parser, variable *Variable) error {
 		case DQ:
 			backend.Inc64_m(byte(backend.REG_RAX))
 		}
+	case ORIGIN_STRUCT:
+		err := returnPointerFromStructVar(variable, byte(backend.REG_RAX))
+		if err != nil {
+			return err
+		}
+		switch variable.Type {
+		case DB:
+			backend.Inc8_m(byte(backend.REG_RAX))
+		case DW:
+			backend.Inc16_m(byte(backend.REG_RAX))
+		case DD:
+			backend.Inc32_m(byte(backend.REG_RAX))
+		case DQ:
+			backend.Inc64_m(byte(backend.REG_RAX))
+		}
 	}
 
 	eatSemicolon(parser)
@@ -323,6 +363,21 @@ func (vl *VarsList) decrementVar(parser *Parser, variable *Variable) error {
 		}
 	case ORIGIN_GLOBAL:
 		backend.Create_variable_reference(variable.Name, byte(backend.REG_RAX))
+		switch variable.Type {
+		case DB:
+			backend.Dec8_m(byte(backend.REG_RAX))
+		case DW:
+			backend.Dec16_m(byte(backend.REG_RAX))
+		case DD:
+			backend.Dec32_m(byte(backend.REG_RAX))
+		case DQ:
+			backend.Dec64_m(byte(backend.REG_RAX))
+		}
+	case ORIGIN_STRUCT:
+		err := returnPointerFromStructVar(variable, byte(backend.REG_RAX))
+		if err != nil {
+			return err
+		}
 		switch variable.Type {
 		case DB:
 			backend.Dec8_m(byte(backend.REG_RAX))
@@ -369,7 +424,10 @@ func (vl *VarsList) sumVar(parser *Parser, varName string, variable *Variable) e
 	}
 
 	clearReg(byte(backend.REG_RAX), variable.Type)
-	vl.SetVar(variable)
+	err = vl.SetVar(variable)
+	if err != nil {
+		return fmt.Errorf("error setting variable %s in line %d: %s", varName, parser.LineNumber, err.Error())
+	}
 
 	return nil
 }
@@ -406,7 +464,10 @@ func (vl *VarsList) subVar(parser *Parser, varName string, variable *Variable) e
 
 	// Clear the register based on variable type and store result
 	clearReg(byte(backend.REG_RAX), variable.Type)
-	vl.SetVar(variable)
+	err = vl.SetVar(variable)
+	if err != nil {
+		return fmt.Errorf("error setting variable %s in line %d: %s", varName, parser.LineNumber, err.Error())
+	}
 
 	return nil
 }
@@ -429,7 +490,10 @@ func (vl *VarsList) setVarStruct(parser *Parser, varName string) (*Variable, err
 			return nil, err
 		}
 
-		vl.SetVar(variable)
+		err = vl.SetVar(variable)
+		if err != nil {
+			return nil, fmt.Errorf("error setting variable %s in line %d: %s", varName, parser.LineNumber, err.Error())
+		}
 
 		clearReg(byte(backend.REG_RAX), variable.Type)
 	case "++":
@@ -447,48 +511,48 @@ func (vl *VarsList) setVarStruct(parser *Parser, varName string) (*Variable, err
 	return nil, nil
 }
 
-func parseCoisoEstranho(parser *Parser, extra *any) (OriginType, error) {
+func parseCoisoEstranho(parser *Parser, extra *any) (OriginType, any, error) {
 	//eat <db> if it exists
 	peekToken, err := parser.Peek()
 	if err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 	switch peekToken {
 	case "<":
 		parser.NextToken()                    //eat <
 		typeString, err := parser.NextToken() //db,dw,dd,dq
 		if err != nil {
-			return 0, err
+			return 0, nil, err
 		}
 		nextCoisoEstranho, err := parser.NextToken() //db,dw,dd,dq
 		if err != nil {
-			return 0, err
+			return 0, nil, err
 		}
 
 		if nextCoisoEstranho != ">" {
-			return 0, fmt.Errorf("expected '>' after type declaration in line %d", parser.LineNumber)
+			return 0, nil, fmt.Errorf("expected '>' after type declaration in line %d", parser.LineNumber)
 		}
 
 		typeRaw, err := getTypeFromToken(typeString)
 		structRaw := GetStructByName(typeString)
 
 		if structRaw == nil && err != nil {
-			return 0, fmt.Errorf("unknown struct or type '%s' in line %d", typeString, parser.LineNumber)
+			return 0, nil, fmt.Errorf("unknown struct or type '%s' in line %d", typeString, parser.LineNumber)
 		}
 
 		if *extra != nil {
-			return 0, fmt.Errorf("extra should be nil for arrays on line %d", parser.LineNumber)
+			return 0, nil, fmt.Errorf("extra should be nil for arrays on line %d", parser.LineNumber)
 		}
 
 		if structRaw != nil { //checking struct
 			*extra = structRaw.Name
-			return ORIGIN_STRUCT, nil
+			return ORIGIN_STRUCT, structRaw, nil
 		} else if err == nil { //checking normal vars
 			*extra = typeRaw
-			return ORIGIN_RBP, nil
+			return ORIGIN_RBP, nil, nil
 		}
 	}
-	return ORIGIN_RBP, nil //default is RBP
+	return ORIGIN_RBP, nil, nil //default is RBP
 }
 
 func createPointerVar(parser *Parser) (*Variable, error) {
@@ -508,7 +572,7 @@ func createPointerVar(parser *Parser) (*Variable, error) {
 
 	var extra any
 
-	varOriginType, err := parseCoisoEstranho(parser, &extra)
+	varOriginType, coisoEstranho, err := parseCoisoEstranho(parser, &extra)
 	if err != nil {
 		return nil, err
 	}
@@ -518,11 +582,24 @@ func createPointerVar(parser *Parser) (*Variable, error) {
 		return nil, err
 	}
 
-	variable, err := varList.AddVariable(name, DQ, extra, varOriginType)
+	//even do varOriginType is struct we should create the main var as a normal var
+	// ptr structTest<MyStruct> = MyStruct{1,2,3};       structTest is normal var
+	// structTest.field1 etc are struct vars
+	finalVarType := varOriginType
+	if finalVarType == ORIGIN_STRUCT {
+		finalVarType = ORIGIN_RBP
+	}
+	variable, err := varList.AddVariable(name, DQ, extra, finalVarType)
 	if err != nil {
 		return nil, err
 	}
 
+	if varOriginType == ORIGIN_STRUCT {
+		structType := coisoEstranho.(*StructType)
+		if err := createVarsFromStruct(structType, name); err != nil {
+			return nil, err
+		}
+	}
 	return variable, nil
 }
 
@@ -543,7 +620,7 @@ func createVarStruct(parser *Parser, varType int, extra any) (*Variable, error) 
 		return nil, fmt.Errorf("Variable '%s' already exists in scope '%s' in line %d", name, SCOPE, parser.LineNumber)
 	}
 
-	varOriginType, err := parseCoisoEstranho(parser, &extra)
+	varOriginType, coisoEstranho, err := parseCoisoEstranho(parser, &extra)
 	if err != nil {
 		return nil, err
 	}
@@ -554,10 +631,25 @@ func createVarStruct(parser *Parser, varType int, extra any) (*Variable, error) 
 	}
 	clearReg(byte(backend.REG_RAX), varType)
 
-	variable, err := varList.AddVariable(name, varType, extra, varOriginType)
+	//even do varOriginType is struct we should create the main var as a normal var
+	// ptr structTest<MyStruct> = MyStruct{1,2,3};       structTest is normal var
+	// structTest.field1 etc are struct vars
+	finalVarType := varOriginType
+	if finalVarType == ORIGIN_STRUCT {
+		finalVarType = ORIGIN_RBP
+	}
+	variable, err := varList.AddVariable(name, varType, extra, finalVarType)
 	if err != nil {
 		return nil, err
 	}
+
+	if varOriginType == ORIGIN_STRUCT {
+		structType := coisoEstranho.(*StructType)
+		if err := createVarsFromStruct(structType, name); err != nil {
+			return nil, err
+		}
+	}
+
 	return variable, nil
 }
 
