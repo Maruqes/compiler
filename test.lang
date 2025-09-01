@@ -12,33 +12,29 @@ struct MyStruct {
 
 
 func main() {
-    ptr arr<dd> = dd{1,2,3,4};
-	// problema nos arrays arr[0]
-	dq a = arr[2];
-	printHex(a);
-	aGlobal--;
-	aGlobal-=10;
-	printHex(aGlobal);
-	
+   
 
-	ptr structTest<MyStruct> = MyStruct{1,2,3};
 
-	structTest.field1 = 0;
-	structTest.field2 = 5;
-	structTest.field3 = 10;
 
-	structTest.field1++;
-	structTest.field1+=5;
+	//here
 
-	structTest.field2--;
-	structTest.field2-=5;
+	// dw (16-bit) overflow wrap
+	dd d32 = 0xffffffff;
+	dq w16 = 0xffff;
 
-	structTest.field3-=10;
+	dw w162 = (w16 | 0x00f0);
 
-	printHex(structTest);
-	printHex(structTest.field1);
-	printHex(structTest.field2);
-	printHex(structTest.field3);
+	dd d322 = (d32 & 0x0000ff00);
+
+	// Bitwise ops across sizes (masking at assignment sites)
+	dq bits = d322 | w162;
+	dq bits2 = (d32 & 0x0000ff00) | (w16 ^ 0x00f0);
+	printHex(bits);
+	printHex(bits2);
+	printHex(w162);
+	printHex(d322);
+
+
 	// if (5 > 4) && (1 == 1){
 	// 	printHex(0xff0000);
 	// }

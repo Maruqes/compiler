@@ -213,6 +213,7 @@ func (vl *VarsList) SetVar(variable *Variable) error {
 	return nil
 }
 func (vl *VarsList) GetVariable(name string, reg byte) error {
+	
 	for _, v := range vl.vars {
 		if v.Name == name {
 			switch v.Origin {
@@ -227,6 +228,10 @@ func (vl *VarsList) GetVariable(name string, reg byte) error {
 				case DQ:
 					backend.Mov64_r_mi(reg, byte(backend.REG_RBP), int(v.Position))
 				}
+				// Ensure upper bits are cleared according to the variable width
+				// to avoid stale data when this value participates in grouped
+				// expressions (e.g., inside parentheses) using 64-bit ops.
+				clearReg(reg, v.Type)
 			case ORIGIN_GLOBAL:
 				_, err := getPublicVar(v.Name, reg)
 				if err != nil {

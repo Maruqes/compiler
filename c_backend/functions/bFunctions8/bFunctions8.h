@@ -9,14 +9,24 @@
 #include <stdlib.h>
 
 // define al bl regs... ah bl
-#define REG_AL 0
-#define REG_CL 1
-#define REG_DL 2
-#define REG_BL 3
-#define REG_AH 4
-#define REG_CH 5
-#define REG_DH 6
-#define REG_BH 7
+#define REG_AL 0x0
+#define REG_CL 0x1
+#define REG_DL 0x2
+#define REG_BL 0x3
+#define REG_SPL 0x4
+#define REG_BPL 0x5
+#define REG_SIL 0x6
+#define REG_DIL 0x7
+
+// Extended Registers (8-15)
+#define REG_R8B 0x8	 // o que importa sao os ultimos 3 bits ou seja continua a ser 000
+#define REG_R9B 0x9	 // o que importa sao os ultimos 3 bits ou seja continua a ser 001
+#define REG_R10B 0xA // o que importa sao os ultimos 3 bits ou seja continua a ser 010
+#define REG_R11B 0xB // o que importa sao os ultimos 3 bits ou seja continua a ser 011
+#define REG_R12B 0xC // o que importa sao os ultimos 3 bits ou seja continua a ser 100
+#define REG_R13B 0xD // o que importa sao os ultimos 3 bits ou seja continua a ser 101
+#define REG_R14B 0xE // o que importa sao os ultimos 3 bits ou seja continua a ser 110
+#define REG_R15B 0xF // o que importa sao os ultimos 3 bits ou seja continua a ser 111
 
 void mov8_r_i(uint8_t reg_code, uint8_t value);
 void mov8_r_m(uint8_t reg, uint8_t mem_reg);
@@ -182,5 +192,17 @@ void funcao_teste_div8_r(void);
 void funcao_teste_div8_m(void);
 void funcao_teste_div8_mi(void);
 void funcao_teste_div8_mr(void);
+
+// INC test functions (8-bit)
+void funcao_teste_inc8_r(void);
+void funcao_teste_inc8_m(void);
+void funcao_teste_inc8_mi(void);
+void funcao_teste_inc8_mr(void);
+
+// DEC test functions (8-bit)
+void funcao_teste_dec8_r(void);
+void funcao_teste_dec8_m(void);
+void funcao_teste_dec8_mi(void);
+void funcao_teste_dec8_mr(void);
 
 #endif // BFUNCTIONS8_H

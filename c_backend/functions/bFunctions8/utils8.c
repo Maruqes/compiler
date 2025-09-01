@@ -5,20 +5,20 @@
 
 void cmp8_r_r(uint8_t reg1, uint8_t reg2)
 {
-    cant_use_rx((uint8_t[]){reg1, reg2}, 2);
-
-    char *opcode_bytes = malloc(2);
+    char *opcode_bytes = malloc(3);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0x38; // CMP r/m8, r8 opcode
-    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, reg2, reg1);
+    // REX: R extends reg2 (ModRM.reg), B extends reg1 (r/m)
+    set_rex_prefix(opcode_bytes, 0, (reg2 >= REG_R8) ? 1 : 0, 0, (reg1 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x38; // CMP r/m8, r8 opcode
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, reg2, reg1);
 
     OpCode new_opcode;
-    new_opcode.size = 2;
+    new_opcode.size = 3;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -35,21 +35,20 @@ void cmp8_r_r(uint8_t reg1, uint8_t reg2)
 
 void cmp8_r_i(uint8_t reg1, uint8_t imm8)
 {
-    cant_use_rx((uint8_t[]){reg1}, 1);
-
-    char *opcode_bytes = malloc(3);
+    char *opcode_bytes = malloc(4);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0x80;                               // CMP r/m8, imm8 opcode
-    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, 7, reg1); // /7 indicates CMP operation
-    opcode_bytes[2] = imm8;
+    set_rex_prefix(opcode_bytes, 0, 0, 0, (reg1 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x80;                               // CMP r/m8, imm8 opcode
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 7, reg1); // /7 indicates CMP operation
+    opcode_bytes[3] = imm8;
 
     OpCode new_opcode;
-    new_opcode.size = 3;
+    new_opcode.size = 4;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -66,8 +65,6 @@ void cmp8_r_i(uint8_t reg1, uint8_t imm8)
 
 void cmp8_r_m(uint8_t reg1, uint8_t reg2)
 {
-    cant_use_rx((uint8_t[]){reg1, reg2}, 2);
-
     if (reg2 == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use RSP as a memory register.\n");
@@ -75,20 +72,21 @@ void cmp8_r_m(uint8_t reg1, uint8_t reg2)
     }
 
     int sib_needed = precisa_sib(MOD_1BYTE_DISP, reg2, 0);
-    char *opcode_bytes = malloc(3 + sib_needed);
+    char *opcode_bytes = malloc(4 + sib_needed);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0x3A; // CMP r8, r/m8 opcode
-    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, reg1, reg2);
-    set_sib(&opcode_bytes[2], 0, RM_SIB, reg2);
-    opcode_bytes[2 + sib_needed] = 0x00; // Displacement byte
+    set_rex_prefix(opcode_bytes, 0, (reg1 >= REG_R8) ? 1 : 0, 0, (reg2 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x3A; // CMP r8, r/m8 opcode
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, reg1, reg2);
+    set_sib(&opcode_bytes[3], 0, RM_SIB, reg2);
+    opcode_bytes[3 + sib_needed] = 0x00; // Displacement byte
 
     OpCode new_opcode;
-    new_opcode.size = 3 + sib_needed;
+    new_opcode.size = 4 + sib_needed;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -105,8 +103,6 @@ void cmp8_r_m(uint8_t reg1, uint8_t reg2)
 
 void cmp8_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset)
 {
-    cant_use_rx((uint8_t[]){reg1, reg2}, 2);
-
     if (reg2 == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use RSP as a memory register.\n");
@@ -114,20 +110,21 @@ void cmp8_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset)
     }
 
     int sib_needed = precisa_sib(MOD_4BYTE_DISP, reg2, 0);
-    char *opcode_bytes = malloc(6 + sib_needed);
+    char *opcode_bytes = malloc(7 + sib_needed);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0x3A; // CMP r8, r/m8 opcode
-    set_modrm(&opcode_bytes[1], MOD_4BYTE_DISP, reg1, reg2);
-    set_sib(&opcode_bytes[2], 0, RM_SIB, reg2);
-    memcpy(&opcode_bytes[2 + sib_needed], &offset, sizeof(uint32_t));
+    set_rex_prefix(opcode_bytes, 0, (reg1 >= REG_R8) ? 1 : 0, 0, (reg2 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x3A; // CMP r8, r/m8 opcode
+    set_modrm(&opcode_bytes[2], MOD_4BYTE_DISP, reg1, reg2);
+    set_sib(&opcode_bytes[3], 0, RM_SIB, reg2);
+    memcpy(&opcode_bytes[3 + sib_needed], &offset, sizeof(uint32_t));
 
     OpCode new_opcode;
-    new_opcode.size = 6 + sib_needed;
+    new_opcode.size = 7 + sib_needed;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -144,21 +141,20 @@ void cmp8_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset)
 
 void lshfit8(uint8_t reg, uint8_t imm)
 {
-    cant_use_rx((uint8_t[]){reg}, 1);
-
-    char *opcode_bytes = malloc(3);
+    char *opcode_bytes = malloc(4);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0xC0;                              // SHL r/m8, imm8 opcode
-    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, 4, reg); // /4 indicates SHL operation
-    opcode_bytes[2] = imm;
+    set_rex_prefix(opcode_bytes, 0, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xC0;                              // SHL r/m8, imm8 opcode
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 4, reg); // /4 indicates SHL operation
+    opcode_bytes[3] = imm;
 
     OpCode new_opcode;
-    new_opcode.size = 3;
+    new_opcode.size = 4;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -175,8 +171,36 @@ void lshfit8(uint8_t reg, uint8_t imm)
 
 void rshfit8(uint8_t reg, uint8_t imm)
 {
-    cant_use_rx((uint8_t[]){reg}, 1);
+    char *opcode_bytes = malloc(4);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
 
+    set_rex_prefix(opcode_bytes, 0, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xC0;                              // SHR r/m8, imm8 opcode
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 5, reg); // /5 indicates SHR operation
+    opcode_bytes[3] = imm;
+
+    OpCode new_opcode;
+    new_opcode.size = 4;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void lshfit8_reg(uint8_t reg1)
+{
     char *opcode_bytes = malloc(3);
     if (!opcode_bytes)
     {
@@ -184,9 +208,9 @@ void rshfit8(uint8_t reg, uint8_t imm)
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0xC0;                              // SHR r/m8, imm8 opcode
-    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, 5, reg); // /5 indicates SHR operation
-    opcode_bytes[2] = imm;
+    set_rex_prefix(opcode_bytes, 0, 0, 0, (reg1 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xD2;                               // SHL r/m8, CL opcode
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 4, reg1); // /4 indicates SHL operation
 
     OpCode new_opcode;
     new_opcode.size = 3;
@@ -204,52 +228,21 @@ void rshfit8(uint8_t reg, uint8_t imm)
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
-void lshfit8_reg(uint8_t reg1)
-{
-    cant_use_rx((uint8_t[]){reg1}, 1);
-
-    char *opcode_bytes = malloc(2);
-    if (!opcode_bytes)
-    {
-        perror("Failed to allocate memory for opcode_bytes");
-        exit(EXIT_FAILURE);
-    }
-
-    opcode_bytes[0] = 0xD2;                               // SHL r/m8, CL opcode
-    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, 4, reg1); // /4 indicates SHL operation
-
-    OpCode new_opcode;
-    new_opcode.size = 2;
-    new_opcode.code = opcode_bytes;
-
-    // Add the opcode to the array
-    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
-    if (!op_codes_array)
-    {
-        perror("Failed to reallocate memory for op_codes_array");
-        free(opcode_bytes);
-        exit(EXIT_FAILURE);
-    }
-
-    op_codes_array[op_codes_array_size++] = new_opcode;
-}
-
 void rshfit8_reg(uint8_t reg1)
 {
-    cant_use_rx((uint8_t[]){reg1}, 1);
-
-    char *opcode_bytes = malloc(2);
+    char *opcode_bytes = malloc(3);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0xD2;                               // SHR r/m8, CL opcode
-    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, 5, reg1); // /5 indicates SHR operation
+    set_rex_prefix(opcode_bytes, 0, 0, 0, (reg1 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xD2;                               // SHR r/m8, CL opcode
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 5, reg1); // /5 indicates SHR operation
 
     OpCode new_opcode;
-    new_opcode.size = 2;
+    new_opcode.size = 3;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -268,38 +261,6 @@ void rshfit8_reg(uint8_t reg1)
 
 void and8_r_r(uint8_t reg1, uint8_t reg2)
 {
-    cant_use_rx((uint8_t[]){reg1, reg2}, 2);
-
-    char *opcode_bytes = malloc(2);
-    if (!opcode_bytes)
-    {
-        perror("Failed to allocate memory for opcode_bytes");
-        exit(EXIT_FAILURE);
-    }
-
-    opcode_bytes[0] = 0x20; // AND r/m8, r8 opcode
-    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, reg2, reg1);
-
-    OpCode new_opcode;
-    new_opcode.size = 2;
-    new_opcode.code = opcode_bytes;
-
-    // Add the opcode to the array
-    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
-    if (!op_codes_array)
-    {
-        perror("Failed to reallocate memory for op_codes_array");
-        free(opcode_bytes);
-        exit(EXIT_FAILURE);
-    }
-
-    op_codes_array[op_codes_array_size++] = new_opcode;
-}
-
-void and8_r_i(uint8_t reg, uint8_t imm8)
-{
-    cant_use_rx((uint8_t[]){reg}, 1);
-
     char *opcode_bytes = malloc(3);
     if (!opcode_bytes)
     {
@@ -307,9 +268,9 @@ void and8_r_i(uint8_t reg, uint8_t imm8)
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0x80;                              // AND r/m8, imm8 opcode
-    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, 4, reg); // /4 indicates AND operation
-    opcode_bytes[2] = imm8;
+    set_rex_prefix(opcode_bytes, 0, (reg2 >= REG_R8) ? 1 : 0, 0, (reg1 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x20; // AND r/m8, r8 opcode
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, reg2, reg1);
 
     OpCode new_opcode;
     new_opcode.size = 3;
@@ -327,10 +288,38 @@ void and8_r_i(uint8_t reg, uint8_t imm8)
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
+void and8_r_i(uint8_t reg, uint8_t imm8)
+{
+    char *opcode_bytes = malloc(4);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    set_rex_prefix(opcode_bytes, 0, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x80;                              // AND r/m8, imm8 opcode
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 4, reg); // /4 indicates AND operation
+    opcode_bytes[3] = imm8;
+
+    OpCode new_opcode;
+    new_opcode.size = 4;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
 void and8_r_m(uint8_t reg1, uint8_t reg2)
 {
-    cant_use_rx((uint8_t[]){reg1, reg2}, 2);
-
     if (reg2 == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use RSP as a memory register.\n");
@@ -338,20 +327,21 @@ void and8_r_m(uint8_t reg1, uint8_t reg2)
     }
 
     int sib_needed = precisa_sib(MOD_1BYTE_DISP, reg2, 0);
-    char *opcode_bytes = malloc(3 + sib_needed);
+    char *opcode_bytes = malloc(4 + sib_needed);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0x22; // AND r8, r/m8 opcode
-    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, reg1, reg2);
-    set_sib(&opcode_bytes[2], 0, RM_SIB, reg2);
-    opcode_bytes[2 + sib_needed] = 0x00; // Displacement byte
+    set_rex_prefix(opcode_bytes, 0, (reg1 >= REG_R8) ? 1 : 0, 0, (reg2 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x22; // AND r8, r/m8 opcode
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, reg1, reg2);
+    set_sib(&opcode_bytes[3], 0, RM_SIB, reg2);
+    opcode_bytes[3 + sib_needed] = 0x00; // Displacement byte
 
     OpCode new_opcode;
-    new_opcode.size = 3 + sib_needed;
+    new_opcode.size = 4 + sib_needed;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -368,8 +358,6 @@ void and8_r_m(uint8_t reg1, uint8_t reg2)
 
 void and8_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset)
 {
-    cant_use_rx((uint8_t[]){reg1, reg2}, 2);
-
     if (reg2 == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use RSP as a memory register.\n");
@@ -377,20 +365,21 @@ void and8_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset)
     }
 
     int sib_needed = precisa_sib(MOD_4BYTE_DISP, reg2, 0);
-    char *opcode_bytes = malloc(6 + sib_needed);
+    char *opcode_bytes = malloc(7 + sib_needed);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0x22; // AND r8, r/m8 opcode
-    set_modrm(&opcode_bytes[1], MOD_4BYTE_DISP, reg1, reg2);
-    set_sib(&opcode_bytes[2], 0, RM_SIB, reg2);
-    memcpy(&opcode_bytes[2 + sib_needed], &offset, sizeof(uint32_t));
+    set_rex_prefix(opcode_bytes, 0, (reg1 >= REG_R8) ? 1 : 0, 0, (reg2 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x22; // AND r8, r/m8 opcode
+    set_modrm(&opcode_bytes[2], MOD_4BYTE_DISP, reg1, reg2);
+    set_sib(&opcode_bytes[3], 0, RM_SIB, reg2);
+    memcpy(&opcode_bytes[3 + sib_needed], &offset, sizeof(uint32_t));
 
     OpCode new_opcode;
-    new_opcode.size = 6 + sib_needed;
+    new_opcode.size = 7 + sib_needed;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -407,8 +396,6 @@ void and8_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset)
 
 void and8_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3)
 {
-    cant_use_rx((uint8_t[]){reg1, reg2, reg3}, 4);
-
     if (reg3 == REG_RSP) // ESP RSP ALL SAME SHIT ITS ALL "4"
     {
         fprintf(stderr, "Error: Cannot use ESP as an index register.\n");
@@ -421,21 +408,22 @@ void and8_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3)
         exit(EXIT_FAILURE);
     }
 
-    char *opcode_bytes = malloc(3);
+    char *opcode_bytes = malloc(5);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0x22; // AND r8, r/m8 opcode
-    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, reg1, RM_SIB);
+    set_rex_prefix(opcode_bytes, 0, (reg1 >= REG_R8) ? 1 : 0, (reg3 >= REG_R8) ? 1 : 0, (reg2 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x22; // AND r8, r/m8 opcode
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, reg1, RM_SIB);
 
-    set_sib(&opcode_bytes[2], SCALE_1, reg3, reg2);
-    opcode_bytes[3] = 0x00;
+    set_sib(&opcode_bytes[3], SCALE_1, reg3, reg2);
+    opcode_bytes[4] = 0x00;
 
     OpCode new_opcode;
-    new_opcode.size = 4;
+    new_opcode.size = 5;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -454,38 +442,6 @@ void and8_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3)
 
 void or8_r_r(uint8_t reg1, uint8_t reg2)
 {
-    cant_use_rx((uint8_t[]){reg1, reg2}, 2);
-
-    char *opcode_bytes = malloc(2);
-    if (!opcode_bytes)
-    {
-        perror("Failed to allocate memory for opcode_bytes");
-        exit(EXIT_FAILURE);
-    }
-
-    opcode_bytes[0] = 0x08; // OR r/m8, r8 opcode
-    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, reg2, reg1);
-
-    OpCode new_opcode;
-    new_opcode.size = 2;
-    new_opcode.code = opcode_bytes;
-
-    // Add the opcode to the array
-    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
-    if (!op_codes_array)
-    {
-        perror("Failed to reallocate memory for op_codes_array");
-        free(opcode_bytes);
-        exit(EXIT_FAILURE);
-    }
-
-    op_codes_array[op_codes_array_size++] = new_opcode;
-}
-
-void or8_r_i(uint8_t reg, uint8_t imm8)
-{
-    cant_use_rx((uint8_t[]){reg}, 1);
-
     char *opcode_bytes = malloc(3);
     if (!opcode_bytes)
     {
@@ -493,9 +449,9 @@ void or8_r_i(uint8_t reg, uint8_t imm8)
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0x80;                              // OR r/m8, imm8 opcode
-    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, 1, reg); // /1 indicates OR operation
-    opcode_bytes[2] = imm8;
+    set_rex_prefix(opcode_bytes, 0, (reg2 >= REG_R8) ? 1 : 0, 0, (reg1 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x08; // OR r/m8, r8 opcode
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, reg2, reg1);
 
     OpCode new_opcode;
     new_opcode.size = 3;
@@ -513,10 +469,38 @@ void or8_r_i(uint8_t reg, uint8_t imm8)
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
+void or8_r_i(uint8_t reg, uint8_t imm8)
+{
+    char *opcode_bytes = malloc(4);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    set_rex_prefix(opcode_bytes, 0, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x80;                              // OR r/m8, imm8 opcode
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 1, reg); // /1 indicates OR operation
+    opcode_bytes[3] = imm8;
+
+    OpCode new_opcode;
+    new_opcode.size = 4;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
 void or8_r_m(uint8_t reg1, uint8_t reg2)
 {
-    cant_use_rx((uint8_t[]){reg1, reg2}, 2);
-
     if (reg2 == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use RSP as a memory register.\n");
@@ -524,20 +508,21 @@ void or8_r_m(uint8_t reg1, uint8_t reg2)
     }
 
     int sib_needed = precisa_sib(MOD_1BYTE_DISP, reg2, 0);
-    char *opcode_bytes = malloc(3 + sib_needed);
+    char *opcode_bytes = malloc(4 + sib_needed);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0x0A; // OR r8, r/m8 opcode
-    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, reg1, reg2);
-    set_sib(&opcode_bytes[2], 0, RM_SIB, reg2);
-    opcode_bytes[2 + sib_needed] = 0x00; // Displacement byte
+    set_rex_prefix(opcode_bytes, 0, (reg1 >= REG_R8) ? 1 : 0, 0, (reg2 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x0A; // OR r8, r/m8 opcode
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, reg1, reg2);
+    set_sib(&opcode_bytes[3], 0, RM_SIB, reg2);
+    opcode_bytes[3 + sib_needed] = 0x00; // Displacement byte
 
     OpCode new_opcode;
-    new_opcode.size = 3 + sib_needed;
+    new_opcode.size = 4 + sib_needed;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -554,8 +539,6 @@ void or8_r_m(uint8_t reg1, uint8_t reg2)
 
 void or8_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset)
 {
-    cant_use_rx((uint8_t[]){reg1, reg2}, 2);
-
     if (reg2 == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use RSP as a memory register.\n");
@@ -563,20 +546,21 @@ void or8_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset)
     }
 
     int sib_needed = precisa_sib(MOD_4BYTE_DISP, reg2, 0);
-    char *opcode_bytes = malloc(6 + sib_needed);
+    char *opcode_bytes = malloc(7 + sib_needed);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0x0A; // OR r8, r/m8 opcode
-    set_modrm(&opcode_bytes[1], MOD_4BYTE_DISP, reg1, reg2);
-    set_sib(&opcode_bytes[2], 0, RM_SIB, reg2);
-    memcpy(&opcode_bytes[2 + sib_needed], &offset, sizeof(uint32_t));
+    set_rex_prefix(opcode_bytes, 0, (reg1 >= REG_R8) ? 1 : 0, 0, (reg2 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x0A; // OR r8, r/m8 opcode
+    set_modrm(&opcode_bytes[2], MOD_4BYTE_DISP, reg1, reg2);
+    set_sib(&opcode_bytes[3], 0, RM_SIB, reg2);
+    memcpy(&opcode_bytes[3 + sib_needed], &offset, sizeof(uint32_t));
 
     OpCode new_opcode;
-    new_opcode.size = 6 + sib_needed;
+    new_opcode.size = 7 + sib_needed;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -593,8 +577,6 @@ void or8_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset)
 
 void or8_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3)
 {
-    cant_use_rx((uint8_t[]){reg1, reg2, reg3}, 3);
-
     if (reg3 == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use ESP as an index register.\n");
@@ -607,20 +589,21 @@ void or8_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3)
         exit(EXIT_FAILURE);
     }
 
-    char *opcode_bytes = malloc(4);
+    char *opcode_bytes = malloc(5);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0x0A; // OR r8, r/m8 opcode
-    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, reg1, RM_SIB);
-    set_sib(&opcode_bytes[2], SCALE_1, reg3, reg2);
-    opcode_bytes[3] = 0x00; // Displacement byte
+    set_rex_prefix(opcode_bytes, 0, (reg1 >= REG_R8) ? 1 : 0, (reg3 >= REG_R8) ? 1 : 0, (reg2 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x0A; // OR r8, r/m8 opcode
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, reg1, RM_SIB);
+    set_sib(&opcode_bytes[3], SCALE_1, reg3, reg2);
+    opcode_bytes[4] = 0x00; // Displacement byte
 
     OpCode new_opcode;
-    new_opcode.size = 4;
+    new_opcode.size = 5;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -639,20 +622,19 @@ void or8_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3)
 
 void not8_r(uint8_t reg)
 {
-    cant_use_rx((uint8_t[]){reg}, 1);
-
-    char *opcode_bytes = malloc(2);
+    char *opcode_bytes = malloc(3);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0xF6;                              // NOT r/m8 opcode
-    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, 2, reg); // /2 indicates NOT operation
+    set_rex_prefix(opcode_bytes, 0, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xF6;                              // NOT r/m8 opcode
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 2, reg); // /2 indicates NOT operation
 
     OpCode new_opcode;
-    new_opcode.size = 2;
+    new_opcode.size = 3;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -669,8 +651,6 @@ void not8_r(uint8_t reg)
 
 void not8_m(uint8_t reg)
 {
-    cant_use_rx((uint8_t[]){reg}, 1);
-
     if (reg == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use RSP as a memory register.\n");
@@ -678,20 +658,21 @@ void not8_m(uint8_t reg)
     }
 
     int sib_needed = precisa_sib(MOD_1BYTE_DISP, reg, 0);
-    char *opcode_bytes = malloc(3 + sib_needed);
+    char *opcode_bytes = malloc(4 + sib_needed);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0xF6;                              // NOT r/m8 opcode
-    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, 2, reg); // /2 indicates NOT operation
-    set_sib(&opcode_bytes[2], 0, RM_SIB, reg);
-    opcode_bytes[2 + sib_needed] = 0x00; // Displacement byte
+    set_rex_prefix(opcode_bytes, 0, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xF6;                              // NOT r/m8 opcode
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, 2, reg); // /2 indicates NOT operation
+    set_sib(&opcode_bytes[3], 0, RM_SIB, reg);
+    opcode_bytes[3 + sib_needed] = 0x00; // Displacement byte
 
     OpCode new_opcode;
-    new_opcode.size = 3 + sib_needed;
+    new_opcode.size = 4 + sib_needed;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -708,8 +689,6 @@ void not8_m(uint8_t reg)
 
 void not8_mi(uint8_t reg, uint32_t offset)
 {
-    cant_use_rx((uint8_t[]){reg}, 1);
-
     if (reg == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use RSP as a memory register.\n");
@@ -717,20 +696,21 @@ void not8_mi(uint8_t reg, uint32_t offset)
     }
 
     int sib_needed = precisa_sib(MOD_4BYTE_DISP, reg, 0);
-    char *opcode_bytes = malloc(6 + sib_needed);
+    char *opcode_bytes = malloc(7 + sib_needed);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0xF6;                              // NOT r/m8 opcode
-    set_modrm(&opcode_bytes[1], MOD_4BYTE_DISP, 2, reg); // /2 indicates NOT operation
-    set_sib(&opcode_bytes[2], 0, RM_SIB, reg);
-    memcpy(&opcode_bytes[2 + sib_needed], &offset, sizeof(uint32_t));
+    set_rex_prefix(opcode_bytes, 0, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xF6;                              // NOT r/m8 opcode
+    set_modrm(&opcode_bytes[2], MOD_4BYTE_DISP, 2, reg); // /2 indicates NOT operation
+    set_sib(&opcode_bytes[3], 0, RM_SIB, reg);
+    memcpy(&opcode_bytes[3 + sib_needed], &offset, sizeof(uint32_t));
 
     OpCode new_opcode;
-    new_opcode.size = 6 + sib_needed;
+    new_opcode.size = 7 + sib_needed;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -747,8 +727,6 @@ void not8_mi(uint8_t reg, uint32_t offset)
 
 void not8_mr(uint8_t reg_base, uint8_t reg_index)
 {
-    cant_use_rx((uint8_t[]){reg_base, reg_index}, 2);
-
     if (reg_index == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use ESP as an index register.\n");
@@ -761,20 +739,21 @@ void not8_mr(uint8_t reg_base, uint8_t reg_index)
         exit(EXIT_FAILURE);
     }
 
-    char *opcode_bytes = malloc(4);
+    char *opcode_bytes = malloc(5);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0xF6;                                 // NOT r/m8 opcode
-    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, 2, RM_SIB); // /2 indicates NOT operation
-    set_sib(&opcode_bytes[2], SCALE_1, reg_index, reg_base);
-    opcode_bytes[3] = 0x00; // Displacement byte
+    set_rex_prefix(opcode_bytes, 0, 0, (reg_index >= REG_R8) ? 1 : 0, (reg_base >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xF6;                                 // NOT r/m8 opcode
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, 2, RM_SIB); // /2 indicates NOT operation
+    set_sib(&opcode_bytes[3], SCALE_1, reg_index, reg_base);
+    opcode_bytes[4] = 0x00; // Displacement byte
 
     OpCode new_opcode;
-    new_opcode.size = 4;
+    new_opcode.size = 5;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -793,38 +772,6 @@ void not8_mr(uint8_t reg_base, uint8_t reg_index)
 
 void xor8_r_r(uint8_t reg1, uint8_t reg2)
 {
-    cant_use_rx((uint8_t[]){reg1, reg2}, 2);
-
-    char *opcode_bytes = malloc(2);
-    if (!opcode_bytes)
-    {
-        perror("Failed to allocate memory for opcode_bytes");
-        exit(EXIT_FAILURE);
-    }
-
-    opcode_bytes[0] = 0x30; // XOR r/m8, r8 opcode
-    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, reg2, reg1);
-
-    OpCode new_opcode;
-    new_opcode.size = 2;
-    new_opcode.code = opcode_bytes;
-
-    // Add the opcode to the array
-    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
-    if (!op_codes_array)
-    {
-        perror("Failed to reallocate memory for op_codes_array");
-        free(opcode_bytes);
-        exit(EXIT_FAILURE);
-    }
-
-    op_codes_array[op_codes_array_size++] = new_opcode;
-}
-
-void xor8_r_i(uint8_t reg, uint8_t imm8)
-{
-    cant_use_rx((uint8_t[]){reg}, 1);
-
     char *opcode_bytes = malloc(3);
     if (!opcode_bytes)
     {
@@ -832,9 +779,9 @@ void xor8_r_i(uint8_t reg, uint8_t imm8)
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0x80;                              // XOR r/m8, imm8 opcode
-    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, 6, reg); // /6 indicates XOR operation
-    opcode_bytes[2] = imm8;
+    set_rex_prefix(opcode_bytes, 0, (reg2 >= REG_R8) ? 1 : 0, 0, (reg1 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x30; // XOR r/m8, r8 opcode
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, reg2, reg1);
 
     OpCode new_opcode;
     new_opcode.size = 3;
@@ -852,10 +799,38 @@ void xor8_r_i(uint8_t reg, uint8_t imm8)
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
 
+void xor8_r_i(uint8_t reg, uint8_t imm8)
+{
+    char *opcode_bytes = malloc(4);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    set_rex_prefix(opcode_bytes, 0, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x80;                              // XOR r/m8, imm8 opcode
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 6, reg); // /6 indicates XOR operation
+    opcode_bytes[3] = imm8;
+
+    OpCode new_opcode;
+    new_opcode.size = 4;
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
 void xor8_r_m(uint8_t reg1, uint8_t reg2)
 {
-    cant_use_rx((uint8_t[]){reg1, reg2}, 2);
-
     if (reg2 == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use RSP as a memory register.\n");
@@ -863,20 +838,21 @@ void xor8_r_m(uint8_t reg1, uint8_t reg2)
     }
 
     int sib_needed = precisa_sib(MOD_1BYTE_DISP, reg2, 0);
-    char *opcode_bytes = malloc(3 + sib_needed);
+    char *opcode_bytes = malloc(4 + sib_needed);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0x32; // XOR r8, r/m8 opcode
-    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, reg1, reg2);
-    set_sib(&opcode_bytes[2], 0, RM_SIB, reg2);
-    opcode_bytes[2 + sib_needed] = 0x00; // Displacement byte
+    set_rex_prefix(opcode_bytes, 0, (reg1 >= REG_R8) ? 1 : 0, 0, (reg2 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x32; // XOR r8, r/m8 opcode
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, reg1, reg2);
+    set_sib(&opcode_bytes[3], 0, RM_SIB, reg2);
+    opcode_bytes[3 + sib_needed] = 0x00; // Displacement byte
 
     OpCode new_opcode;
-    new_opcode.size = 3 + sib_needed;
+    new_opcode.size = 4 + sib_needed;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -893,8 +869,6 @@ void xor8_r_m(uint8_t reg1, uint8_t reg2)
 
 void xor8_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset)
 {
-    cant_use_rx((uint8_t[]){reg1, reg2}, 2);
-
     if (reg2 == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use RSP as a memory register.\n");
@@ -902,20 +876,21 @@ void xor8_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset)
     }
 
     int sib_needed = precisa_sib(MOD_4BYTE_DISP, reg2, 0);
-    char *opcode_bytes = malloc(6 + sib_needed);
+    char *opcode_bytes = malloc(7 + sib_needed);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0x32; // XOR r8, r/m8 opcode
-    set_modrm(&opcode_bytes[1], MOD_4BYTE_DISP, reg1, reg2);
-    set_sib(&opcode_bytes[2], 0, RM_SIB, reg2);
-    memcpy(&opcode_bytes[2 + sib_needed], &offset, sizeof(uint32_t));
+    set_rex_prefix(opcode_bytes, 0, (reg1 >= REG_R8) ? 1 : 0, 0, (reg2 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x32; // XOR r8, r/m8 opcode
+    set_modrm(&opcode_bytes[2], MOD_4BYTE_DISP, reg1, reg2);
+    set_sib(&opcode_bytes[3], 0, RM_SIB, reg2);
+    memcpy(&opcode_bytes[3 + sib_needed], &offset, sizeof(uint32_t));
 
     OpCode new_opcode;
-    new_opcode.size = 6 + sib_needed;
+    new_opcode.size = 7 + sib_needed;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -932,8 +907,6 @@ void xor8_r_mi(uint8_t reg1, uint8_t reg2, uint32_t offset)
 
 void xor8_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3)
 {
-    cant_use_rx((uint8_t[]){reg1, reg2, reg3}, 3);
-
     if (reg3 == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use ESP as an index register.\n");
@@ -946,20 +919,21 @@ void xor8_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3)
         exit(EXIT_FAILURE);
     }
 
-    char *opcode_bytes = malloc(4);
+    char *opcode_bytes = malloc(5);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0x32; // XOR r8, r/m8 opcode
-    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, reg1, RM_SIB);
-    set_sib(&opcode_bytes[2], SCALE_1, reg3, reg2);
-    opcode_bytes[3] = 0x00; // Displacement byte
+    set_rex_prefix(opcode_bytes, 0, (reg1 >= REG_R8) ? 1 : 0, (reg3 >= REG_R8) ? 1 : 0, (reg2 >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x32; // XOR r8, r/m8 opcode
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, reg1, RM_SIB);
+    set_sib(&opcode_bytes[3], SCALE_1, reg3, reg2);
+    opcode_bytes[4] = 0x00; // Displacement byte
 
     OpCode new_opcode;
-    new_opcode.size = 4;
+    new_opcode.size = 5;
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array
@@ -978,20 +952,19 @@ void xor8_r_mr(uint8_t reg1, uint8_t reg2, uint8_t reg3)
 
 void inc8_r(uint8_t reg)
 {
-    cant_use_rx((uint8_t[]){reg}, 1);
-
-    char *opcode_bytes = malloc(2);
+    char *opcode_bytes = malloc(3);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0xFE;                              // INC r8
-    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, 0, reg); // /0 for INC
+    set_rex_prefix(opcode_bytes, 0, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xFE;                              // INC r8
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 0, reg); // /0 for INC
 
     OpCode new_opcode;
-    new_opcode.size = 2;
+    new_opcode.size = 3;
     new_opcode.code = opcode_bytes;
 
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
@@ -1006,8 +979,6 @@ void inc8_r(uint8_t reg)
 
 void inc8_m(uint8_t reg)
 {
-    cant_use_rx((uint8_t[]){reg}, 1);
-
     if (reg == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use RSP as a memory register in 8-bit mode.\n");
@@ -1020,23 +991,24 @@ void inc8_m(uint8_t reg)
     }
 
     int sib_needed = (reg == REG_RSP || reg == RM_SIB) ? 1 : 0;
-    char *opcode_bytes = malloc(3 + sib_needed);
+    char *opcode_bytes = malloc(4 + sib_needed);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0xFE; // INC r/m8
-    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, 0, reg);
+    set_rex_prefix(opcode_bytes, 0, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xFE; // INC r/m8
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, 0, reg);
     if (sib_needed)
     {
-        set_sib(&opcode_bytes[2], SCALE_1, RM_SIB, reg);
+        set_sib(&opcode_bytes[3], SCALE_1, RM_SIB, reg);
     }
-    opcode_bytes[1 + sib_needed + 1] = 0x00;
+    opcode_bytes[3 + sib_needed] = 0x00;
 
     OpCode new_opcode;
-    new_opcode.size = 3 + sib_needed;
+    new_opcode.size = 4 + sib_needed;
     new_opcode.code = opcode_bytes;
 
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
@@ -1051,8 +1023,6 @@ void inc8_m(uint8_t reg)
 
 void inc8_mi(uint8_t reg, uint32_t offset)
 {
-    cant_use_rx((uint8_t[]){reg}, 1);
-
     if (reg == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use RSP as a memory register in 8-bit mode.\n");
@@ -1065,23 +1035,24 @@ void inc8_mi(uint8_t reg, uint32_t offset)
     }
 
     int sib_needed = (reg == REG_RSP || reg == RM_SIB) ? 1 : 0;
-    char *opcode_bytes = malloc(6 + sib_needed);
+    char *opcode_bytes = malloc(7 + sib_needed);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0xFE; // INC r/m8
-    set_modrm(&opcode_bytes[1], MOD_4BYTE_DISP, 0, reg);
+    set_rex_prefix(opcode_bytes, 0, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xFE; // INC r/m8
+    set_modrm(&opcode_bytes[2], MOD_4BYTE_DISP, 0, reg);
     if (sib_needed)
     {
-        set_sib(&opcode_bytes[2], SCALE_1, RM_SIB, reg);
+        set_sib(&opcode_bytes[3], SCALE_1, RM_SIB, reg);
     }
-    memcpy(&opcode_bytes[2 + sib_needed], &offset, sizeof(offset));
+    memcpy(&opcode_bytes[3 + sib_needed], &offset, sizeof(offset));
 
     OpCode new_opcode;
-    new_opcode.size = 6 + sib_needed;
+    new_opcode.size = 7 + sib_needed;
     new_opcode.code = opcode_bytes;
 
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
@@ -1096,8 +1067,6 @@ void inc8_mi(uint8_t reg, uint32_t offset)
 
 void inc8_mr(uint8_t reg_base, uint8_t reg_index)
 {
-    cant_use_rx((uint8_t[]){reg_base, reg_index}, 2);
-
     if (reg_base == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use RSP as base register in 8-bit mode.\n");
@@ -1114,20 +1083,21 @@ void inc8_mr(uint8_t reg_base, uint8_t reg_index)
         exit(EXIT_FAILURE);
     }
 
-    char *opcode_bytes = malloc(4);
+    char *opcode_bytes = malloc(5);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0xFE; // INC r/m8
-    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, 0, RM_SIB);
-    set_sib(&opcode_bytes[2], SCALE_1, reg_index, reg_base);
-    opcode_bytes[3] = 0x00;
+    set_rex_prefix(opcode_bytes, 0, 0, (reg_index >= REG_R8) ? 1 : 0, (reg_base >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xFE; // INC r/m8
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, 0, RM_SIB);
+    set_sib(&opcode_bytes[3], SCALE_1, reg_index, reg_base);
+    opcode_bytes[4] = 0x00;
 
     OpCode new_opcode;
-    new_opcode.size = 4;
+    new_opcode.size = 5;
     new_opcode.code = opcode_bytes;
 
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
@@ -1144,20 +1114,19 @@ void inc8_mr(uint8_t reg_base, uint8_t reg_index)
 
 void dec8_r(uint8_t reg)
 {
-    cant_use_rx((uint8_t[]){reg}, 1);
-
-    char *opcode_bytes = malloc(2);
+    char *opcode_bytes = malloc(3);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0xFE;                              // DEC r8
-    set_modrm(&opcode_bytes[1], MOD_REG_DIRECT, 1, reg); // /1 for DEC
+    set_rex_prefix(opcode_bytes, 0, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xFE;                              // DEC r8
+    set_modrm(&opcode_bytes[2], MOD_REG_DIRECT, 1, reg); // /1 for DEC
 
     OpCode new_opcode;
-    new_opcode.size = 2;
+    new_opcode.size = 3;
     new_opcode.code = opcode_bytes;
 
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
@@ -1172,8 +1141,6 @@ void dec8_r(uint8_t reg)
 
 void dec8_m(uint8_t reg)
 {
-    cant_use_rx((uint8_t[]){reg}, 1);
-
     if (reg == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use RSP as a memory register in 8-bit mode.\n");
@@ -1186,23 +1153,24 @@ void dec8_m(uint8_t reg)
     }
 
     int sib_needed = (reg == REG_RSP || reg == RM_SIB) ? 1 : 0;
-    char *opcode_bytes = malloc(3 + sib_needed);
+    char *opcode_bytes = malloc(4 + sib_needed);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0xFE; // DEC r/m8
-    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, 1, reg);
+    set_rex_prefix(opcode_bytes, 0, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xFE; // DEC r/m8
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, 1, reg);
     if (sib_needed)
     {
-        set_sib(&opcode_bytes[2], SCALE_1, RM_SIB, reg);
+        set_sib(&opcode_bytes[3], SCALE_1, RM_SIB, reg);
     }
-    opcode_bytes[1 + sib_needed + 1] = 0x00;
+    opcode_bytes[3 + sib_needed] = 0x00;
 
     OpCode new_opcode;
-    new_opcode.size = 3 + sib_needed;
+    new_opcode.size = 4 + sib_needed;
     new_opcode.code = opcode_bytes;
 
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
@@ -1217,8 +1185,6 @@ void dec8_m(uint8_t reg)
 
 void dec8_mi(uint8_t reg, uint32_t offset)
 {
-    cant_use_rx((uint8_t[]){reg}, 1);
-
     if (reg == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use RSP as a memory register in 8-bit mode.\n");
@@ -1231,23 +1197,24 @@ void dec8_mi(uint8_t reg, uint32_t offset)
     }
 
     int sib_needed = (reg == REG_RSP || reg == RM_SIB) ? 1 : 0;
-    char *opcode_bytes = malloc(6 + sib_needed);
+    char *opcode_bytes = malloc(7 + sib_needed);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0xFE; // DEC r/m8
-    set_modrm(&opcode_bytes[1], MOD_4BYTE_DISP, 1, reg);
+    set_rex_prefix(opcode_bytes, 0, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xFE; // DEC r/m8
+    set_modrm(&opcode_bytes[2], MOD_4BYTE_DISP, 1, reg);
     if (sib_needed)
     {
-        set_sib(&opcode_bytes[2], SCALE_1, RM_SIB, reg);
+        set_sib(&opcode_bytes[3], SCALE_1, RM_SIB, reg);
     }
-    memcpy(&opcode_bytes[2 + sib_needed], &offset, sizeof(offset));
+    memcpy(&opcode_bytes[3 + sib_needed], &offset, sizeof(offset));
 
     OpCode new_opcode;
-    new_opcode.size = 6 + sib_needed;
+    new_opcode.size = 7 + sib_needed;
     new_opcode.code = opcode_bytes;
 
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
@@ -1262,8 +1229,6 @@ void dec8_mi(uint8_t reg, uint32_t offset)
 
 void dec8_mr(uint8_t reg_base, uint8_t reg_index)
 {
-    cant_use_rx((uint8_t[]){reg_base, reg_index}, 2);
-
     if (reg_base == REG_RSP)
     {
         fprintf(stderr, "Error: Cannot use RSP as base register in 8-bit mode.\n");
@@ -1280,20 +1245,21 @@ void dec8_mr(uint8_t reg_base, uint8_t reg_index)
         exit(EXIT_FAILURE);
     }
 
-    char *opcode_bytes = malloc(4);
+    char *opcode_bytes = malloc(5);
     if (!opcode_bytes)
     {
         perror("Failed to allocate memory for opcode_bytes");
         exit(EXIT_FAILURE);
     }
 
-    opcode_bytes[0] = 0xFE; // DEC r/m8
-    set_modrm(&opcode_bytes[1], MOD_1BYTE_DISP, 1, RM_SIB);
-    set_sib(&opcode_bytes[2], SCALE_1, reg_index, reg_base);
-    opcode_bytes[3] = 0x00;
+    set_rex_prefix(opcode_bytes, 0, 0, (reg_index >= REG_R8) ? 1 : 0, (reg_base >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xFE; // DEC r/m8
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, 1, RM_SIB);
+    set_sib(&opcode_bytes[3], SCALE_1, reg_index, reg_base);
+    opcode_bytes[4] = 0x00;
 
     OpCode new_opcode;
-    new_opcode.size = 4;
+    new_opcode.size = 5;
     new_opcode.code = opcode_bytes;
 
     op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));

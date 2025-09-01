@@ -18,12 +18,14 @@ import (
 todo->
 asm funcs
 inputs na main-> args    ./main <args>
-bitwise -> e = e & 3; // AND NOT OR XOR etc etc etc left shift right shift
+left shift right shift
 */
 
 /*
 known bugs->
 	APAGAMOS STRUCTS/GLOBAL
+
+	PROBLEMO PUBLIC VAR backend.REG_RSI in c
 */
 
 func main() {
@@ -31,6 +33,7 @@ func main() {
 	var par parser.Parser
 	// par.StartParse("features.lang")
 	par.StartParse("test.lang")
+
 
 	backend.Call("global")
 	backend.Call("main")

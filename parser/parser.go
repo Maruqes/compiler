@@ -17,7 +17,7 @@ var comparisonOperators = []string{"==", "!=", "<=", ">=", "<", ">"}
 
 // contains solo char that compose predefined tokens
 var composingTokens = append([]string{"{", "}", "(", ")", "[", "]", ";", ",", "+", "-", "*", "%", "=", "!", "&", "&&", "|", "||", "^", "?", "/",
-	"++", "--", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "//"}, comparisonOperators...)
+	"++", "--", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "//", ">>", "<<"}, comparisonOperators...)
 
 func (p *Parser) StartParse(fileName string) error {
 	//open file
@@ -351,7 +351,6 @@ func isReserved(r byte) bool {
 	return false
 }
 
-// r9 is reserved for loops
 func pickTmpReg(dest byte) (byte, error) {
 	candidates := []byte{
 		byte(backend.REG_R8),
@@ -525,7 +524,13 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 			if err := parseConditionals(symbol, reg, tmp); err != nil {
 				return err, nil, false
 			}
-
+		case "<<":
+			//move to cl the ammount to shift
+			backend.Mov64_r_r(byte(backend.REG_RCX), tmp)
+			backend.Lshfit64_reg(reg)
+		case ">>":
+			backend.Mov64_r_r(byte(backend.REG_RCX), tmp)
+			backend.Rshfit64_reg(reg)
 		default:
 			fmt.Printf("Current line is %d\n", parser.LineNumber)
 			return fmt.Errorf("unknown symbol '%s' found at line %d", symbol, parser.LineNumber), nil, false

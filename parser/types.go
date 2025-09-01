@@ -304,7 +304,6 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 		return false, fmt.Errorf("nesting de arrays excede maxDepth=%d", maxDepth)
 	}
 
-
 	SubStack(arrType * numberOfElements)
 	our_depth := depth
 	backend.Mov64_mi_r(byte(backend.REG_R15), uint(our_depth*8), byte(backend.REG_RSP))
@@ -440,6 +439,7 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 		parsedOne = true
 	}
 
+	// Make sure the loaded element is properly zero-extended to its width.
 	clearReg(reg, arrType)
 
 	return parsedOne, nil

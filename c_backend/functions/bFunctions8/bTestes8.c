@@ -12,16 +12,25 @@
 #define REG_RBP 0x5
 #define REG_RSI 0x6
 #define REG_RDI 0x7
+#define REG_R8 0x8
+#define REG_R9 0x9
+#define REG_R10 0xA
+#define REG_R11 0xB
+#define REG_R12 0xC
+#define REG_R13 0xD
+#define REG_R14 0xE
+#define REG_R15 0xF
 
 // Registos de 0 a 7 (8-bit registers for operations)
 static const uint8_t all_regs[] = {
-    REG_AL, REG_CL, REG_DL, REG_BL,
-    REG_AH, REG_CH, REG_DH, REG_BH};
+    REG_AL, REG_CL, REG_DL, REG_BL, REG_SPL, REG_BPL,
+    REG_SIL, REG_DIL, REG_R8B, REG_R9B, REG_R10B, REG_R11B, REG_R12B};
 
 // 64-bit registers for memory addressing
 static const uint8_t all_mem_regs[] = {
     REG_RAX, REG_RCX, REG_RDX, REG_RBX,
-    REG_RSP, REG_RBP, REG_RSI, REG_RDI};
+    REG_RSP, REG_RBP, REG_RSI, REG_RDI,
+    REG_R8, REG_R9, REG_R10, REG_R11, REG_R12};
 
 // Valores imediatos para testar edge cases
 static const uint8_t imm8_vals[] = {0U, UINT8_MAX, 1U, 0x80U};
@@ -86,7 +95,7 @@ void funcao_teste_mov8_r_mr(void)
         {
             for (unsigned k = 0; k < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++k)
             {
-                if (all_mem_regs[k] == REG_RSP)
+                if (all_mem_regs[k] == REG_RSP || all_mem_regs[k] == REG_R12B)
                 {
                     continue;
                 }
@@ -691,6 +700,124 @@ void funcao_teste_xor8_r_mr(void)
             nop();
         }
         nop();
+        nop();
+    }
+}
+
+// INC tests
+void funcao_teste_inc8_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        inc8_r(all_regs[i]);
+        nop();
+    }
+}
+
+void funcao_teste_inc8_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        if (all_mem_regs[i] == REG_RSP)
+        {
+            continue; // Skip RSP as memory register
+        }
+        inc8_m(all_mem_regs[i]);
+        nop();
+    }
+}
+
+void funcao_teste_inc8_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        if (all_mem_regs[i] == REG_RSP)
+        {
+            continue; // Skip RSP as memory register
+        }
+        for (unsigned j = 0; j < sizeof(off_vals) / sizeof(*off_vals); ++j)
+        {
+            inc8_mi(all_mem_regs[i], off_vals[j]);
+        }
+        nop();
+    }
+}
+
+void funcao_teste_inc8_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        if (all_mem_regs[i] == REG_RSP)
+        {
+            continue; // Skip RSP as base register
+        }
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as index register
+            }
+            inc8_mr(all_mem_regs[i], all_mem_regs[j]);
+        }
+        nop();
+    }
+}
+
+// DEC tests
+void funcao_teste_dec8_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        dec8_r(all_regs[i]);
+        nop();
+    }
+}
+
+void funcao_teste_dec8_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        if (all_mem_regs[i] == REG_RSP)
+        {
+            continue; // Skip RSP as memory register
+        }
+        dec8_m(all_mem_regs[i]);
+        nop();
+    }
+}
+
+void funcao_teste_dec8_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        if (all_mem_regs[i] == REG_RSP)
+        {
+            continue; // Skip RSP as memory register
+        }
+        for (unsigned j = 0; j < sizeof(off_vals) / sizeof(*off_vals); ++j)
+        {
+            dec8_mi(all_mem_regs[i], off_vals[j]);
+        }
+        nop();
+    }
+}
+
+void funcao_teste_dec8_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        if (all_mem_regs[i] == REG_RSP)
+        {
+            continue; // Skip RSP as base register
+        }
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // Skip RSP as index register
+            }
+            dec8_mr(all_mem_regs[i], all_mem_regs[j]);
+        }
         nop();
     }
 }
