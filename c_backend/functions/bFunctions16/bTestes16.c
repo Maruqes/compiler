@@ -12,16 +12,29 @@
 #define REG_RBP 0x5
 #define REG_RSI 0x6
 #define REG_RDI 0x7
+// extended
+#define REG_R8 0x8
+#define REG_R9 0x9
+#define REG_R10 0xA
+#define REG_R11 0xB
+#define REG_R12 0xC
+#define REG_R13 0xD
+#define REG_R14 0xE
+#define REG_R15 0xF
 
 // Registos de 0 a 7 (16-bit registers for operations)
 static const uint8_t all_regs[] = {
     REG_AX, REG_CX, REG_DX, REG_BX,
-    REG_SP, REG_BP, REG_SI, REG_DI};
+    REG_SP, REG_BP, REG_SI, REG_DI,
+    REG_R8W, REG_R9W, REG_R10W, REG_R11W,
+    REG_R12W, REG_R13W, REG_R14W, REG_R15W};
 
 // 64-bit registers for memory addressing
 static const uint8_t all_mem_regs[] = {
     REG_RAX, REG_RCX, REG_RDX, REG_RBX,
-    REG_RSP, REG_RBP, REG_RSI, REG_RDI};
+    REG_RSP, REG_RBP, REG_RSI, REG_RDI,
+    REG_R8, REG_R9, REG_R10, REG_R11,
+    REG_R12, REG_R13, REG_R14, REG_R15};
 
 // Valores imediatos para testar edge cases
 static const uint16_t imm16_vals[] = {0U, UINT16_MAX, 1U, 0x8000U};
@@ -1036,6 +1049,163 @@ void funcao_teste_div16_mr(void)
             }
             div16_mr(all_mem_regs[i], all_mem_regs[j]);
         }
+        nop();
+    }
+}
+
+// ============================================================================
+// INC/DEC 16-bit tests
+// ============================================================================
+
+// Test INC r16
+void funcao_teste_inc16_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        inc16_r(all_regs[i]);
+        nop();
+    }
+}
+
+// Test INC [r64]
+void funcao_teste_inc16_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        if (all_mem_regs[i] == REG_RSP)
+        {
+            continue; // RSP cannot be base for memory operand
+        }
+        // R12 requires SIB handling; our inc16_m rejects RM_SIB as base
+        if (all_mem_regs[i] == REG_R12)
+        {
+            continue;
+        }
+        inc16_m(all_mem_regs[i]);
+        nop();
+    }
+}
+
+// Test INC [r64 + disp32]
+void funcao_teste_inc16_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        if (all_mem_regs[i] == REG_RSP)
+        {
+            continue; // RSP cannot be base for memory operand
+        }
+        if (all_mem_regs[i] == REG_R12)
+        {
+            continue; // Skip R12 base; inc16_mi blocks RM_SIB base
+        }
+        for (unsigned j = 0; j < sizeof(off_vals) / sizeof(*off_vals); ++j)
+        {
+            inc16_mi(all_mem_regs[i], (uint32_t)off_vals[j]);
+        }
+        nop();
+        nop();
+    }
+}
+
+// Test INC [r64_base + r64_index]
+void funcao_teste_inc16_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        if (all_mem_regs[i] == REG_RSP)
+        {
+            continue; // RSP cannot be base for memory operand
+        }
+        if (all_mem_regs[i] == REG_R12)
+        {
+            continue; // Skip R12 base; inc16_mr blocks RM_SIB base
+        }
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // RSP cannot be index
+            }
+            inc16_mr(all_mem_regs[i], all_mem_regs[j]);
+        }
+        nop();
+        nop();
+    }
+}
+
+// Test DEC r16
+void funcao_teste_dec16_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        dec16_r(all_regs[i]);
+        nop();
+    }
+}
+
+// Test DEC [r64]
+void funcao_teste_dec16_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        if (all_mem_regs[i] == REG_RSP)
+        {
+            continue; // RSP cannot be base
+        }
+        if (all_mem_regs[i] == REG_R12)
+        {
+            continue; // Skip R12 base; dec16_m blocks RM_SIB base
+        }
+        dec16_m(all_mem_regs[i]);
+        nop();
+    }
+}
+
+// Test DEC [r64 + disp32]
+void funcao_teste_dec16_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        if (all_mem_regs[i] == REG_RSP)
+        {
+            continue; // RSP cannot be base
+        }
+        if (all_mem_regs[i] == REG_R12)
+        {
+            continue; // Skip R12 base; dec16_mi blocks RM_SIB base
+        }
+        for (unsigned j = 0; j < sizeof(off_vals) / sizeof(*off_vals); ++j)
+        {
+            dec16_mi(all_mem_regs[i], (uint32_t)off_vals[j]);
+        }
+        nop();
+        nop();
+    }
+}
+
+// Test DEC [r64_base + r64_index]
+void funcao_teste_dec16_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        if (all_mem_regs[i] == REG_RSP)
+        {
+            continue; // RSP cannot be base
+        }
+        if (all_mem_regs[i] == REG_R12)
+        {
+            continue; // Skip R12 base; dec16_mr blocks RM_SIB base
+        }
+        for (unsigned j = 0; j < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++j)
+        {
+            if (all_mem_regs[j] == REG_RSP)
+            {
+                continue; // RSP cannot be index
+            }
+            dec16_mr(all_mem_regs[i], all_mem_regs[j]);
+        }
+        nop();
         nop();
     }
 }

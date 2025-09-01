@@ -22,7 +22,7 @@ func main() {
 	dd d32 = 0xffffffff;
 	dq w16 = 0xffff;
 
-	dw w162 = (w16 | 0x00f0);
+	dw w162 = (w16 ^ 0x00f0);
 
 	dd d322 = (d32 & 0x0000ff00);
 

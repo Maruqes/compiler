@@ -18,6 +18,16 @@
 #define REG_SI 6
 #define REG_DI 7
 
+// Extended Registers (8-15)
+#define REG_R8W 8
+#define REG_R9W 9
+#define REG_R10W 10
+#define REG_R11W 11
+#define REG_R12W 12
+#define REG_R13W 13
+#define REG_R14W 14
+#define REG_R15W 15
+
 void mov16_r_i(uint8_t reg_code, uint16_t value);
 void mov16_r_m(uint8_t reg, uint8_t mem_reg);
 void mov16_r_mi(uint8_t reg_dest, uint8_t reg_base, int32_t offset);
@@ -183,5 +193,17 @@ void funcao_teste_div16_r(void);
 void funcao_teste_div16_m(void);
 void funcao_teste_div16_mi(void);
 void funcao_teste_div16_mr(void);
+
+// INC 16-bit tests
+void funcao_teste_inc16_r(void);
+void funcao_teste_inc16_m(void);
+void funcao_teste_inc16_mi(void);
+void funcao_teste_inc16_mr(void);
+
+// DEC 16-bit tests
+void funcao_teste_dec16_r(void);
+void funcao_teste_dec16_m(void);
+void funcao_teste_dec16_mi(void);
+void funcao_teste_dec16_mr(void);
 
 #endif // BFUNCTIONS16_H
