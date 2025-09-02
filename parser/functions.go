@@ -148,39 +148,6 @@ func parseReturn(parser *Parser) error {
 	return nil
 }
 
-func temporaryPrintVar(parser *Parser) error {
-	//parse "(", "var_name", ")"
-	if parser.file == nil {
-		return os.ErrInvalid
-	}
-
-	token, err := parser.NextToken()
-	if err != nil {
-		return err
-	}
-
-	if token != "(" {
-		return fmt.Errorf("expected '(', got '%s'", token)
-	}
-
-	varName, err := parser.NextToken()
-	if err != nil {
-		return err
-	}
-
-	token, err = parser.NextToken()
-	if err != nil {
-		return err
-	}
-
-	if token != ")" {
-		return fmt.Errorf("expected ')', got '%s'", token)
-	}
-	PrintVar(varName)
-	eatSemicolon(parser)
-	return nil
-}
-
 func temporaryPrintHexVar(parser *Parser) error {
 	//parse "(", "var_name", ")"
 	if parser.file == nil {
@@ -277,13 +244,6 @@ func parseCodeBlock(parser *Parser) error {
 				return nil
 			}
 			return err
-		}
-
-		if token == "print" {
-			if err := temporaryPrintVar(parser); err != nil {
-				return err
-			}
-			continue
 		}
 
 		if token == "printHex" {

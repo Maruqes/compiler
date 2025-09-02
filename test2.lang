@@ -1,0 +1,11 @@
+
+func print(ptr s1, dq len){
+	asm(mov64_r_i, rax, 1);
+	asm(mov64_r_i, rdi, 1);
+	loadReg(rsi, s1);
+	loadReg(rdx, len);
+	asm(syscall);
+	return;
+}
+
+include("test3.lang")

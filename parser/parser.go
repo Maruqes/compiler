@@ -557,6 +557,23 @@ func getAfterEqual(parser *Parser) error {
 	return err
 }
 
+func includeFile(parser *Parser) error {
+	eatFirstBrace(parser)
+	filename, err := parser.NextToken()
+	if err != nil {
+		return err
+	}
+	eatLastBrace(parser)
+
+	var par Parser
+	err = par.StartParse(filename[1 : len(filename)-1])
+	if err != nil {
+		return err
+	}
+
+	return StartParsing(&par)
+}
+
 func StartParsing(parser *Parser) error {
 	if parser.file == nil {
 		return os.ErrInvalid
@@ -583,6 +600,11 @@ func StartParsing(parser *Parser) error {
 			}
 		case "struct":
 			err := createStructType(parser)
+			if err != nil {
+				return err
+			}
+		case "include":
+			err := includeFile(parser)
 			if err != nil {
 				return err
 			}

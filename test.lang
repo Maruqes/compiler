@@ -1,3 +1,5 @@
+include("test2.lang")
+
 global{
 	dq aGlobal = 10;
 }
@@ -10,43 +12,8 @@ struct MyStruct {
 }
 
 
-
 func main() {
-   
-
-
-
-	//here
-
-	// dw (16-bit) overflow wrap
-	dd d32 = 0xffffffff;
-	dq w16 = 0xffff;
-
-	dw w162 = (w16 ^ 0x00f0);
-
-	dd d322 = (d32 & 0x0000ff00);
-
-	// Bitwise ops across sizes (masking at assignment sites)
-	dq bits = d322 | w162;
-	dq bits2 = (d32 & 0x0000ff00) | (w16 ^ 0x00f0);
-	printHex(bits);
-	printHex(bits2);
-	printHex(w162);
-	printHex(d322);
-
-	db testLoadReg1 = 0xff;
-	db testLoadReg = 0;
-	db testLoadReg2 = 0xff;
-
-	asm(mov64_r_i, rax, 20);
-	loadVar(testLoadReg, rax);
-
-
-	asm(mov64_r_i, rax, 60);
-	// asm(mov64_r_i, rdi, 11);
-	loadReg(rdi, testLoadReg);
-	asm(syscall);
-
+	printHelloWorld();
 	
 
 	return;
