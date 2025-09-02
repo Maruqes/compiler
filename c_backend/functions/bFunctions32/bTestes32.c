@@ -12,16 +12,29 @@
 #define REG_RBP 0x5
 #define REG_RSI 0x6
 #define REG_RDI 0x7
+// extended
+#define REG_R8 0x8
+#define REG_R9 0x9
+#define REG_R10 0xA
+#define REG_R11 0xB
+#define REG_R12 0xC
+#define REG_R13 0xD
+#define REG_R14 0xE
+#define REG_R15 0xF
 
 // Registos de 0 a 7 (32-bit registers for operations)
 static const uint8_t all_regs[] = {
     REG_EAX, REG_ECX, REG_EDX, REG_EBX,
-    REG_ESP, REG_EBP, REG_ESI, REG_EDI};
+    REG_ESP, REG_EBP, REG_ESI, REG_EDI,
+    REG_R8D, REG_R9D, REG_R10D, REG_R11D,
+    REG_R12D, REG_R13D, REG_R14D, REG_R15D};
 
 // 64-bit registers for memory addressing
 static const uint8_t all_mem_regs[] = {
     REG_RAX, REG_RCX, REG_RDX, REG_RBX,
-    REG_RSP, REG_RBP, REG_RSI, REG_RDI};
+    REG_RSP, REG_RBP, REG_RSI, REG_RDI,
+    REG_R8, REG_R9, REG_R10, REG_R11,
+    REG_R12, REG_R13, REG_R14, REG_R15};
 
 // Valores imediatos para testar edge cases
 static const uint32_t imm32_vals[] = {0U, UINT32_MAX, 1U, 0x80000000U};
@@ -902,3 +915,106 @@ void funcao_teste_div32_mr(void)
     nop();
 }
 
+// ============================================================================
+// INC/DEC 32-bit tests
+// ============================================================================
+
+// Test INC r32
+void funcao_teste_inc32_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        inc32_r(all_regs[i]);
+    }
+    nop();
+}
+
+// Test INC [mem]
+void funcao_teste_inc32_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        inc32_m(all_mem_regs[i]);
+    }
+    nop();
+}
+
+// Test INC [mem + offset]
+void funcao_teste_inc32_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(off_vals) / sizeof(*off_vals); ++j)
+        {
+            inc32_mi(all_mem_regs[i], (uint32_t)off_vals[j]);
+        }
+        nop();
+    }
+    nop();
+}
+
+// Test INC [base + index]
+void funcao_teste_inc32_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            if (all_regs[j] == REG_ESP)
+                continue;
+            inc32_mr(all_mem_regs[i], all_regs[j]);
+        }
+        nop();
+    }
+    nop();
+}
+
+// Test DEC r32
+void funcao_teste_dec32_r(void)
+{
+    for (unsigned i = 0; i < sizeof(all_regs) / sizeof(*all_regs); ++i)
+    {
+        dec32_r(all_regs[i]);
+    }
+    nop();
+}
+
+// Test DEC [mem]
+void funcao_teste_dec32_m(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        dec32_m(all_mem_regs[i]);
+    }
+    nop();
+}
+
+// Test DEC [mem + offset]
+void funcao_teste_dec32_mi(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(off_vals) / sizeof(*off_vals); ++j)
+        {
+            dec32_mi(all_mem_regs[i], (uint32_t)off_vals[j]);
+        }
+        nop();
+    }
+    nop();
+}
+
+// Test DEC [base + index]
+void funcao_teste_dec32_mr(void)
+{
+    for (unsigned i = 0; i < sizeof(all_mem_regs) / sizeof(*all_mem_regs); ++i)
+    {
+        for (unsigned j = 0; j < sizeof(all_regs) / sizeof(*all_regs); ++j)
+        {
+            if (all_regs[j] == REG_ESP)
+                continue;
+            dec32_mr(all_mem_regs[i], all_regs[j]);
+        }
+        nop();
+    }
+    nop();
+}

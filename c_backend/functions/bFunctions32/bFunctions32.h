@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include "../bFunctions64/bFunctions64.h"
 
 #define REG_EAX 0x0 // 32-bit register defs kept for compatibility
 #define REG_ECX 0x1
@@ -16,6 +17,14 @@
 #define REG_EBP 0x5
 #define REG_ESI 0x6
 #define REG_EDI 0x7
+#define REG_R8D 0x8
+#define REG_R9D 0x9
+#define REG_R10D 0xA
+#define REG_R11D 0xB
+#define REG_R12D 0xC
+#define REG_R13D 0xD
+#define REG_R14D 0xE
+#define REG_R15D 0xF
 
 #define XMM0 0x0
 #define XMM1 0x1
@@ -40,13 +49,7 @@ void mov32_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2);
 void mov32_mr_i(uint8_t reg, uint8_t reg2, uint32_t value);
 void mov32_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3);
 
-void sete_r(uint8_t reg);
-void setne_r(uint8_t reg);
-void setl_r(uint8_t reg);
-void setg_r(uint8_t reg);
 
-void shl_reg_imm(uint8_t reg, uint8_t imm);
-void shr_reg_imm(uint8_t reg, uint8_t imm);
 
 // Arithmetic operations
 void sum32_r_r(uint8_t reg1, uint8_t reg2);
@@ -193,5 +196,15 @@ void funcao_teste_div32_r(void);
 void funcao_teste_div32_m(void);
 void funcao_teste_div32_mi(void);
 void funcao_teste_div32_mr(void);
+
+void funcao_teste_inc32_r(void);
+void funcao_teste_inc32_m(void);
+void funcao_teste_inc32_mi(void);
+void funcao_teste_inc32_mr(void);
+
+void funcao_teste_dec32_r(void);
+void funcao_teste_dec32_m(void);
+void funcao_teste_dec32_mi(void);
+void funcao_teste_dec32_mr(void);
 
 #endif // BFUNCTIONS32_H

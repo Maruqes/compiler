@@ -34,6 +34,10 @@ func main() {
 	// par.StartParse("features.lang")
 	par.StartParse("test.lang")
 
+	backend.Funcao_teste_inc32_r()
+	backend.Funcao_teste_inc32_m()
+	backend.Funcao_teste_inc32_mi()
+	backend.Funcao_teste_inc32_mr()
 
 	backend.Call("global")
 	backend.Call("main")
