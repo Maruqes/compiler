@@ -328,6 +328,14 @@ func parseCodeBlock(parser *Parser) error {
 			if err := ParseNewAsmFunc(parser); err != nil {
 				return err
 			}
+		case "loadReg":
+			if err := ParseNewLoadRegFunc(parser); err != nil {
+				return err
+			}
+		case "loadVar":
+			if err := ParseNewLoadVarFunc(parser); err != nil {
+				return err
+			}
 		default:
 
 			if isFunctionCall(token) {

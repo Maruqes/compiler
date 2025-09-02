@@ -34,9 +34,17 @@ func main() {
 	printHex(w162);
 	printHex(d322);
 
-	
+	db testLoadReg1 = 0xff;
+	db testLoadReg = 0;
+	db testLoadReg2 = 0xff;
+
+	asm(mov64_r_i, rax, 20);
+	loadVar(testLoadReg, rax);
+
+
 	asm(mov64_r_i, rax, 60);
-	asm(mov64_r_i, rdi, 11);
+	// asm(mov64_r_i, rdi, 11);
+	loadReg(rdi, testLoadReg);
 	asm(syscall);
 
 	

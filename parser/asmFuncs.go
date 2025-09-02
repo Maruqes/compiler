@@ -271,7 +271,7 @@ func ParseNewAsmFunc(parser *Parser) error {
 	if err != nil {
 		return err
 	}
-	
+
 	peekString, err := parser.Peek()
 	if err != nil {
 		return err
@@ -323,6 +323,72 @@ func ParseNewAsmFunc(parser *Parser) error {
 	if err := callAsmFunction(actualFunc, asmParams); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+// loadReg(rax, var_name)
+func ParseNewLoadRegFunc(parser *Parser) error {
+	eatFirstBrace(parser)
+
+	regString, err := parser.NextToken()
+	if err != nil {
+		return err
+	}
+
+	finalReg, err := convertStringToAsmReg(regString)
+	if err != nil {
+		return err
+	}
+	eatSymbol(parser, ",")
+
+	err, _, _ = getUntilSymbol(parser, []string{")"}, finalReg)
+	if err != nil {
+		return err
+	}
+
+	eatSemicolon(parser)
+	return nil
+}
+
+// loadVar(var_name, rax)
+func ParseNewLoadVarFunc(parser *Parser) error {
+
+	varList := GetVarList(SCOPE)
+	if varList == nil {
+		return fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+	}
+
+	//PARSER PART
+	eatFirstBrace(parser)
+	varname, err := parser.NextToken()
+	if err != nil {
+		return err
+	}
+	eatSymbol(parser, ",")
+
+	regString, err := parser.NextToken()
+	if err != nil {
+		return err
+	}
+
+	eatLastBrace(parser)
+	eatSemicolon(parser)
+
+	//ASM PART
+	finalReg, err := convertStringToAsmReg(regString)
+	if err != nil {
+		return err
+	}
+
+	varStruct, err := varList.GetVariableStruct(varname)
+	if err != nil {
+		return err
+	}
+
+	backend.Mov64_r_r(byte(backend.REG_RAX), finalReg)
+
+	varList.SetVar(varStruct)
 
 	return nil
 }
