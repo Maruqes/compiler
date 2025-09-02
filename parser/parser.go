@@ -319,6 +319,17 @@ func eatSemicolon(parser *Parser) {
 	}
 }
 
+func eatSymbol(parser *Parser, symbol string) {
+	//parse symbol else panic
+	foundSymbol, err := parser.NextToken()
+	if err != nil {
+		panic("Error eating symbol: " + err.Error())
+	}
+	if foundSymbol != symbol {
+		panic(fmt.Sprintf("Expected '%s', got '%s' on line %d", symbol, foundSymbol, parser.LineNumber))
+	}
+}
+
 // Reserved scratch registers to avoid clobber across recursive parses
 var reservedTmpRegs []byte
 
