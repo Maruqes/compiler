@@ -554,6 +554,7 @@ func parseCoisoEstranho(parser *Parser, extra *any) (OriginType, any, error) {
 			return ORIGIN_STRUCT, structRaw, nil
 		} else if err == nil { //checking normal vars
 			*extra = typeRaw
+			fmt.Println("Found normal var:", typeRaw)
 			return ORIGIN_RBP, nil, nil
 		}
 	}

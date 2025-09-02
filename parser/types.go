@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -148,6 +149,10 @@ func parseVariablesFuncCalls(parser *Parser, token string, reg byte) (bool, erro
 	return false, nil
 }
 
+// nested defers solution
+var deferNumber int = 0
+var deferLow int = math.MaxInt
+
 func parsePointer(parser *Parser, token string, reg byte) (bool, error) {
 	varList := GetVarList(SCOPE)
 	if varList == nil {
@@ -169,17 +174,71 @@ func parsePointer(parser *Parser, token string, reg byte) (bool, error) {
 			}
 			return true, nil
 		case '*':
+			// Determine the dereferenced width for this '*' only.
+			derefWidth := DQ
 
-			token, err := parser.NextToken()
+			targetTok, err := parser.NextToken()
 			if err != nil {
 				return false, err
 			}
 
-			err = getValueFromToken(parser, token, reg)
-			if err != nil {
+			// If the token refers to a known variable, pick its annotated width if any.
+			if varList.DoesVarExist(targetTok) {
+				vinfo, err := varList.GetVariableStruct(targetTok)
+				if err != nil {
+					return false, err
+				}
+				if vinfo != nil && vinfo.Extra != nil {
+					switch tv := vinfo.Extra.(type) {
+					case string:
+						if isTypeToken(tv) {
+							t, err := getTypeFromToken(tv)
+							if err != nil {
+								return false, err
+							}
+							derefWidth = t
+						}
+					case int:
+						if isType(tv) {
+							derefWidth = tv
+						}
+					}
+				}
+			}
+
+			if deferLow > derefWidth {
+				deferLow = derefWidth
+			}
+
+			deferNumber++
+			// Compute the address into reg.
+			if err := getValueFromToken(parser, targetTok, reg); err != nil {
 				return false, err
 			}
-			backend.Mov64_r_m(reg, reg)
+			deferNumber--
+
+			if deferNumber == 0 {
+				derefWidth = deferLow
+				deferNumber = 0
+				deferLow = math.MaxInt
+			} else {
+				derefWidth = DQ
+			}
+
+			// Load value from [reg] with the chosen width.
+			switch derefWidth {
+			case DQ:
+				backend.Mov64_r_m(reg, reg)
+			case DD:
+				backend.Mov32_r_m(reg, reg)
+			case DW:
+				backend.Mov16_r_m(reg, reg)
+			case DB:
+				backend.Mov8_r_m(reg, reg)
+			default:
+				return false, fmt.Errorf("unknown pointer type: %d", derefWidth)
+			}
+			clearReg(reg, derefWidth)
 			return true, nil
 		}
 	}

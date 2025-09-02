@@ -11,7 +11,7 @@ struct MyStruct {
 
 
 func structsT(){
-	MyStruct structName = MyStruct{1,2,3};
+	ptr structName<MyStruct> = MyStruct{1,2,3};
 
     printHex(structName);
     printHex(structName.field1);
@@ -107,7 +107,7 @@ func flow(){
 		break;
 	}
 
-	for i = 0; i < 5; i++; {
+	for dq i = 0; i < 5; i++; {
 		if i >= 1 {
 			continue;
 		}
@@ -123,15 +123,25 @@ func pointers(){
 	dw c = 7;
 	db d = 8;
 
-	ptr aP = &a;
-	ptr bP = &b;
-	ptr cP = &c;
-	ptr dP = &d;
+	ptr aP<dq> = &a;
+	ptr bP<dd> = &b;
+	ptr cP<dw> = &c;
+	ptr dP<db> = &d;
+
+	ptr aPP<dq> = &aP;
+	ptr bPP<dd> = &bP;
+	ptr cPP<dw> = &cP;
+	ptr dPP<db> = &dP;
 
 	printHex(*aP);
 	printHex(*bP);
 	printHex(*cP);
 	printHex(*dP);
+
+	printHex(**aPP);
+	printHex(**bPP);
+	printHex(**cPP);
+	printHex(**dPP);
 
 	return;
 }
@@ -164,19 +174,19 @@ func globalVars(){
 
 func arraysT(){
 
-	dq arr = dq{1,2,3,4,5};
+	dq arr<dq> = dq{1,2,3,4,5};
 	printHex(arr);
 	printHex(arr[0]);
-	printHex(arr[1*8]);
-	printHex(arr[2*8]);
-	printHex(arr[3*8]);
-	printHex(arr[4*8]);
+	printHex(arr[1]);
+	printHex(arr[2]);
+	printHex(arr[3]);
+	printHex(arr[4]);
 
-	dq matrix = dq{dq{1, 2}, dq{3, 4}};
+	dq matrix<dq> = dq{dq{1, 2}, dq{3, 4}};
     printHex(matrix[0][0]);
-    printHex(matrix[0][1*8]);
-    printHex(matrix[1*8][0]);
-    printHex(matrix[1*8][1*8]);
+    printHex(matrix[0][1]);
+    printHex(matrix[1][0]);
+    printHex(matrix[1][1]);
 
 	return;
 }

@@ -18,26 +18,17 @@ import (
 todo->
 asm funcs
 inputs na main-> args    ./main <args>
-left shift right shift
 */
-
 /*
-known bugs->
-	APAGAMOS STRUCTS/GLOBAL
-
-	PROBLEMO PUBLIC VAR backend.REG_RSI in c
+known problems
+-dd(b) = fffffffffffffffa (eu esperava 00000000fffffffa)
 */
 
 func main() {
 
 	var par parser.Parser
-	// par.StartParse("features.lang")
-	par.StartParse("test.lang")
-
-	backend.Funcao_teste_inc32_r()
-	backend.Funcao_teste_inc32_m()
-	backend.Funcao_teste_inc32_mi()
-	backend.Funcao_teste_inc32_mr()
+	par.StartParse("features.lang")
+	// par.StartParse("test.lang")
 
 	backend.Call("global")
 	backend.Call("main")

@@ -1,5 +1,6 @@
 #include "bFunctions32.h"
 #include "../functions.h"
+#include "../bFunctions64/bFunctions64.h"
 
 /*
 i-immediate
