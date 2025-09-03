@@ -2,6 +2,7 @@ global{
     dq aGlob = 5;
 }
 
+// include can be done like->  include("test3.lang")
 
 struct MyStruct {
     dq field1;
@@ -283,6 +284,26 @@ func kernelInfo(){
 	return;
 }
 
+func retornoDQ(){
+	dq res = 0x0123456789abcdef;
+	return res;
+}
+
+func retornoDD(){
+	dd res = 0x0123456789abcdef;
+	return res;
+}
+
+func retornoDW(){
+	dw res = 0x0123456789abcdef;
+	return res;
+}
+
+func retornoDB(){
+	db res = 0x0123456789abcdef;
+	return res;
+}
+
 func main(){
 
 	defer {
@@ -313,6 +334,13 @@ func main(){
 	kernelInfo();
 	print("\n");
 	kernelInfo2();
+	printHex(retornoDQ());
+	printHex(retornoDD());
+	printHex(retornoDW());
+	printHex(retornoDB());
+	printHex(dd(retornoDQ()));
+	printHex(dw(retornoDQ()));
+	printHex(db(retornoDQ()));
 
     return;
 }
