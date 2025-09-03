@@ -9,14 +9,28 @@ struct MyStruct {
     db field3;
 }
 
+struct MyStruct2 {
+	db field1;
+	db field2;
+	db field3;
+	db field4;
+	db field5 MyStruct<1>;
+	db field5 db<4>;
+	db field6;
+}
+
+
 
 func structsT(){
 	ptr structName<MyStruct> = MyStruct{1,2,3};
+
+	ptr test<MyStruct2> = MyStruct2{};
 
     printHex(structName);
     printHex(structName.field1);
     printHex(structName.field2);
     printHex(structName.field3);
+    printHex(test);
 	return;
 }
 
@@ -146,14 +160,31 @@ func pointers(){
 	return;
 }
 
-func strings(){
-	ptr str = "Hello, World!";
-	printHex(str);
-	
-	for dq i = 0; i < 13; i++; {
-		db letter = db(str[i]);
-		print(letter);
+
+func getStringLen(ptr s1){
+	dd res = 0;
+	while s1[res] != 0 {
+		res++;
 	}
+	return res;
+}
+
+
+func print(ptr s1){
+	dd len = getStringLen(s1);
+
+	asm(mov64_r_i, rax, 1);
+	asm(mov64_r_i, rdi, 1);
+	loadReg(rsi, s1);
+	loadReg(rdx, len);
+	asm(syscall);
+	return;
+}
+
+func strings(){
+	ptr str = "Hello, World!\n";
+	printHex(str);
+	print(str);
 	return;
 }
 
@@ -176,17 +207,17 @@ func arraysT(){
 
 	dq arr<dq> = dq{1,2,3,4,5};
 	printHex(arr);
-	printHex(arr[0]);
-	printHex(arr[1]);
-	printHex(arr[2]);
-	printHex(arr[3]);
-	printHex(arr[4]);
+
+	for dq i = 0; i < 5; i++; {
+		printHex(arr[i]);
+	}
 
 	dq matrix<dq> = dq{dq{1, 2}, dq{3, 4}};
-    printHex(matrix[0][0]);
-    printHex(matrix[0][1]);
-    printHex(matrix[1][0]);
-    printHex(matrix[1][1]);
+	for dq i = 0; i < 2; i++; {
+		for dq j = 0; j < 2; j++; {
+			printHex(matrix[i][j]);
+		}
+	}
 
 	return;
 }
@@ -205,32 +236,83 @@ func arithmetics(){
 	return;
 }
 
+
+func kernelInfo2(){
+
+	ptr memInfo = db<390>;
+
+	asm(mov64_r_i, rax, 63);
+	loadReg(rdi, memInfo);
+	asm(syscall);
+
+	for dq i = 0; i < 6; i++; {
+		print(memInfo + (i * 65));
+		print("\n");
+	}
+	return;
+}
+
+struct utsname {
+    db sysname db<65>;   
+    db nodename db<65>; 
+    db release db<65>;
+    db version db<65>; 
+    db machine db<65>;  
+    db domainname db<65>;
+}
+
+func kernelInfo(){
+	ptr structName<utsname> = utsname{};
+
+	asm(mov64_r_i, rax, 63);
+	loadReg(rdi, structName);
+	asm(syscall);
+
+	printHex(structName.sysname); //first letter
+	print(&structName.sysname);
+	print("\n");
+	print(&structName.nodename);
+	print("\n");
+	print(&structName.release);
+	print("\n");
+	print(&structName.version);
+	print("\n");
+	print(&structName.machine);
+	print("\n");
+	print(&structName.domainname);
+	return;
+}
+
 func main(){
 
 	defer {
-		printHex(0xffffffffffffffff);
+		printHex(0xdeafbeefdeafbeef);
 	}
 
 	structsT();
-	print(10);
+	print("\n");
 	vars();
-	print(10);
+	print("\n");
 	flow();
-	print(10);
+	print("\n");
 	pointers();
-	print(10);
+	print("\n");
 	strings();
-	print(10);
+	print("\n");
 
 	dq e = 5;
 	functionParams(1, 2, 3, 4, &e);
 
-	print(10);
+	print("\n");
 	globalVars();
-	print(10);
+	print("\n");
 	arraysT();
-	print(10);
+	print("\n");
 	arithmetics();
+	print("\n");
+	kernelInfo();
+	print("\n");
+	kernelInfo2();
 
     return;
 }

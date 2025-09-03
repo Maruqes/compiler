@@ -1,20 +1,45 @@
-include("test2.lang")
 
 global{
-	dq aGlobal = 10;
 }
-
 
 struct MyStruct {
-    dq field1;
-    dq field2;
-    dq field3;
+	db field1;
+	db field2;
+	db field3;
+	dq field4;
 }
 
 
+struct MyStruct2 {
+	db field1;
+	db field2;
+	db field3;
+	db field4;
+	db field5 MyStruct<2>;
+	db field6; 
+}
+
 func main() {
-	printHelloWorld();
-	
+	// db a = 0;
+	// db b = 0;
+	// ptr allocArr = db<5>;
+	// // ptr allocArr = MyStruct<5>;
+	// db c = 0;
+	// db d = 0;
+
+	// printHex(&a);
+	// printHex(&b);
+	// printHex(allocArr);
+	// printHex(&c);
+	// printHex(&d);
+
+	db a = 0;
+	ptr test<MyStruct2> = MyStruct2{0,0,0,0,0,0};
+	db c = 0;
+	printHex(&a);
+	printHex(test);
+	printHex(&test);
+	printHex(&c);
 
 	return;
 }

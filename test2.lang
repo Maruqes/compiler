@@ -1,5 +1,15 @@
+func getStringLen(ptr s1){
+	dd res = 0;
+	while s1[res] != 0 {
+		res++;
+	}
+	return res;
+}
 
-func print(ptr s1, dq len){
+
+func print(ptr s1){
+	dd len = getStringLen(s1);
+
 	asm(mov64_r_i, rax, 1);
 	asm(mov64_r_i, rdi, 1);
 	loadReg(rsi, s1);

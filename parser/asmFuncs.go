@@ -160,7 +160,6 @@ var asmFuncs = map[string]any{
 	"mov64_mr_i":  backend.Mov64_mr_i,
 	"mov64_mr_r":  backend.Mov64_mr_r,
 
-	
 	"lshfit64":     backend.Lshfit64,
 	"rshfit64":     backend.Rshfit64,
 	"lshfit64_reg": backend.Lshfit64_reg,
@@ -193,7 +192,6 @@ var asmFuncs = map[string]any{
 	"mov32_mr_i": backend.Mov32_mr_i,
 	"mov32_mr_r": backend.Mov32_mr_r,
 
-	
 	"lshfit32":     backend.Lshfit32,
 	"rshfit32":     backend.Rshfit32,
 	"lshfit32_reg": backend.Lshfit32_reg,
@@ -220,7 +218,6 @@ var asmFuncs = map[string]any{
 	"mov16_mr_i": backend.Mov16_mr_i,
 	"mov16_mr_r": backend.Mov16_mr_r,
 
-	
 	"lshfit16":     backend.Lshfit16,
 	"rshfit16":     backend.Rshfit16,
 	"lshfit16_reg": backend.Lshfit16_reg,
@@ -247,7 +244,6 @@ var asmFuncs = map[string]any{
 	"mov8_mr_i": backend.Mov8_mr_i,
 	"mov8_mr_r": backend.Mov8_mr_r,
 
-	
 	"lshfit8":     backend.Lshfit8,
 	"rshfit8":     backend.Rshfit8,
 	"lshfit8_reg": backend.Lshfit8_reg,
@@ -260,7 +256,7 @@ var asmFuncs = map[string]any{
 	"dec8_m":      backend.Dec8_m,
 	"dec8_mi":     backend.Dec8_mi,
 	"dec8_mr":     backend.Dec8_mr,
-	"syscall": backend.Syscall_instruction,
+	"syscall":     backend.Syscall_instruction,
 }
 
 // callAsmFunction invokes a function value of any type using reflection with the given arguments.
@@ -377,7 +373,7 @@ asm(mov64_r_i, rax, 10)
 */
 func ParseNewAsmFunc(parser *Parser) error {
 
-	eatFirstBrace(parser)
+	eatSymbol(parser, "(")
 
 	asmFuncName, err := parser.NextToken()
 	if err != nil {
@@ -424,7 +420,7 @@ func ParseNewAsmFunc(parser *Parser) error {
 
 	fmt.Println(asmFuncName, asmParams)
 
-	eatSemicolon(parser)
+	eatSymbol(parser, ";")
 
 	actualFunc, exists := asmFuncs[asmFuncName]
 	if !exists {
@@ -441,7 +437,7 @@ func ParseNewAsmFunc(parser *Parser) error {
 
 // loadReg(rax, var_name)
 func ParseNewLoadRegFunc(parser *Parser) error {
-	eatFirstBrace(parser)
+	eatSymbol(parser, "(")
 
 	regString, err := parser.NextToken()
 	if err != nil {
@@ -459,7 +455,7 @@ func ParseNewLoadRegFunc(parser *Parser) error {
 		return err
 	}
 
-	eatSemicolon(parser)
+	eatSymbol(parser, ";")
 	return nil
 }
 
@@ -472,7 +468,7 @@ func ParseNewLoadVarFunc(parser *Parser) error {
 	}
 
 	//PARSER PART
-	eatFirstBrace(parser)
+	eatSymbol(parser, "(")
 	varname, err := parser.NextToken()
 	if err != nil {
 		return err
@@ -484,8 +480,8 @@ func ParseNewLoadVarFunc(parser *Parser) error {
 		return err
 	}
 
-	eatLastBrace(parser)
-	eatSemicolon(parser)
+	eatSymbol(parser, ")")
+	eatSymbol(parser, ";")
 
 	//ASM PART
 	finalReg, err := convertStringToAsmReg(regString)

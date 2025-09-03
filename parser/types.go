@@ -328,7 +328,7 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 		return false, nil
 	}
 
-	token, err = parser.NextToken()
+	token, err = parser.Peek()
 	if err != nil {
 		return false, err
 	}
@@ -339,6 +339,12 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 
 	if token[0] != '{' {
 		return false, nil
+	}
+
+	// Consume the '{' token
+	_, err = parser.NextToken()
+	if err != nil {
+		return false, err
 	}
 
 	numberOfElements, err := countArrayElements(parser)
@@ -414,6 +420,47 @@ func parseArrays(parser *Parser, token string, reg byte) (bool, error) {
 		return false, fmt.Errorf("number of elements parsed (%d) does not match expected (%d)", count, numberOfElements)
 	}
 
+	return true, nil
+}
+
+func parseNonPopulatedArrays(parser *Parser, token string, reg byte) (bool, error) {
+	arrType, err := getTypeFromToken(token)
+	if err != nil {
+		return false, nil
+	}
+	token, err = parser.Peek()
+	if err != nil {
+		return false, err
+	}
+	if len(token) < 1 {
+		return false, nil
+	}
+
+	if token[0] != '<' {
+		return false, nil
+	}
+
+	//consume <
+	_, err = parser.NextToken()
+	if err != nil {
+		return false, err
+	}
+
+	//get number to sub
+	token, err = parser.NextToken()
+	if err != nil {
+		return false, err
+	}
+
+	eatSymbol(parser, ">")
+
+	number, err := strconv.ParseUint(token, 10, 64)
+	if err != nil {
+		return false, err
+	}
+
+	SubStack(int(number) * arrType)
+	backend.Mov64_r_r(reg, byte(backend.REG_RSP))
 	return true, nil
 }
 
@@ -619,7 +666,7 @@ func parseTypeFuncs(parser *Parser, token string, reg byte) (bool, error) {
 		return false, nil
 	}
 
-	eatFirstBrace(parser)
+	eatSymbol(parser, "(")
 
 	typeToken, err := getTypeFromToken(token)
 	if err != nil {
@@ -638,7 +685,7 @@ func parseTypeFuncs(parser *Parser, token string, reg byte) (bool, error) {
 
 	clearReg(reg, typeToken)
 
-	eatLastBrace(parser)
+	eatSymbol(parser, ")")
 
 	return true, nil
 }
@@ -709,6 +756,14 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 	}
 
 	parsed, err = parseArrays(parser, token, reg)
+	if err != nil {
+		return err
+	}
+	if parsed {
+		return nil
+	}
+
+	parsed, err = parseNonPopulatedArrays(parser, token, reg)
 	if err != nil {
 		return err
 	}

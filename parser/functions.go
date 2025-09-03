@@ -169,7 +169,7 @@ func temporaryPrintHexVar(parser *Parser) error {
 	}
 	wrapper.PrintHex(byte(backend.REG_RAX))
 
-	eatSemicolon(parser)
+	eatSymbol(parser, ";")
 	return nil
 }
 
@@ -302,7 +302,7 @@ func parseCodeBlock(parser *Parser) error {
 				if err := parseFunctionCall(parser, token); err != nil {
 					return err
 				}
-				eatSemicolon(parser)
+				eatSymbol(parser, ";")
 				continue
 			}
 

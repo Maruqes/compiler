@@ -342,7 +342,7 @@ func (vl *VarsList) incrementVar(parser *Parser, variable *Variable) error {
 		}
 	}
 
-	eatSemicolon(parser)
+	eatSymbol(parser, ";")
 	return nil
 }
 
@@ -391,7 +391,7 @@ func (vl *VarsList) decrementVar(parser *Parser, variable *Variable) error {
 			backend.Dec64_m(byte(backend.REG_RAX))
 		}
 	}
-	eatSemicolon(parser)
+	eatSymbol(parser, ";")
 	return nil
 }
 
@@ -628,11 +628,20 @@ func createVarStruct(parser *Parser, varType int, extra any) (*Variable, error) 
 		return nil, err
 	}
 
-	// get the value after the equal sign in RAX
-	if err := getAfterEqual(parser); err != nil {
+	peekString, err := parser.Peek()
+	if err != nil {
 		return nil, err
 	}
-	clearReg(byte(backend.REG_RAX), varType)
+
+	if peekString == "=" {
+		// get the value after the equal sign in RAX
+		if err := getAfterEqual(parser); err != nil {
+			return nil, err
+		}
+		clearReg(byte(backend.REG_RAX), varType)
+	} else {
+		eatSymbol(parser, ";")
+	}
 
 	//even do varOriginType is struct we should create the main var as a normal var
 	// ptr structTest<MyStruct> = MyStruct{1,2,3};       structTest is normal var

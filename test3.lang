@@ -1,4 +1,4 @@
 func printHelloWorld() {
-    print("Hello, World!\n",14);
+    print("Hello, World!\n");
 	return;
 }

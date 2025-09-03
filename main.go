@@ -27,8 +27,8 @@ known problems
 func main() {
 
 	var par parser.Parser
-	// par.StartParse("features.lang")
-	par.StartParse("test.lang")
+	par.StartParse("features.lang")
+	// par.StartParse("test.lang")
 
 	backend.Call("global")
 	backend.Call("main")

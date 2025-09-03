@@ -156,7 +156,7 @@ func ParseNewBreak(parser *Parser) error {
 	}
 
 	backend.Jmp(loopBreak.breakLabel)
-	eatSemicolon(parser)
+	eatSymbol(parser, ";")
 
 	return nil
 }
@@ -170,7 +170,7 @@ func ParseNewContinue(parser *Parser) error {
 	}
 
 	backend.Jmp(loopBreak.continueLabel)
-	eatSemicolon(parser)
+	eatSymbol(parser, ";")
 
 	return nil
 }
@@ -225,13 +225,13 @@ func parseWhiles(parser *Parser) error {
 var forCount int
 
 func parseFors(parser *Parser) error {
-	// Snapshot before init 
+	// Snapshot before init
 	preImage, err := copyStackImage()
 	if err != nil {
 		return err
 	}
 
-	// Snapshot after init 
+	// Snapshot after init
 	var postImage *VarsList
 
 	forCount++

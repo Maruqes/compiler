@@ -140,7 +140,7 @@ func checkPublicVars(parser *Parser) (bool, error) {
 	backend.Create_label(name)
 	CreateStack()
 	functions = append(functions, FunctionType{Name: name, Params: nil})
-	eatFirstCurlBrace(parser)
+	eatSymbol(parser, "{")
 
 	typeTokenStr, err := parser.NextToken()
 	if err != nil {

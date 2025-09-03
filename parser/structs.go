@@ -2,15 +2,18 @@ package parser
 
 import (
 	"fmt"
+	"sort"
+	"strconv"
 	"strings"
 
 	backend "github.com/Maruqes/compiler/swig"
 )
 
 type structField struct {
-	Name string
-
-	Type int
+	Name   string
+	Type   int
+	Size   int
+	Struct *StructType
 }
 
 type StructType struct {
@@ -31,6 +34,25 @@ func GetStructByName(name string) *StructType {
 		}
 	}
 	return nil
+}
+
+func GetSizeOfStruct(name string) int {
+	st := GetStructByName(name)
+	if st == nil {
+		return 0
+	}
+
+	size := 0
+	for i := range st.Fields {
+		if st.Fields[i].Struct == nil {
+			// Primitive field: size = elementSize (Type) * count (Size)
+			size += st.Fields[i].Type * st.Fields[i].Size
+		} else {
+			// Nested struct field: size = nestedStructSize * count (Size)
+			size += GetSizeOfStruct(st.Fields[i].Struct.Name) * st.Fields[i].Size
+		}
+	}
+	return size
 }
 
 var ErrNotStructParam = fmt.Errorf("not a struct param")
@@ -97,7 +119,13 @@ func parseStructParam(token string) (string, *StructType, int, int, error) {
 
 	spacer := 0
 	for i := len(st.Fields) - 1; i > fieldIndex; i-- {
-		spacer += st.Fields[i].Type
+		if st.Fields[i].Struct == nil {
+			// Primitive field after target: add its byte size
+			spacer += st.Fields[i].Type * st.Fields[i].Size
+		} else {
+			// Nested struct after target: add its total size
+			spacer += st.Fields[i].Size * GetSizeOfStruct(st.Fields[i].Struct.Name)
+		}
 	}
 	return structName, st, spacer, fieldIndex, nil
 }
@@ -111,12 +139,13 @@ func createStructType(parser *Parser) error {
 	}
 
 	//parse {
-	eatFirstCurlBrace(parser)
+	eatSymbol(parser, "{")
 	//parse struct fields
 
 	var fields []structField
 	for {
-
+		finalSize := 1
+		var fieldStruct *StructType = nil
 		fieldType, err := parser.NextToken()
 		if err != nil {
 			return err
@@ -132,13 +161,47 @@ func createStructType(parser *Parser) error {
 			return err
 		}
 
-		eatSemicolon(parser)
+		peekString, err := parser.Peek()
+		if err != nil {
+			return err
+		}
+		if isTypeToken(peekString) || GetStructByName(peekString) != nil {
+			//we creating multiple of that var-> ptr allocName db<5>; || ptr allocName StructName<5>;
+			parser.NextToken() //eat token
+			eatSymbol(parser, "<")
+			allocSize, err := parser.NextToken()
+			if err != nil {
+				return err
+			}
+			eatSymbol(parser, ">")
+			allocName := fmt.Sprintf("alloc_%s_%s", fieldName, allocSize)
+			fmt.Println(allocName)
+
+			allocSizeInt, err := strconv.Atoi(allocSize)
+			if err != nil {
+				return err
+			}
+
+			finalSize = allocSizeInt
+
+			if GetStructByName(peekString) != nil {
+				fieldStruct = GetStructByName(peekString)
+			}
+		}
+
+		eatSymbol(parser, ";")
+
 		fieldTypeInt, err := getTypeFromToken(fieldType)
 		if err != nil {
 			return err
 		}
-		fields = append(fields, structField{Name: fieldName, Type: fieldTypeInt})
+		fields = append(fields, structField{Name: fieldName, Type: fieldTypeInt, Size: finalSize, Struct: fieldStruct})
 	}
+
+	//inverter ordem de fields para ficarem padronizados
+	sort.Slice(fields, func(i, j int) bool {
+		return fields[i].Name < fields[j].Name
+	})
 
 	//create struct type
 	structType := StructType{Name: structName, Fields: fields}
@@ -157,7 +220,20 @@ func parseStructsCreation(parser *Parser, token string, reg byte) (bool, error) 
 	}
 
 	structFieldCount := len(structType.Fields)
-	eatFirstCurlBrace(parser)
+	eatSymbol(parser, "{")
+
+	//see if is closed struct StructName{}
+	peekString, err := parser.Peek()
+	if err != nil {
+		return false, fmt.Errorf("error peeking token: %v", err)
+	}
+
+	if peekString == "}" {
+		parser.NextToken()
+		SubStack(GetSizeOfStruct(structType.Name))
+		backend.Mov64_r_r(reg, byte(backend.REG_RSP))
+		return true, nil
+	}
 
 	//falta checkar tipos e numero de parametros
 	n_params := 0
@@ -172,8 +248,14 @@ func parseStructsCreation(parser *Parser, token string, reg byte) (bool, error) 
 				return true, fmt.Errorf("struct '%s' expects %d fields, got more", structType.Name, structFieldCount)
 			}
 
-			// PushStack64(byte(backend.REG_RAX))
-			SubStack(structType.Fields[n_params].Type)
+			// Allocate space on the stack for this field (primitive or nested struct)
+			if structType.Fields[n_params].Struct == nil {
+				// Primitive
+				SubStack(structType.Fields[n_params].Type * structType.Fields[n_params].Size)
+			} else {
+				// Nested struct
+				SubStack(structType.Fields[n_params].Size * GetSizeOfStruct(structType.Fields[n_params].Struct.Name))
+			}
 			switch structType.Fields[n_params].Type {
 			case DQ:
 				backend.Mov64_m_r(byte(backend.REG_RSP), byte(backend.REG_RAX))

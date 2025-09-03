@@ -178,7 +178,11 @@ func (p *Parser) NextToken() (string, error) {
 		char, err := p.readNextChar()
 		if err != nil {
 			if err == io.EOF {
-				return res, io.EOF
+				if res != "" {
+					return res, nil
+				} else {
+					return "", io.EOF
+				}
 			}
 			return "", err
 		}
@@ -260,62 +264,6 @@ func eatEqual(parser *Parser) {
 	}
 	if equal != "=" {
 		panic(fmt.Sprintf("Expected '=', got '%s' on line %d", equal, parser.LineNumber))
-	}
-}
-
-// (
-func eatFirstBrace(parser *Parser) {
-	//parse ( else panic
-	firstBrace, err := parser.NextToken()
-	if err != nil {
-		panic("Error eating first brace: " + err.Error())
-	}
-	if firstBrace != "(" {
-		panic(fmt.Sprintf("Expected '(', got '%s' on line %d", firstBrace, parser.LineNumber))
-	}
-}
-
-func eatLastBrace(parser *Parser) {
-	//parse ) else panic
-	lastBrace, err := parser.NextToken()
-	if err != nil {
-		panic("Error eating last brace: " + err.Error())
-	}
-	if lastBrace != ")" {
-		panic(fmt.Sprintf("Expected ')', got '%s' on line %d", lastBrace, parser.LineNumber))
-	}
-}
-
-func eatFirstCurlBrace(parser *Parser) {
-	//parse { else panic
-	firstCurlBrace, err := parser.NextToken()
-	if err != nil {
-		panic("Error eating first curl brace: " + err.Error())
-	}
-	if firstCurlBrace != "{" {
-		panic(fmt.Sprintf("Expected '{', got '%s' on line %d", firstCurlBrace, parser.LineNumber))
-	}
-}
-
-func eatLastCurlBrace(parser *Parser) {
-	//parse } else panic
-	lastCurlBrace, err := parser.NextToken()
-	if err != nil {
-		panic("Error eating last curl brace: " + err.Error())
-	}
-	if lastCurlBrace != "}" {
-		panic(fmt.Sprintf("Expected '}', got '%s' on line %d", lastCurlBrace, parser.LineNumber))
-	}
-}
-
-func eatSemicolon(parser *Parser) {
-	//parse ; else panic
-	semicolon, err := parser.NextToken()
-	if err != nil {
-		panic("Error eating semicolon: " + err.Error())
-	}
-	if semicolon != ";" {
-		panic(fmt.Sprintf("Expected ';', got '%s' on line %d", semicolon, parser.LineNumber))
 	}
 }
 
@@ -558,12 +506,12 @@ func getAfterEqual(parser *Parser) error {
 }
 
 func includeFile(parser *Parser) error {
-	eatFirstBrace(parser)
+	eatSymbol(parser, "(")
 	filename, err := parser.NextToken()
 	if err != nil {
 		return err
 	}
-	eatLastBrace(parser)
+	eatSymbol(parser, ")")
 
 	var par Parser
 	err = par.StartParse(filename[1 : len(filename)-1])
