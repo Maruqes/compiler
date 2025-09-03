@@ -19,7 +19,14 @@ var comparisonOperators = []string{"==", "!=", "<=", ">=", "<", ">"}
 var composingTokens = append([]string{"{", "}", "(", ")", "[", "]", ";", ",", "+", "-", "*", "%", "=", "!", "&", "&&", "|", "||", "^", "?", "/",
 	"++", "--", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "//", ">>", "<<"}, comparisonOperators...)
 
+var filenameArrSave []string
 func (p *Parser) StartParse(fileName string) error {
+	for _,name := range filenameArrSave{
+		if name == fileName{
+			panic("File already included: " + fileName)
+		}
+	}
+	filenameArrSave = append(filenameArrSave, fileName)
 	//open file
 	file, err := os.Open(fileName)
 	if err != nil {

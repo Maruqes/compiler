@@ -1,0 +1,29 @@
+func exit(dq status){
+	asm(mov64_r_i, rax, 60);
+	loadReg(rdi, status);
+	asm(syscall);
+	return;
+}
+
+struct timespec {
+    dq tv_nsec;
+	dq tv_sec;
+}
+
+func nanosleep(dq seconds, dq nanoseconds){
+	ptr ts<timespec> = timespec{nanoseconds, seconds};
+
+	asm(mov64_r_i, rax, 35);
+	loadReg(rdi, ts);
+	asm(mov64_r_i, rsi, 0);
+	asm(syscall);
+	return;
+}
+
+func clock_gettime(ptr ts){
+	asm(mov64_r_i, rax, 228);
+	asm(mov64_r_i, rdi, 0); // CLOCK_REALTIME
+	loadReg(rsi, ts);
+	asm(syscall);
+	return;
+}

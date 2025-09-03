@@ -2,39 +2,29 @@
 global{
 }
 
-func getStringLen(ptr s1){
-	dd res = 0;
-	while s1[res] != 0 {
-		res++;
-	}
-	return res;
+
+struct Timespec {
+    dq tv_sec;
+    dq tv_nsec;
 }
 
-func print(ptr s1){
-	dd len = getStringLen(s1);
-	asm(mov64_r_i, rax, 1);
-	asm(mov64_r_i, rdi, 1);
-	loadReg(rsi, s1);
-	loadReg(rdx, len);
-	asm(syscall);
-	return;
-}
 
-func getArgsPtr(dq argc, dq rbpVar) {
-	ptr args<dq> = rbpVar + 24;
-	return args;
+struct MyS1{
+	dq a;
+	dq b;
 }
 
 func main(dq argc) {
-	dq rbpVar;
-	loadVar(rbpVar, rbp);
-	ptr args<dq> = getArgsPtr(argc, rbpVar);
+	ptr structName<MyS1> = MyS1{1,2};
+	ptr ts<Timespec> = Timespec{1, 2};
 
-	for dq i = 0; i < argc; i++; {
-		print("arg ");
-		print(args[i]);
-		print("\n");
-	}
-	
+	printHex(structName);
+	printHex(structName.a);
+	printHex(structName.b);
+
+	printHex(ts);
+	printHex(ts.tv_sec);
+	printHex(ts.tv_nsec);
+
 	return;
 }

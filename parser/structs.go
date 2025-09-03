@@ -2,7 +2,6 @@ package parser
 
 import (
 	"fmt"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -197,11 +196,6 @@ func createStructType(parser *Parser) error {
 		}
 		fields = append(fields, structField{Name: fieldName, Type: fieldTypeInt, Size: finalSize, Struct: fieldStruct})
 	}
-
-	//inverter ordem de fields para ficarem padronizados
-	sort.Slice(fields, func(i, j int) bool {
-		return fields[i].Name < fields[j].Name
-	})
 
 	//create struct type
 	structType := StructType{Name: structName, Fields: fields}

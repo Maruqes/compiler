@@ -1,0 +1,14 @@
+func memset(ptr s1, dq len, db value){
+	for dq i = 0; i < len; i++; {
+		s1[i] = value;
+	}
+	return;
+}
+
+//needs to be called from main (defer is another func so can not use it)
+func getArgsPtr(dq argc, dq rbpVar) {
+	ptr args<dq> = rbpVar + 24;
+	return args;
+}
+
+

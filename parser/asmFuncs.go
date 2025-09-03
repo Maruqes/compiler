@@ -257,6 +257,7 @@ var asmFuncs = map[string]any{
 	"dec8_mi":     backend.Dec8_mi,
 	"dec8_mr":     backend.Dec8_mr,
 	"syscall":     backend.Syscall_instruction,
+	"ret":         backend.Ret,
 }
 
 // callAsmFunction invokes a function value of any type using reflection with the given arguments.

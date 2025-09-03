@@ -9,11 +9,6 @@ import (
 	"github.com/Maruqes/compiler/wrapper"
 )
 
-type DeferType struct {
-	startLabel string
-	endLabel   string
-}
-
 type ParamType struct {
 	Name string
 	Type int // DQ for 64-bit, DD for 32-bit, DW for 16-bit, DB for 8-bit
@@ -22,23 +17,9 @@ type ParamType struct {
 type FunctionType struct {
 	Name   string
 	Params []ParamType
-	defers []DeferType
 }
 
 var functions []FunctionType
-
-func addDeferToLastFunction(defers DeferType) {
-	if len(functions) == 0 {
-		return
-	}
-	functions[len(functions)-1].defers = append(functions[len(functions)-1].defers, defers)
-}
-func getAllDefers() []DeferType {
-	if len(functions) == 0 {
-		return nil
-	}
-	return functions[len(functions)-1].defers
-}
 
 func isFunctionCall(token string) bool {
 	for _, function := range functions {
@@ -116,34 +97,13 @@ func parseFunctionCall(parser *Parser, funcName string) error {
 	return nil
 }
 
-func parseDefer(parser *Parser) error {
-	startDeferLabel := fmt.Sprintf("defer_start_%d", parser.LineNumber)
-	endDeferLabel := fmt.Sprintf("defer_end_%d", parser.LineNumber)
-	backend.Jmp(endDeferLabel)
-	backend.Create_label(startDeferLabel)
-	err := parseCodeBlock(parser)
-	if err != nil {
-		return err
-	}
-	backend.Ret() // Return from the defer block
-	backend.Create_label(endDeferLabel)
-
-	addDeferToLastFunction(DeferType{startLabel: startDeferLabel, endLabel: endDeferLabel})
-	return nil
-}
-
 func parseReturn(parser *Parser) error {
 	err, _, _ := getUntilSymbol(parser, []string{";"}, byte(backend.REG_RAX))
 	if err != nil {
 		return err
 	}
-	defers := getAllDefers()
-	for _, deferBlock := range defers {
-		backend.Call(deferBlock.startLabel)
-	}
 
 	LeaveStack()
-	backend.Ret()
 	setScope(GLOBAL_SCOPE)
 	return nil
 }
@@ -260,10 +220,7 @@ func parseCodeBlock(parser *Parser) error {
 			if err := parseReturn(parser); err != nil {
 				return err
 			}
-		case "defer":
-			if err := parseDefer(parser); err != nil {
-				return err
-			}
+
 		case "if":
 			if err := parseIf(parser); err != nil {
 				return err
