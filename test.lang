@@ -20,26 +20,21 @@ func print(ptr s1){
 	return;
 }
 
+func getArgsPtr(dq argc, dq rbpVar) {
+	ptr args<dq> = rbpVar + 24;
+	return args;
+}
 
-func main() {
-	ptr stringMem = db<200>;
+func main(dq argc) {
+	dq rbpVar;
+	loadVar(rbpVar, rbp);
+	ptr args<dq> = getArgsPtr(argc, rbpVar);
 
-	read(stringMem, 200);
-	reverseString(stringMem);
-	print(stringMem);
-
-	dq a<dq> = dq{1,2};
-	printHex(a[0]);
-	printHex(a[1]);
-
-	dq temp;
-
-	temp = a[0];
-	a[0] = a[1];
-	a[1] = temp + a[0] + &temp - &temp + ((5+5)+(2*3));
-
-	printHex(a[0]);
-	printHex(a[1]);
-
+	for dq i = 0; i < argc; i++; {
+		print("arg ");
+		print(args[i]);
+		print("\n");
+	}
+	
 	return;
 }

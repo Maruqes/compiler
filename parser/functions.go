@@ -370,6 +370,7 @@ func createVariablesFromParams(parser *Parser, params []ParamType) error {
 
 	paramLength := len(params) * 8
 	for i, param := range params {
+		fmt.Println(param.Name + " -> " + fmt.Sprintf("%d", paramLength-((i-1)*8)))
 		backend.Mov64_r_mi(byte(backend.REG_RAX), byte(backend.REG_RBP), paramLength-((i-1)*8))
 		createVarWithReg(parser, byte(backend.REG_RAX), param.Type, param.Name, nil, ORIGIN_RBP)
 	}

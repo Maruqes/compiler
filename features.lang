@@ -335,7 +335,14 @@ func retornoDB(){
 	return res;
 }
 
-func main(){
+//needs to be called from main (defer is another func so can not use it)
+func getArgsPtr(dq argc, dq rbpVar) {
+	ptr args<dq> = rbpVar + 24;
+	return args;
+}
+
+
+func main(dq argc){
 
 	defer {
 		printHex(0xdeafbeefdeafbeef);
@@ -378,6 +385,18 @@ func main(){
 	read(stringMem, 200);
 	reverseString(stringMem);
 	print(stringMem);
+
+
+	//cannot be called inside defer cause its another func
+	dq rbpVar;
+	loadVar(rbpVar, rbp);
+	ptr args<dq> = getArgsPtr(argc, rbpVar);
+
+	for dq i = 0; i < argc; i++; {
+		print("arg ");
+		print(args[i]);
+		print("\n");
+	}
 
     return;
 }
