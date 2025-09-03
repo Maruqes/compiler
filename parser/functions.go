@@ -177,41 +177,41 @@ func temporaryPrintHexVar(parser *Parser) error {
 dq a = 20
 a=30
 */
-func parseVariableDeclaration(parser *Parser, token string) (bool, *Variable, error) {
+func parseVariableDeclaration(parser *Parser, token string) (bool, error) {
 	varList := GetVarList(SCOPE)
 	if varList == nil {
-		return false, nil, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
+		return false, fmt.Errorf("Variable list for scope '%s' not found", SCOPE)
 	}
 
 	//if its a var redefenition
 	if varList.DoesVarExist(token) {
-		v, err := varList.setVarStruct(parser, token)
-		return true, v, err
+		err := varList.setVarStruct(parser, token)
+		return true, err
 	}
 
 	switch token {
 	case "dq":
 		// create 64-bit variable
-		variable, err := createVarStruct(parser, DQ, nil)
-		return true, variable, err
+		_, err := createVarStruct(parser, DQ, nil)
+		return true, err
 	case "dd":
 		// create 32-bit variable
-		variable, err := createVarStruct(parser, DD, nil)
-		return true, variable, err
+		_, err := createVarStruct(parser, DD, nil)
+		return true, err
 	case "dw":
-		// create 16-bit variable
-		variable, err := createVarStruct(parser, DW, nil)
-		return true, variable, err
+		// c_eate 16-bit variable
+		_, err := createVarStruct(parser, DW, nil)
+		return true, err
 	case "db":
 		// create 8-bit variable
-		variable, err := createVarStruct(parser, DB, nil)
-		return true, variable, err
+		_, err := createVarStruct(parser, DB, nil)
+		return true, err
 	case "ptr":
 		// create pointer variable
-		variable, err := createPointerVar(parser)
-		return true, variable, err
+		_, err := createPointerVar(parser)
+		return true, err
 	default:
-		return true, nil, fmt.Errorf("unknown variable declaration type: '%s'", token)
+		return true, fmt.Errorf("unknown variable declaration type: '%s'", token)
 	}
 }
 
@@ -306,7 +306,7 @@ func parseCodeBlock(parser *Parser) error {
 				continue
 			}
 
-			parsed, _, err := parseVariableDeclaration(parser, token)
+			parsed, err := parseVariableDeclaration(parser, token)
 			if err != nil && parsed {
 				return err
 			}

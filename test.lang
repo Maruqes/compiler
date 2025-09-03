@@ -2,44 +2,44 @@
 global{
 }
 
-struct MyStruct {
-	db field1;
-	db field2;
-	db field3;
-	dq field4;
+func getStringLen(ptr s1){
+	dd res = 0;
+	while s1[res] != 0 {
+		res++;
+	}
+	return res;
 }
 
-
-struct MyStruct2 {
-	db field1;
-	db field2;
-	db field3;
-	db field4;
-	db field5 MyStruct<2>;
-	db field6; 
+func print(ptr s1){
+	dd len = getStringLen(s1);
+	asm(mov64_r_i, rax, 1);
+	asm(mov64_r_i, rdi, 1);
+	loadReg(rsi, s1);
+	loadReg(rdx, len);
+	asm(syscall);
+	return;
 }
+
 
 func main() {
-	// db a = 0;
-	// db b = 0;
-	// ptr allocArr = db<5>;
-	// // ptr allocArr = MyStruct<5>;
-	// db c = 0;
-	// db d = 0;
+	ptr stringMem = db<200>;
 
-	// printHex(&a);
-	// printHex(&b);
-	// printHex(allocArr);
-	// printHex(&c);
-	// printHex(&d);
+	read(stringMem, 200);
+	reverseString(stringMem);
+	print(stringMem);
 
-	db a = 0;
-	ptr test<MyStruct2> = MyStruct2{0,0,0,0,0,0};
-	db c = 0;
-	printHex(&a);
-	printHex(test);
-	printHex(&test);
-	printHex(&c);
+	dq a<dq> = dq{1,2};
+	printHex(a[0]);
+	printHex(a[1]);
+
+	dq temp;
+
+	temp = a[0];
+	a[0] = a[1];
+	a[1] = temp + a[0] + &temp - &temp + ((5+5)+(2*3));
+
+	printHex(a[0]);
+	printHex(a[1]);
 
 	return;
 }

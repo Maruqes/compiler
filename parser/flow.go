@@ -252,7 +252,7 @@ func parseFors(parser *Parser) error {
 		return err
 	}
 
-	parsed, _, err := parseVariableDeclaration(parser, token)
+	parsed, err := parseVariableDeclaration(parser, token)
 	if err != nil || !parsed {
 		return fmt.Errorf("error parsing variable declaration for 'for' loop: %v", err)
 	}
@@ -284,7 +284,7 @@ func parseFors(parser *Parser) error {
 	}
 	backend.Create_label(forSecond)
 
-	parsed, _, err = parseVariableDeclaration(parser, token)
+	parsed, err = parseVariableDeclaration(parser, token)
 	if err != nil || !parsed {
 		return fmt.Errorf("error parsing variable declaration for 'for' loop: %v", err)
 	}

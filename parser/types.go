@@ -20,56 +20,6 @@ const (
 	PTR = 8
 )
 
-func printType(size int) {
-	switch size {
-	case DQ:
-		fmt.Println("dq/ptr")
-	case DD:
-		fmt.Println("dd")
-	case DW:
-		fmt.Println("dw")
-	case DB:
-		fmt.Println("db")
-	default:
-		fmt.Println("unknown")
-	}
-}
-
-func printRegs(reg int) {
-	switch reg {
-	case backend.REG_RAX:
-		fmt.Println("rax")
-	case backend.REG_RBX:
-		fmt.Println("rbx")
-	case backend.REG_RCX:
-		fmt.Println("rcx")
-	case backend.REG_RDX:
-		fmt.Println("rdx")
-	case backend.REG_RSI:
-		fmt.Println("rsi")
-	case backend.REG_RDI:
-		fmt.Println("rdi")
-	case backend.REG_R8:
-		fmt.Println("r8")
-	case backend.REG_R9:
-		fmt.Println("r9")
-	case backend.REG_R10:
-		fmt.Println("r10")
-	case backend.REG_R11:
-		fmt.Println("r11")
-	case backend.REG_R12:
-		fmt.Println("r12")
-	case backend.REG_R13:
-		fmt.Println("r13")
-	case backend.REG_R14:
-		fmt.Println("r14")
-	case backend.REG_R15:
-		fmt.Println("r15")
-	default:
-		fmt.Printf("unknown reg %d", reg)
-	}
-}
-
 func getTypeFromToken(token string) (int, error) {
 	switch token {
 	case "dq":

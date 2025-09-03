@@ -474,43 +474,119 @@ func (vl *VarsList) subVar(parser *Parser, varName string, variable *Variable) e
 	return nil
 }
 
-func (vl *VarsList) setVarStruct(parser *Parser, varName string) (*Variable, error) {
+func setDeadressedVar(parser *Parser, varName string, vl *VarsList) error {
+	arrType := DB
+
+	eatSymbol(parser, "[")
+
+	varStruct, err := vl.GetVariableStruct(varName)
+	if err != nil {
+		return err
+	}
+
+	if varStruct.Extra != nil {
+		switch v := varStruct.Extra.(type) {
+		case string:
+			if isTypeToken(v) {
+				t, err := getTypeFromToken(v)
+				if err != nil {
+					return err
+				}
+				arrType = t
+			} else {
+				return fmt.Errorf("cannot assign a scalar to an indexed struct '%s' on line %d; assign to a field or use an appropriate copy routine", v, parser.LineNumber)
+			}
+		case int:
+			if isType(v) {
+				arrType = v
+			}
+		}
+	}
+
+	err, _, _ = getUntilSymbol(parser, []string{"]"}, byte(backend.REG_RCX))
+	if err != nil {
+		return err
+	}
+	backend.Push64(byte(backend.REG_RCX))
+
+	//tem de ter os pushs e pops porque o getAfterEqual fode o ECX
+	err = getAfterEqual(parser)
+	if err != nil {
+		return err
+	}
+
+	backend.Pop64(byte(backend.REG_RCX))
+
+	backend.Mul64_r_i(byte(backend.REG_RCX), uint(arrType))
+	if err := vl.GetVariable(varName, byte(backend.REG_RBX)); err != nil {
+		return err
+	}
+
+	// Ensure value in RAX matches the element width before storing.
+	clearReg(byte(backend.REG_RAX), arrType)
+
+	switch arrType {
+	case DQ:
+		backend.Mov64_mr_r(byte(backend.REG_RBX), byte(backend.REG_RCX), byte(backend.REG_RAX))
+	case DD:
+		backend.Mov32_mr_r(byte(backend.REG_RBX), byte(backend.REG_RCX), byte(backend.REG_RAX))
+	case DW:
+		backend.Mov16_mr_r(byte(backend.REG_RBX), byte(backend.REG_RCX), byte(backend.REG_RAX))
+	case DB:
+		backend.Mov8_mr_r(byte(backend.REG_RBX), byte(backend.REG_RCX), byte(backend.REG_RAX))
+	default:
+		return fmt.Errorf("unknown array type: %d on line %d", arrType, parser.LineNumber)
+	}
+
+	return nil
+}
+
+func (vl *VarsList) setVarStruct(parser *Parser, varName string) error {
+
+	peekString, err := parser.Peek()
+	if err != nil {
+		return err
+	}
+	if peekString == "[" {
+		//parse deadessing a[<index>] = 20;
+		return setDeadressedVar(parser, varName, vl)
+	}
 
 	fmt.Println("Setting variable:", varName)
 	variable, err := vl.GetVariableStruct(varName)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	peekToken, err := parser.Peek()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	switch peekToken {
 	case "=":
 		err = getAfterEqual(parser)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		err = vl.SetVar(variable)
 		if err != nil {
-			return nil, fmt.Errorf("error setting variable %s in line %d: %s", varName, parser.LineNumber, err.Error())
+			return fmt.Errorf("error setting variable %s in line %d: %s", varName, parser.LineNumber, err.Error())
 		}
 
 		clearReg(byte(backend.REG_RAX), variable.Type)
 	case "++":
-		return variable, vl.incrementVar(parser, variable)
+		return vl.incrementVar(parser, variable)
 	case "--":
-		return variable, vl.decrementVar(parser, variable)
+		return vl.decrementVar(parser, variable)
 	case "+=":
-		return variable, vl.sumVar(parser, varName, variable)
+		return vl.sumVar(parser, varName, variable)
 	case "-=":
-		return variable, vl.subVar(parser, varName, variable)
+		return vl.subVar(parser, varName, variable)
 	default:
-		return variable, fmt.Errorf("unexpected token '%s' after '--' in line %d", peekToken, parser.LineNumber)
+		return fmt.Errorf("unexpected token '%s' after '--' in line %d", peekToken, parser.LineNumber)
 	}
 
-	return nil, nil
+	return nil
 }
 
 func parseCoisoEstranho(parser *Parser, extra *any) (OriginType, any, error) {
