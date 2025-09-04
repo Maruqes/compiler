@@ -126,20 +126,23 @@ func createPublicVar(parser *Parser, size int) error {
 	return nil
 }
 
-func checkPublicVars(parser *Parser) (bool, error) {
+var FUNC_GLOBAL []string
+var funcglobalIndex int
 
+func checkPublicVars(parser *Parser) (bool, error) {
 	name := "global"
 	setScope(name)
 	vl := GetVarList(name)
 	if vl == nil {
 		CreateVarList(name)
-	} else {
-		return false, fmt.Errorf("variable list for scope '%s' already exists", name)
-	}
+	} 
 
-	backend.Create_label(name)
+	funcGlobalName := fmt.Sprintf("func_global_%d", funcglobalIndex)
+	funcglobalIndex++
+	FUNC_GLOBAL = append(FUNC_GLOBAL, funcGlobalName)
+	fmt.Println(FUNC_GLOBAL)
+	backend.Create_label(funcGlobalName)
 	CreateStack()
-	functions = append(functions, FunctionType{Name: name, Params: nil})
 	eatSymbol(parser, "{")
 
 	typeTokenStr, err := parser.NextToken()

@@ -3,28 +3,40 @@ global{
 }
 
 
-struct Timespec {
-    dq tv_sec;
-    dq tv_nsec;
-}
-
-
-struct MyS1{
-	dq a;
-	dq b;
-}
+include("liblang/min.lang")
+include("liblang/mem.lang")
+include("liblang/strings.lang")
 
 func main(dq argc) {
-	ptr structName<MyS1> = MyS1{1,2};
-	ptr ts<Timespec> = Timespec{1, 2};
+	ptr p1 = brk(8);
+	ptr p2 = brk(8);
+	ptr p3 = brk(8);
 
-	printHex(structName);
-	printHex(structName.a);
-	printHex(structName.b);
+	memset(p1, 8, 0);
+	memset(p2, 8, 1);
+	memset(p3, 8, 2);
 
-	printHex(ts);
-	printHex(ts.tv_sec);
-	printHex(ts.tv_nsec);
+	printHex(*p1);
+	printHex(*p2);
+	printHex(*p3);
+
+	ptr f1 = freeBrk(p1);
+	ptr f2 = freeBrk(p2);
+	ptr f3 = freeBrk(p3);
+
+
+	ptr p4 = mmap(4096);
+	memset(p4, 4096, 3);
+	printHex(p4);
+	printHex(*p4);
+
+	ptr p5 = mmap(4096);
+	memset(p5, 4096, 4);
+	printHex(p5);
+	printHex(*p5);
+
+	freeMmap(p4,4096);
+	freeMmap(p5,4096);
 
 	return;
 }

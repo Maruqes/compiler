@@ -104,7 +104,6 @@ func parseReturn(parser *Parser) error {
 	}
 
 	LeaveStack()
-	setScope(GLOBAL_SCOPE)
 	return nil
 }
 

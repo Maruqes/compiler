@@ -27,10 +27,10 @@ known problems
 func main() {
 
 	var par parser.Parser
-	par.StartParse("features.lang")
-	// par.StartParse("test.lang")
+	// par.StartParse("features.lang")
+	par.StartParse("test.lang")
 
-	backend.Call("global")
+	backend.Call("global_init")
 	backend.Call("main")
 	wrapper.Exit(0)
 
@@ -38,6 +38,12 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprintf("Error during parsing on line %d: %v", par.LineNumber, err))
 	}
+
+	backend.Create_label("global_init")
+	for _, fn := range parser.FUNC_GLOBAL {
+		backend.Call(fn)
+	}
+	backend.Ret()
 
 	// .data
 	backend.Add_string_constant("printSave", "--\n")

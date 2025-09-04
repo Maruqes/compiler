@@ -1,6 +1,21 @@
+global{
+	dq brkTrack = 0;    //upper part of last brk allocation
+	dq brkTrackLow = 0; //lower part of last brk allocation
+	dq lastBrkPiece = 0;
+
+	db BRK_STRUCT_SIZE = 32; //size of BrkPiece struct
+}
+
 func memset(ptr s1, dq len, db value){
 	for dq i = 0; i < len; i++; {
 		s1[i] = value;
+	}
+	return;
+}
+
+func memcpy(ptr dest, ptr src, dq len){
+	for dq i = 0; i < len; i++; {
+		dest[i] = src[i];
 	}
 	return;
 }
@@ -11,4 +26,125 @@ func getArgsPtr(dq argc, dq rbpVar) {
 	return args;
 }
 
+//brk will be->  [brkPiece][ur memory]  [brkPiece][ur memory]  [brkPiece][ur memory]
+struct BrkPiece{
+	dq oldBrkPiece;
+	dq oldBrkTrack;
+	dq oldBrkTrackLow;
+	dq free;
+}
 
+func sys_brk(dq size){
+	dq res;
+	asm(mov64_r_i, rax, 12);
+	loadReg(rdi, size);
+	asm(syscall);
+	loadVar(res, rax);
+	return res;
+}
+
+func brk(dq size){
+	if brkTrack == 0{
+		brkTrack = sys_brk(0);
+	}
+
+	ptr currentBrkPiece<BrkPiece> = BrkPiece{lastBrkPiece, brkTrack, brkTrackLow, 0};
+
+	//the "!!" means the pointer is being used by user memory
+	ptr oldBrkSave = brkTrack;  //!![brkPiece][ur memory]
+	ptr structBrk = brkTrack + BRK_STRUCT_SIZE; //[brkPiece]!![ur memory]
+	ptr newBrk = structBrk + size; //[brkPiece][ur memory]!!
+
+	ptr err = sys_brk(newBrk);  //settar o brk para o novo tamanho
+	if err != newBrk {
+		return -1; //error
+	}
+
+	//guardar a struct do brkPiece
+	memcpy(oldBrkSave, currentBrkPiece, BRK_STRUCT_SIZE);
+
+	// atualizar os ponteiros
+	lastBrkPiece = oldBrkSave;
+	brkTrack = newBrk; 
+	brkTrackLow = structBrk;
+
+	return structBrk; //retornar o pointer depois da struct
+}
+
+func testFreeBrk(ptr brkStructPtr){
+
+	// nothing to do
+	if brkStructPtr == 0 {
+		return;
+	}
+
+	ptr brkPtr = brkStructPtr + BRK_STRUCT_SIZE; //go to user memory start
+	ptr currentBrkPiece<BrkPiece> = brkStructPtr;
+
+	if currentBrkPiece.free == 0{
+		return; 
+	}
+	
+	//caso seja topo free
+	if brkPtr == brkTrackLow {
+		lastBrkPiece = currentBrkPiece.oldBrkPiece;
+		brkTrack = currentBrkPiece.oldBrkTrack;
+		brkTrackLow = currentBrkPiece.oldBrkTrackLow;
+		ptr err = sys_brk(brkTrack);
+		if err != brkTrack {
+			return -1; //error
+		}
+
+		if brkTrack != 0 && brkTrackLow != 0 {
+			testFreeBrk(lastBrkPiece);
+		}
+	}
+
+	return;
+}
+
+func freeBrk(ptr brkPtr){
+	ptr structBrk = brkPtr - BRK_STRUCT_SIZE; //go to start of brkPiece struct
+
+	ptr currentBrkPiece<BrkPiece> = structBrk;
+	currentBrkPiece.free = 1;
+
+	//caso seja topo free
+	if brkPtr == brkTrackLow {
+		lastBrkPiece = currentBrkPiece.oldBrkPiece;
+		brkTrack = currentBrkPiece.oldBrkTrack;
+		brkTrackLow = currentBrkPiece.oldBrkTrackLow;
+		ptr err = sys_brk(brkTrack);
+		if err != brkTrack {
+			return -1; //error
+		}
+
+		if brkTrack != 0 && brkTrackLow != 0 {
+			testFreeBrk(lastBrkPiece);
+		}
+	}
+	
+	return brkTrack;
+}
+
+func mmap(dq length){
+	dq addr = 0;
+	asm(mov64_r_i, rax, 9);
+	asm(mov64_r_i, rdi, 0); //addr
+	loadReg(rsi, length);       //length
+	asm(mov64_r_i, rdx, 3);    //prot = PROT_READ | PROT_WRITE
+	asm(mov64_r_i, r10, 34);   //flags = MAP_PRIVATE | MAP_ANONYMOUS
+	loadReg(r8, -1);    //fd
+	asm(mov64_r_i, r9, 0);     //offset
+	asm(syscall);
+	loadVar(addr, rax);
+	return addr;
+}
+
+func freeMmap(ptr addr, dq length){
+	asm(mov64_r_i, rax, 11);
+	loadReg(rdi, addr);
+	loadReg(rsi, length);
+	asm(syscall);
+	return;
+}

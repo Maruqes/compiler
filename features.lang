@@ -181,9 +181,13 @@ func functionParams(dq a, dd b, dw c, db d, ptr e){
 	return;
 }
 
+global{
+    dq aGlob2 = 10;
+}
+
 func globalVars(){
 	printHex(aGlob);
-	printHex(aGlob);
+	printHex(aGlob2);
 	return;
 }
 
