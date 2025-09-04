@@ -14,6 +14,7 @@ void jump_short(uint8_t offset)
     }
 
     opcode_bytes[0] = 0xEB; // Short jump opcode
+                            // Load the absolute address of a label into a register using RIP-relative LEA.
     opcode_bytes[1] = offset;
 
     OpCode new_opcode;
@@ -180,6 +181,77 @@ void call(char *name)
 
     OpCode new_opcode;
     new_opcode.size = 5; // Total instruction size
+    new_opcode.code = opcode_bytes;
+
+    // Add the opcode to the array
+    op_codes_array = realloc(op_codes_array,
+                             (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void call_raw_address(uint8_t reg)
+{
+    // Encode: REX.W + FF /2 r/m64 with ModRM mod=11 (register direct)
+    char *opcode_bytes = malloc(3);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    // REX.W=1, set B if high register is used
+    set_rex_prefix(opcode_bytes, 1, 0, 0, (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0xFF; // Group 5 instructions (INC/DEC/CALL/JMP/PUSH), we use /2 for CALL
+    set_modrm((uint8_t *)&opcode_bytes[2], MOD_REG_DIRECT, 2 /* /2 = CALL */, reg & 0x7);
+
+    OpCode new_opcode;
+    new_opcode.size = 3;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+// Load the absolute address of a label into a register using RIP-relative LEA.
+// Encoding: REX.W + 0x8D + ModRM(mod=00, reg=dest, rm=101) + disp32
+// disp32 = target - (next RIP) and is fixed later by add_label_jump/fix_all_labels.
+void create_label_reference(uint8_t reg, char *name)
+{
+    if (reg == REG_RSP)
+    {
+        fprintf(stderr, "Error: Cannot use RSP as a register for createLabelReference.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char *opcode_bytes = malloc(7);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    // REX.W=1, R extends 'reg' if needed; X=0, B=0 (RIP-relative has no base reg)
+    set_rex_prefix(opcode_bytes, 1, (reg >= REG_R8) ? 1 : 0, 0, 0);
+    opcode_bytes[1] = 0x8D; // LEA
+    // ModRM: mod=00 (no base), reg=dest, rm=101 (RIP-relative)
+    set_modrm((uint8_t *)&opcode_bytes[2], MOD_NO_DISP, reg & 0x7, 0x5);
+
+    // Placeholder disp32 to be patched to rel32 by fixups
+    memset(&opcode_bytes[3], 0, 4);
+    add_label_jump(name, &opcode_bytes[3], 7);
+
+    OpCode new_opcode;
+    new_opcode.size = 7; // Total instruction size
     new_opcode.code = opcode_bytes;
 
     // Add the opcode to the array

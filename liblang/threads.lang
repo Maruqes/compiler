@@ -1,0 +1,46 @@
+func sys_clone(dq flags, ptr child_stack, ptr ptid, ptr ctid, ptr newtls){
+	print("  child_stack="); printHex(child_stack);
+	dq ret;
+	asm(mov64_r_i, rax, 56); // syscall number for clone
+	loadReg(rdi, flags);
+	loadReg(rsi, child_stack);
+	loadReg(rdx, ptid);
+	loadReg(r10, ctid);
+	loadReg(r8, newtls);
+	asm(syscall);
+	loadVar(ret, rax);
+	return ret;
+}
+
+
+func createThread(ptr start_routine, ptr pStack2, dq stack_size){
+
+	// Common Linux thread flags: share VM/files/fs/sighandlers, be same thread group
+	dq CLONE_VM      = 0x00000100;
+	dq CLONE_FS      = 0x00000200;
+	dq CLONE_FILES   = 0x00000400;
+	dq CLONE_SIGHAND = 0x00000800;
+	dq CLONE_THREAD  = 0x00010000;
+	dq CLONE_SYSVSEM = 0x00040000;
+	dq THREAD_FLAGS = CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD | CLONE_SYSVSEM;
+
+
+	dq pStack = pStack2 + stack_size; 
+	pStack = pStack & 0xffffffffffffff00;
+	pStack = pStack - 8;
+
+
+	print("  &stackTop="); printHex(&pStack);
+	print("  stackTop ="); printHex(pStack);
+
+	dq ret = sys_clone(THREAD_FLAGS, pStack, 0, 0, 0);
+
+	if ret == 0 {
+		loadReg(rsp, pStack);
+		loadReg(rbx, start_routine);
+		asm(call_raw_address, rbx);
+		exit(0);
+	}
+
+	return ret;
+}

@@ -6,37 +6,45 @@ global{
 include("liblang/min.lang")
 include("liblang/mem.lang")
 include("liblang/strings.lang")
+include("liblang/threads.lang")
+
+func test(){
+    dq sp;
+    dq bp;
+    dq local = 0;
+
+    loadVar(sp, rsp);
+    loadVar(bp, rbp);
+
+    print("child thread:\n");
+    print("  rsp="); printHex(sp);
+    print("  rbp="); printHex(bp);
+    print("  &local="); printHex(&local);
+    print("test\n");
+    return;
+}
+
 
 func main(dq argc) {
-	ptr p1 = brk(8);
-	ptr p2 = brk(8);
-	ptr p3 = brk(8);
+    dq stack_size = 8192;
+    ptr pStack = mmapFlags(stack_size, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, PROT_READ|PROT_WRITE); //8KB stack
 
-	memset(p1, 8, 0);
-	memset(p2, 8, 1);
-	memset(p3, 8, 2);
+    print("parent:\n");
+    dq spParent;
+    dq bpParent;
+    dq localParent = 0;
+    loadVar(spParent, rsp);
+    loadVar(bpParent, rbp);
+    print("  rsp="); printHex(spParent);
+    print("  rbp="); printHex(bpParent);
+    print("  &local="); printHex(&localParent);
 
-	printHex(*p1);
-	printHex(*p2);
-	printHex(*p3);
+    print("child stack region:\n");
+    print("  base="); printHex(pStack);
+    print("  top ="); printHex(pStack + stack_size);
 
-	ptr f1 = freeBrk(p1);
-	ptr f2 = freeBrk(p2);
-	ptr f3 = freeBrk(p3);
+    createThread(&test, pStack, stack_size);
+    nanosleep(1,0);
 
-
-	ptr p4 = mmap(4096);
-	memset(p4, 4096, 3);
-	printHex(p4);
-	printHex(*p4);
-
-	ptr p5 = mmap(4096);
-	memset(p5, 4096, 4);
-	printHex(p5);
-	printHex(*p5);
-
-	freeMmap(p4,4096);
-	freeMmap(p5,4096);
-
-	return;
+    return;
 }

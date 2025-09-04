@@ -244,20 +244,24 @@ var asmFuncs = map[string]any{
 	"mov8_mr_i": backend.Mov8_mr_i,
 	"mov8_mr_r": backend.Mov8_mr_r,
 
-	"lshfit8":     backend.Lshfit8,
-	"rshfit8":     backend.Rshfit8,
-	"lshfit8_reg": backend.Lshfit8_reg,
-	"rshfit8_reg": backend.Rshfit8_reg,
-	"inc8_r":      backend.Inc8_r,
-	"inc8_m":      backend.Inc8_m,
-	"inc8_mi":     backend.Inc8_mi,
-	"inc8_mr":     backend.Inc8_mr,
-	"dec8_r":      backend.Dec8_r,
-	"dec8_m":      backend.Dec8_m,
-	"dec8_mi":     backend.Dec8_mi,
-	"dec8_mr":     backend.Dec8_mr,
-	"syscall":     backend.Syscall_instruction,
-	"ret":         backend.Ret,
+	"lshfit8":          backend.Lshfit8,
+	"rshfit8":          backend.Rshfit8,
+	"lshfit8_reg":      backend.Lshfit8_reg,
+	"rshfit8_reg":      backend.Rshfit8_reg,
+	"inc8_r":           backend.Inc8_r,
+	"inc8_m":           backend.Inc8_m,
+	"inc8_mi":          backend.Inc8_mi,
+	"inc8_mr":          backend.Inc8_mr,
+	"dec8_r":           backend.Dec8_r,
+	"dec8_m":           backend.Dec8_m,
+	"dec8_mi":          backend.Dec8_mi,
+	"dec8_mr":          backend.Dec8_mr,
+	"syscall":          backend.Syscall_instruction,
+	"ret":              backend.Ret,
+	"call":             backend.Call,
+	"call_raw_address": backend.Call_raw_address,
+	"jump_reg":         backend.Jump_reg,
+	"and64_r_i":        backend.And64_r_i,
 }
 
 // callAsmFunction invokes a function value of any type using reflection with the given arguments.
@@ -267,7 +271,6 @@ func callAsmFunction(fn any, args []any) error {
 	if v.Kind() != reflect.Func {
 		return fmt.Errorf("asm function is not callable")
 	}
-
 	t := v.Type()
 	numIn := t.NumIn()
 	isVariadic := t.IsVariadic()

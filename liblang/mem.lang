@@ -6,6 +6,36 @@ global{
 	db BRK_STRUCT_SIZE = 32; //size of BrkPiece struct
 }
 
+
+global{
+	// mmap PROT bits
+	dq PROT_NONE = 0;
+	dq PROT_READ = 1;
+	dq PROT_WRITE = 2;
+	dq PROT_EXEC = 4;
+
+	// mmap FLAG bits
+	dq MAP_SHARED = 1;
+	dq MAP_PRIVATE = 2;
+	dq MAP_SHARED_VALIDATE = 3;
+
+	dq MAP_FIXED = 16;
+	dq MAP_ANONYMOUS = 32;
+	dq MAP_32BIT = 64;
+
+	dq MAP_GROWSDOWN = 256;
+	dq MAP_DENYWRITE = 2048;
+	dq MAP_EXECUTABLE = 4096;
+	dq MAP_LOCKED = 8192;
+	dq MAP_NORESERVE = 16384;
+	dq MAP_POPULATE = 32768;
+	dq MAP_NONBLOCK = 65536;
+	dq MAP_STACK = 131072;
+	dq MAP_HUGETLB = 262144;
+	dq MAP_SYNC = 524288;
+	dq MAP_FIXED_NOREPLACE = 1048576;
+}
+
 func memset(ptr s1, dq len, db value){
 	for dq i = 0; i < len; i++; {
 		s1[i] = value;
@@ -125,6 +155,20 @@ func freeBrk(ptr brkPtr){
 	}
 	
 	return brkTrack;
+}
+
+func mmapFlags(dq length, dq flags, dq prot){
+	dq addr = 0;
+	asm(mov64_r_i, rax, 9);
+	asm(mov64_r_i, rdi, 0); //addr
+	loadReg(rsi, length);       //length
+	loadReg(rdx, prot);         //prot
+	loadReg(r10, flags);       //flags
+	loadReg(r8, -1);    //fd
+	asm(mov64_r_i, r9, 0);     //offset
+	asm(syscall);
+	loadVar(addr, rax);
+	return addr;
 }
 
 func mmap(dq length){

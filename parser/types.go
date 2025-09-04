@@ -118,6 +118,11 @@ func parsePointer(parser *Parser, token string, reg byte) (bool, error) {
 				return false, err
 			}
 
+			if isFunctionCall(token) {
+				backend.Create_label_reference(reg, token)
+				return true, nil
+			}
+
 			err = varList.GetVariableAddress(token, reg)
 			if err != nil {
 				return false, err

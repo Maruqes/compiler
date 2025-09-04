@@ -7,12 +7,37 @@ func getStringLen(ptr s1){
 	return res;
 }
 
+func reverseString(ptr s1){
+	dq len = getStringLen(s1);
+	dq i = 0;
+	dq j = len - 2;    // adjust for \n (-1)  and  zero based (string with len = 1 is str[len-1] str[0]) so -2
+	while i < j {
+		// Swap characters
+		db temp = s1[i];
+		s1[i] = s1[j];
+		s1[j] = temp;
+		i++;
+		j--;
+	}
+	return;
+}
 
 func print(ptr s1){
 	dd len = getStringLen(s1);
 
 	asm(mov64_r_i, rax, 1);
 	asm(mov64_r_i, rdi, 1);
+	loadReg(rsi, s1);
+	loadReg(rdx, len);
+	asm(syscall);
+	return;
+}
+
+func errorf(ptr s1){
+	dd len = getStringLen(s1);
+
+	asm(mov64_r_i, rax, 1);
+	asm(mov64_r_i, rdi, 2);
 	loadReg(rsi, s1);
 	loadReg(rdx, len);
 	asm(syscall);
@@ -28,17 +53,3 @@ func read(ptr s1, dd n){
 	return;
 }
 
-func reverseString(ptr s1){
-	dq len = getStringLen(s1);
-	dq i = 0;
-	dq j = len - 2;    // adjust for \n (-1)  and  zero based (string with len = 1 is str[len-1] str[0]) so -2
-	while i < j {
-		// Swap characters
-		db temp = s1[i];
-		s1[i] = s1[j];
-		s1[j] = temp;
-		i++;
-		j--;
-	}
-	return;
-}
