@@ -334,6 +334,17 @@ func createVariablesFromParams(parser *Parser, params []ParamType) error {
 	return nil
 }
 
+func allignStack(align int) {
+	if align <= 0 || align > 16 {
+		align = 16
+	}
+
+	// Align stack to 16 bytes (RSP%16==0)
+	backend.Mov64_r_r(byte(backend.REG_RAX), byte(backend.REG_RSP))
+	backend.And64_r_i(byte(backend.REG_RAX), ^(uint(align) - 1))
+	backend.Sub64_r_r(byte(backend.REG_RSP), byte(backend.REG_RAX))
+}
+
 func createFunc(parser *Parser) error {
 	//get name of the function
 	name, err := parser.NextToken()
@@ -352,7 +363,7 @@ func createFunc(parser *Parser) error {
 
 	setScope(name)
 	CreateVarList(name)
-
+	allignStack(16)
 	backend.Create_label(name)
 	CreateStack()
 

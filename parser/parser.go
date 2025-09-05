@@ -20,9 +20,10 @@ var composingTokens = append([]string{"{", "}", "(", ")", "[", "]", ";", ",", "+
 	"++", "--", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "//", ">>", "<<"}, comparisonOperators...)
 
 var filenameArrSave []string
+
 func (p *Parser) StartParse(fileName string) error {
-	for _,name := range filenameArrSave{
-		if name == fileName{
+	for _, name := range filenameArrSave {
+		if name == fileName {
 			panic("File already included: " + fileName)
 		}
 	}
@@ -432,6 +433,10 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 		case "*":
 			backend.Mul64_r_r(reg, tmp)
 		case "/":
+			if reg == byte(backend.REG_RDX) || tmp == byte(backend.REG_RDX) {
+				return fmt.Errorf("cannot use RDX as destination or source in modulus operation, choose another register"), nil, false
+			}
+
 			if reg != byte(backend.REG_RAX) {
 				backend.Mov64_r_r(byte(backend.REG_RAX), reg)
 			}
@@ -447,6 +452,20 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 		case "^":
 			// XOR operation
 			backend.Xor64_r_r(reg, tmp)
+		case "%":
+			if reg == byte(backend.REG_RDX) || tmp == byte(backend.REG_RDX) {
+				return fmt.Errorf("cannot use RDX as destination or source in modulus operation, choose another register"), nil, false
+			}
+
+			if reg != byte(backend.REG_RAX) {
+				backend.Mov64_r_r(byte(backend.REG_RAX), reg)
+			}
+			backend.Xor64_r_r(byte(backend.REG_RDX), byte(backend.REG_RDX)) // clear RDX before division
+			backend.Div64_r(tmp)
+			if reg != byte(backend.REG_RDX) {
+				backend.Mov64_r_r(reg, byte(backend.REG_RDX)) // move remainder to dest
+			}
+
 		case "&&":
 			// Use global counter for unique labels
 			labelCounter++
@@ -491,10 +510,16 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 				return err, nil, false
 			}
 		case "<<":
+			if reg == byte(backend.REG_RCX) {
+				return fmt.Errorf("cannot use RCX as destination register in shift operation, choose another register"), nil, false
+			}
 			//move to cl the ammount to shift
 			backend.Mov64_r_r(byte(backend.REG_RCX), tmp)
 			backend.Lshfit64_reg(reg)
 		case ">>":
+			if reg == byte(backend.REG_RCX) {
+				return fmt.Errorf("cannot use RCX as destination register in shift operation, choose another register"), nil, false
+			}
 			backend.Mov64_r_r(byte(backend.REG_RCX), tmp)
 			backend.Rshfit64_reg(reg)
 		default:

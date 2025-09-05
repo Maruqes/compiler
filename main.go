@@ -22,6 +22,9 @@ inputs na main-> args    ./main <args>
 /*
 known problems
 -dd(b) = fffffffffffffffa (eu esperava 00000000fffffffa)
+
+PARA FAZER
+AO CRIAR POINTEIRO OBRIGAR A PASSAR TAMANHO <DB/DW/DD/DQ> E METER ISSO EM FUNCOES STRUCTS GLOBAIS
 */
 
 func main() {

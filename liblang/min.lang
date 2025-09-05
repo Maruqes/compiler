@@ -5,6 +5,15 @@ func exit(dq status){
 	return;
 }
 
+// Terminate the entire process (all threads)
+func exit_group(dq status){
+	asm(mov64_r_i, rax, 231); // SYS_exit_group
+	loadReg(rdi, status);
+	asm(syscall);
+	return;
+}
+
+
 struct timespec {
     dq tv_nsec;
 	dq tv_sec;
@@ -26,4 +35,28 @@ func clock_gettime(ptr ts){
 	loadReg(rsi, ts);
 	asm(syscall);
 	return;
+}
+
+func getpid(){
+	dq pid;
+	asm(mov64_r_i, rax, 39); // SYS_getpid
+	asm(syscall);
+	loadVar(pid, rax);
+	return pid;
+}
+
+func getppid(){
+	dq ppid;
+	asm(mov64_r_i, rax, 110); // SYS_getppid
+	asm(syscall);
+	loadVar(ppid, rax);
+	return ppid;
+}
+
+func gettid(){
+	dq tid;
+	asm(mov64_r_i, rax, 186); // SYS_gettid
+	asm(syscall);
+	loadVar(tid, rax);
+	return tid;
 }

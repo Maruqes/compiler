@@ -8,43 +8,106 @@ include("liblang/mem.lang")
 include("liblang/strings.lang")
 include("liblang/threads.lang")
 
-func test(){
-    dq sp;
-    dq bp;
-    dq local = 0;
+// --- Worker A call chain ---
+func A2(){
+    print("A2 start\n");
+    nanosleep(1,0);
+    nanosleep(1,0);
+    print("A2 end\n");
+    return;
+}
 
-    loadVar(sp, rsp);
-    loadVar(bp, rbp);
+func A1(){
+    print("A1 start\n");
+    nanosleep(1,0);
+    A2();
+    print("A1 end\n");
+    return;
+}
 
-    print("child thread:\n");
-    print("  rsp="); printHex(sp);
-    print("  rbp="); printHex(bp);
-    print("  &local="); printHex(&local);
-    print("test\n");
+func workerA(){
+    print("workerA start\n");
+    A1();
+    print("workerA end\n");
+    return;
+}
+
+// --- Worker B call chain ---
+func B3(){
+    print("B3 start\n");
+    nanosleep(1,0);
+    nanosleep(1,0);
+    print("B3 end\n");
+    return;
+}
+
+func B2(){
+    print("B2 start\n");
+    nanosleep(1,0);
+    B3();
+    print("B2 end\n");
+    return;
+}
+
+func B1(){
+    print("B1 start\n");
+    nanosleep(1,0);
+    B2();
+    print("B1 end\n");
+    return;
+}
+
+func workerB(){
+    print("workerB start\n");
+    B1();
+    print("workerB end\n");
+    return;
+}
+
+// --- Worker C call chain ---
+func C2(){
+    print("C2 start\n");
+    nanosleep(1,0);
+    print("C2 mid\n");
+    nanosleep(1,0);
+    print("C2 end\n");
+    return;
+}
+
+func C1(){
+    print("C1 start\n");
+    nanosleep(1,0);
+    C2();
+    print("C1 end\n");
+    return;
+}
+
+func workerC(){
+    print("workerC start\n");
+    C1();
+    print("workerC end\n");
     return;
 }
 
 
-func main(dq argc) {
-    dq stack_size = 8192;
-    ptr pStack = mmapFlags(stack_size, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, PROT_READ|PROT_WRITE); //8KB stack
+func main() {
 
-    print("parent:\n");
-    dq spParent;
-    dq bpParent;
-    dq localParent = 0;
-    loadVar(spParent, rsp);
-    loadVar(bpParent, rbp);
-    print("  rsp="); printHex(spParent);
-    print("  rbp="); printHex(bpParent);
-    print("  &local="); printHex(&localParent);
+    ptr stackA = mmap(5);
 
-    print("child stack region:\n");
-    print("  base="); printHex(pStack);
-    print("  top ="); printHex(pStack + stack_size);
+    // Create threads
+    dd tidA = 0;
+    dd parent_tidA = 0;
+  
 
-    createThread(&test, pStack, stack_size);
-    nanosleep(1,0);
+    print("thread1\n");
+    createThreadIds(&workerA, stackA, 5 * 4096, &tidA, &parent_tidA);
+ 
+    printHex(tidA);
+ 
 
+    threadJoin(&tidA);
+
+    print("Main: all threads finished\n");
+    // exit_group(0);
     return;
 }

@@ -74,6 +74,13 @@ func sys_brk(dq size){
 }
 
 func brk(dq size){
+
+	//force size be multiple of 16
+	dq diff = size % 16;
+	if diff != 0 {
+		size = size + (16 - diff);
+	}
+
 	if brkTrack == 0{
 		brkTrack = sys_brk(0);
 	}
@@ -171,7 +178,8 @@ func mmapFlags(dq length, dq flags, dq prot){
 	return addr;
 }
 
-func mmap(dq length){
+func mmap(dq pages){
+	dq length = pages * 4096;
 	dq addr = 0;
 	asm(mov64_r_i, rax, 9);
 	asm(mov64_r_i, rdi, 0); //addr
@@ -185,7 +193,8 @@ func mmap(dq length){
 	return addr;
 }
 
-func freeMmap(ptr addr, dq length){
+func freeMmap(ptr addr, dq pages){
+	dq length = pages * 4096;
 	asm(mov64_r_i, rax, 11);
 	loadReg(rdi, addr);
 	loadReg(rsi, length);
