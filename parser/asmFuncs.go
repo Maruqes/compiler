@@ -260,6 +260,7 @@ var asmFuncs = map[string]any{
 	"ret":              backend.Ret,
 	"call":             backend.Call,
 	"call_raw_address": backend.Call_raw_address,
+	"jmp_reg":          backend.Jump_reg,
 	"jump_reg":         backend.Jump_reg,
 	"and64_r_i":        backend.And64_r_i,
 }

@@ -21,5 +21,5 @@ void write_string_constants_to_file(int file_descriptor);
 
 // Function to resolve all variable references with their absolute addresses
 void resolve_variable_addresses(uint64_t data_section_start_address);
-
+z
 #endif

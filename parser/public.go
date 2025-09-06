@@ -42,7 +42,18 @@ func getPublicVar(token string, reg byte) (bool, error) {
 	}
 
 	backend.Create_variable_reference(token, reg)
-	backend.Mov64_r_m(reg, reg)
+	switch varPublic.size {
+	case DQ:
+		backend.Mov64_r_m(reg, reg)
+	case DD:
+		backend.Mov32_r_m(reg, reg)
+	case DW:
+		backend.Mov16_r_m(reg, reg)
+	case DB:
+		backend.Mov8_r_m(reg, reg)
+	default:
+		return false, fmt.Errorf("invalid size '%d' for global variable '%s'", varPublic.size, token)
+	}
 	clearReg(reg, varPublic.size)
 
 	return true, nil
@@ -54,13 +65,25 @@ func setPublicVar(token string, reg byte) (bool, error) {
 		return false, fmt.Errorf("cannot set global variable with RBX register")
 	}
 
-	_, exists := publicVarList.GetVar(token)
+	varPublic, exists := publicVarList.GetVar(token)
 	if !exists {
 		return false, fmt.Errorf("global variable '%s' not found", token)
 	}
 
 	backend.Create_variable_reference(token, byte(backend.REG_RBX))
-	backend.Mov64_m_r(byte(backend.REG_RBX), reg)
+	switch varPublic.size {
+	case DQ:
+		backend.Mov64_m_r(byte(backend.REG_RBX), reg)
+	case DD:
+		backend.Mov32_m_r(byte(backend.REG_RBX), reg)
+	case DW:
+		backend.Mov16_m_r(byte(backend.REG_RBX), reg)
+	case DB:
+		backend.Mov8_m_r(byte(backend.REG_RBX), reg)
+	default:
+		return false, fmt.Errorf("invalid size '%d' for global variable '%s'", varPublic.size, token)
+	}
+	clearReg(byte(backend.REG_RBX), varPublic.size)
 	return true, nil
 }
 
@@ -95,7 +118,7 @@ func createPublicVar(parser *Parser, size int) error {
 		return err
 	}
 
-	buf := make([]byte, size)
+	buf := make([]byte, size+1)
 	for i := range buf {
 		buf[i] = '0'
 	}
@@ -135,7 +158,7 @@ func checkPublicVars(parser *Parser) (bool, error) {
 	vl := GetVarList(name)
 	if vl == nil {
 		CreateVarList(name)
-	} 
+	}
 
 	funcGlobalName := fmt.Sprintf("func_global_%d", funcglobalIndex)
 	funcglobalIndex++

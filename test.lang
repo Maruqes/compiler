@@ -1,5 +1,6 @@
 
 global{
+    dq wait = 1;
 }
 
 
@@ -9,105 +10,62 @@ include("liblang/strings.lang")
 include("liblang/threads.lang")
 
 // --- Worker A call chain ---
-func A2(){
+func A2(dq sleep){
     print("A2 start\n");
-    nanosleep(1,0);
-    nanosleep(1,0);
+    nanosleep(sleep,0);
+    nanosleep(sleep,0);
     print("A2 end\n");
     return;
 }
 
-func A1(){
+func A1(dq sleep){
     print("A1 start\n");
-    nanosleep(1,0);
-    A2();
+    nanosleep(sleep,0);
+    A2(sleep);
     print("A1 end\n");
     return;
 }
 
 func workerA(){
+    wait++;
+    dq sleep = wait;
+    A1(sleep);
     print("workerA start\n");
-    A1();
     print("workerA end\n");
+    A2(sleep);
     return;
 }
 
-// --- Worker B call chain ---
-func B3(){
-    print("B3 start\n");
-    nanosleep(1,0);
-    nanosleep(1,0);
-    print("B3 end\n");
+func test(ptr a, ptr b<dd>){
+    printHex(*a);
+    printHex(*b);
     return;
 }
-
-func B2(){
-    print("B2 start\n");
-    nanosleep(1,0);
-    B3();
-    print("B2 end\n");
-    return;
-}
-
-func B1(){
-    print("B1 start\n");
-    nanosleep(1,0);
-    B2();
-    print("B1 end\n");
-    return;
-}
-
-func workerB(){
-    print("workerB start\n");
-    B1();
-    print("workerB end\n");
-    return;
-}
-
-// --- Worker C call chain ---
-func C2(){
-    print("C2 start\n");
-    nanosleep(1,0);
-    print("C2 mid\n");
-    nanosleep(1,0);
-    print("C2 end\n");
-    return;
-}
-
-func C1(){
-    print("C1 start\n");
-    nanosleep(1,0);
-    C2();
-    print("C1 end\n");
-    return;
-}
-
-func workerC(){
-    print("workerC start\n");
-    C1();
-    print("workerC end\n");
-    return;
-}
-
 
 func main() {
+    dq a = 0x123456789abcdef0;
+    dq b = 0xdeadbeefcafebabe;
+    test(&a, &a);
+    test(&b, &b);
 
-    ptr stackA = mmap(5);
 
-    // Create threads
-    dd tidA = 0;
-    dd parent_tidA = 0;
-  
+    ptr tids = dd<5>;
 
-    print("thread1\n");
-    createThreadIds(&workerA, stackA, 5 * 4096, &tidA, &parent_tidA);
- 
-    printHex(tidA);
- 
+    for dd i = 0; i < 5; i++; {
+        dq SZ = 5 * 4096;
+        ptr stack = mmap(5);
+        createThreadIds(&workerA, stack, SZ, tids + (i*4), 0);
+        nanosleep(0, 100000);
+    }
 
-    threadJoin(&tidA);
+    for dd i = 0; i < 5; i++; {
+        print("Waiting thread ");printHex(i);
+        threadJoin(tids + (i*4));
+        print("Joined thread ");printHex(i);
+    }
 
-    print("Main: all threads finished\n");
-    // exit_group(0);
+
+
+    // exit(0);
     return;
 }

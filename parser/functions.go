@@ -10,8 +10,9 @@ import (
 )
 
 type ParamType struct {
-	Name string
-	Type int // DQ for 64-bit, DD for 32-bit, DW for 16-bit, DB for 8-bit
+	Name  string
+	Type  int // DQ for 64-bit, DD for 32-bit, DW for 16-bit, DB for 8-bit
+	Extra any
 }
 
 type FunctionType struct {
@@ -311,7 +312,14 @@ func getParams(parser *Parser) ([]ParamType, error) {
 				return nil, err
 			}
 
-			params = append(params, ParamType{Name: token, Type: paramType})
+			var extra any
+
+			_, _, err = parseCoisoEstranho(parser, &extra)
+			if err != nil {
+				return nil, err
+			}
+
+			params = append(params, ParamType{Name: token, Type: paramType, Extra: extra})
 		} else {
 			return nil, fmt.Errorf("expected type (dq, dd, dw, db), got '%s'", token)
 		}
@@ -328,22 +336,22 @@ func createVariablesFromParams(parser *Parser, params []ParamType) error {
 	for i, param := range params {
 		fmt.Println(param.Name + " -> " + fmt.Sprintf("%d", paramLength-((i-1)*8)))
 		backend.Mov64_r_mi(byte(backend.REG_RAX), byte(backend.REG_RBP), paramLength-((i-1)*8))
-		createVarWithReg(parser, byte(backend.REG_RAX), param.Type, param.Name, nil, ORIGIN_RBP)
+		createVarWithReg(parser, byte(backend.REG_RAX), param.Type, param.Name, param.Extra, ORIGIN_RBP)
 	}
 
 	return nil
 }
 
-func allignStack(align int) {
-	if align <= 0 || align > 16 {
-		align = 16
-	}
+// func allignStack(align int) {
+// 	if align <= 0 || align > 16 {
+// 		align = 16
+// 	}
 
-	// Align stack to 16 bytes (RSP%16==0)
-	backend.Mov64_r_r(byte(backend.REG_RAX), byte(backend.REG_RSP))
-	backend.And64_r_i(byte(backend.REG_RAX), ^(uint(align) - 1))
-	backend.Sub64_r_r(byte(backend.REG_RSP), byte(backend.REG_RAX))
-}
+// 	// Align stack to 16 bytes (RSP%16==0)
+// 	backend.Mov64_r_r(byte(backend.REG_RAX), byte(backend.REG_RSP))
+// 	backend.And64_r_i(byte(backend.REG_RAX), ^(uint(align) - 1))
+// 	backend.Sub64_r_r(byte(backend.REG_RSP), byte(backend.REG_RAX))
+// }
 
 func createFunc(parser *Parser) error {
 	//get name of the function
@@ -363,7 +371,6 @@ func createFunc(parser *Parser) error {
 
 	setScope(name)
 	CreateVarList(name)
-	allignStack(16)
 	backend.Create_label(name)
 	CreateStack()
 
@@ -378,6 +385,7 @@ func createFunc(parser *Parser) error {
 	if err != nil {
 		return fmt.Errorf("error parsing code block for function '%s': %w", name, err)
 	}
+	LeaveStack()
 
 	return nil
 }

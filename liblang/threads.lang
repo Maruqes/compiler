@@ -13,7 +13,6 @@ func sys_clone(dq flags, ptr child_stack, ptr ptid, ptr ctid, ptr newtls){
 
 
 
-
 func createThreadIds(ptr start_routine, ptr pStack2, dq stack_size, ptr out_child_tid, ptr out_parent_tid){
 
 	// Common Linux thread flags: share VM/files/fs/sighandlers, be same thread group
@@ -36,26 +35,17 @@ func createThreadIds(ptr start_routine, ptr pStack2, dq stack_size, ptr out_chil
 	dq pStack = pStack2 + stack_size;
 	// Align stack to 16 bytes and set state required before 'call' (RSP%16==8)
 	pStack = pStack & 0xfffffffffffffff0;
-	pStack = pStack - 8;
+	pStack = pStack - 16;
 
 	dq ret = sys_clone(THREAD_FLAGS, pStack, out_parent_tid, out_child_tid, 0);
 
 	if ret == 0 {
 		loadReg(rbx, start_routine);
 		loadReg(rsp, pStack);
-		loadReg(rbp, 0);
 		asm(call_raw_address, rbx);
 		exit(0);
 	}
-
-	// // Ensure the child TID is visible to the parent before returning
-	// if out_child_tid != 0 {
-	// 	ptr tidp<dd> = out_child_tid;
-	// 	while *tidp == 0 {
-	// 		// spin briefly; child will set via CLONE_CHILD_SETTID on return path
-	// 	}
-	// }
-	nanosleep(0, 10000); // sleep 0.01ms to let child run and set its TID
+	nanosleep(0, 1000000); // sleep 1ms to let thread start (otherwise sometimes the parent exits before child starts)
 	return ret;
 }
 
@@ -75,18 +65,14 @@ func sys_futex(ptr uaddr, dq futex_op, dq val, ptr timeout, ptr uaddr2, dq val3)
 	return;
 }
 
-// Wait until the kernel clears child_tid_addr to 0 (requires CLONE_CHILD_CLEARTID)
-func threadJoin(ptr child_tid_addr){
-	if child_tid_addr == 0 { return; }
-
-	dq FUTEX_WAIT = 0; // futex operations
-
-	while 1 == 1 {
-		ptr dPP<dd> = child_tid_addr;
-		dd cur = *dPP;
+func threadJoin(ptr ctid_addr<dd>){
+    if ctid_addr == 0 { return; }
+    dq FUTEX_WAIT = 0;
+    while 1 == 1 {
+		dd cur = *ctid_addr;
 		if cur == 0 { 
-			break;
+			break; 
 		}
-	}
-	return;
+		sys_futex(ctid_addr, FUTEX_WAIT, cur, 0, 0, 0);
+    }
 }

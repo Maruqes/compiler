@@ -420,6 +420,7 @@ func parseNonPopulatedArrays(parser *Parser, token string, reg byte) (bool, erro
 }
 
 // uses r8
+// arr[0]
 func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 
 	arrType := DB
@@ -436,6 +437,14 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 		}
 	} else {
 		return false, fmt.Errorf("Variable '%s' not found in scope0 '%s'", token, SCOPE)
+	}
+
+	peekString, err := parser.Peek()
+	if err != nil {
+		return false, err
+	}
+	if len(peekString) < 1 || peekString[0] != '[' {
+		return false, nil
 	}
 
 	varStruct, err := varList.GetVariableStruct(token)
