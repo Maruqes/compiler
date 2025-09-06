@@ -18,8 +18,10 @@ void create_variable_reference(char *variable_name, uint8_t register_code);
 
 // Function to write all string constants to the output file
 void write_string_constants_to_file(int file_descriptor);
+// Return total data size (code uses for ELF sizing)
+uint64_t get_data_entries_size();
 
 // Function to resolve all variable references with their absolute addresses
 void resolve_variable_addresses(uint64_t data_section_start_address);
-z
+void add_global_storage(char *name, uint32_t size);
 #endif

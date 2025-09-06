@@ -167,7 +167,8 @@ int create_elf()
 
     // Program header
     struct Elf64_Phdr phdr;
-    init_program_header(&phdr, code_offset, custom_code_size, data_size);
+    uint64_t data_bytes = get_data_entries_size();
+    init_program_header(&phdr, code_offset, custom_code_size, data_bytes);
 
     // Write the ELF file
     int fd = open("hello_elf_64", O_CREAT | O_WRONLY | O_TRUNC, 0755);
@@ -195,6 +196,26 @@ int create_elf()
     return fd;
 }
 
+void set_elf_size(uint64_t code_size, int fd)
+{
+    // Recompute final sizes and patch phdr
+    uint64_t final_data = get_data_entries_size();
+    uint64_t total = code_size + final_data;
+    phdrPublic.p_filesz = total;
+    phdrPublic.p_memsz = total;
+    if (lseek(fd, sizeof(struct Elf64_Ehdr), SEEK_SET) == (off_t)-1)
+    {
+        perror("lseek phdr patch");
+    }
+    else
+    {
+        if (write(fd, &phdrPublic, sizeof(phdrPublic)) != sizeof(phdrPublic))
+        {
+            perror("rewrite phdr");
+        }
+    }
+}
+
 void printHello()
 {
     mov64_r_i(REG_RAX, 1); // syscall number for write
@@ -212,16 +233,18 @@ int write_elf()
     int fd = create_elf();
 
     fix_all_labels();
-    resolve_variable_addresses(phdrPublic.p_vaddr + get_current_code_size());
+    uint64_t code_size = get_current_code_size();
+    resolve_variable_addresses(phdrPublic.p_vaddr + code_size);
 
-    // needs to be this order
     write_all_custom_code(fd);
     write_string_constants_to_file(fd);
+    set_elf_size(code_size, fd);
+
+    uint64_t final_data = get_data_entries_size();
+    uint64_t total = code_size + final_data;
+
     close(fd);
-
     cleanup();
-
-    printf("ELF file created successfully.\n");
-
+    printf("ELF file created successfully. code=%lu data=%lu total=%lu\n", (unsigned long)code_size, (unsigned long)final_data, (unsigned long)total);
     return 0;
 }

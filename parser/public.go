@@ -118,12 +118,8 @@ func createPublicVar(parser *Parser, size int) error {
 		return err
 	}
 
-	buf := make([]byte, size+1)
-	for i := range buf {
-		buf[i] = '0'
-	}
-
-	backend.Add_string_constant(name, string(buf))
+	// Reserve zeroed, aligned storage (raw global, not a string)
+	backend.Add_global_storage(name, uint(size))
 	err = getAfterEqual(parser)
 	if err != nil {
 		return err

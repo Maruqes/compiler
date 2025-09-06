@@ -1,6 +1,7 @@
 
 global{
-    dq wait = 1;
+    dq wait = 1;          // simple shared counter (not atomic) just for variation
+    dq thread_iterations = 3;
 }
 
 
@@ -27,12 +28,45 @@ func A1(dq sleep){
 }
 
 func workerA(){
-    wait++;
-    dq sleep = wait;
-    A1(sleep);
+    dq sleep = wait; wait++;
     print("workerA start\n");
+    for dq i=0; i < thread_iterations; i++; {
+        A1(sleep);
+    }
     print("workerA end\n");
-    A2(sleep);
+    return;
+}
+
+// Additional workers to diversify call chains
+func workerB(){
+    dq s = (wait & 3) + 1; wait++;
+    print("workerB start\n");
+    for dq i=0; i < (thread_iterations + 1); i++; {
+        nanosleep(s,0);
+        A2(s);
+    }
+    print("workerB end\n");
+    return;
+}
+
+func workerC(){
+    dq s = (wait & 1) + 1; wait++;
+    print("workerC start\n");
+    for dq i=0; i < (thread_iterations + 2); i++; {
+        nanosleep(0, 5000000); // 5ms
+    }
+    print("workerC end\n");
+    return;
+}
+
+func workerD(){
+    dq s = (wait & 7) + 1; wait++;
+    print("workerD start\n");
+    for dq i=0; i < thread_iterations; i++; {
+        A2(s);
+        nanosleep(0, 1000000); // 1ms
+    }
+    print("workerD end\n");
     return;
 }
 
@@ -48,24 +82,30 @@ func main() {
     test(&a, &a);
     test(&b, &b);
 
+    dd THREAD_COUNT = 16; // adjust to stress more/less
+    ptr tids = dd<64>; // reserve space (64 * 4 bytes) plenty for TIDs
 
-    ptr tids = dd<5>;
-
-    for dd i = 0; i < 5; i++; {
-        dq SZ = 5 * 4096;
-        ptr stack = mmap(5);
-        createThreadIds(&workerA, stack, SZ, tids + (i*4), 0);
-        nanosleep(0, 100000);
+    for dd i = 0; i < THREAD_COUNT; i++; {
+        dq SZ = 8 * 4096; // 32KB stack
+        ptr stack = mmapFlags(SZ, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, PROT_READ|PROT_WRITE);
+        // Select worker function round-robin
+        ptr fn = 0;
+        dq mod = i % 4;
+        if mod == 0 { fn = &workerA; }
+        if mod == 1 { fn = &workerB; }
+        if mod == 2 { fn = &workerC; }
+        if mod == 3 { fn = &workerD; }
+        createThreadIds(fn, stack, SZ, tids + (i*4), 0);
+        nanosleep(0, 500000); // 0.5ms gap to vary scheduling
     }
 
-    for dd i = 0; i < 5; i++; {
+    for dd i = 0; i < THREAD_COUNT; i++; {
         print("Waiting thread ");printHex(i);
         threadJoin(tids + (i*4));
-        print("Joined thread ");printHex(i);
+        print(" Joined thread ");printHex(i);
+        print("\n");
     }
 
-
-
-    // exit(0);
+    print("All threads joined.\n");
     return;
 }
