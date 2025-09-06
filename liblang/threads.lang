@@ -11,9 +11,16 @@ func sys_clone(dq flags, ptr child_stack, ptr ptid, ptr ctid, ptr newtls){
 	return ret;
 }
 
+func addThreadVariable(ptr stack, dq stack_size, dq param, dq index){
+	dq pStack = stack + stack_size;
+	pStack = pStack & 0xfffffffffffffff0;
+	pStack = pStack - 16;
+
+	memcpy(pStack - (index * 8), &param, 8);
+}
 
 
-func createThreadIds(ptr start_routine, ptr pStack2, dq stack_size, ptr out_child_tid, ptr out_parent_tid){
+func createThreadIds(ptr start_routine, ptr pStack2, dq stack_size, ptr out_child_tid, ptr out_parent_tid, ptr param_max){
 
 	// Common Linux thread flags: share VM/files/fs/sighandlers, be same thread group
 	dq CLONE_VM      = 0x00000100;
@@ -35,7 +42,7 @@ func createThreadIds(ptr start_routine, ptr pStack2, dq stack_size, ptr out_chil
 	dq pStack = pStack2 + stack_size;
 	// Align stack to 16 bytes and set state required before 'call' (RSP%16==8)
 	pStack = pStack & 0xfffffffffffffff0;
-	pStack = pStack - 16;
+	pStack = pStack - 8 - (8 * param_max); // reserve space for return address + parameters
 
 	dq ret = sys_clone(THREAD_FLAGS, pStack, out_parent_tid, out_child_tid, 0);
 
@@ -48,7 +55,6 @@ func createThreadIds(ptr start_routine, ptr pStack2, dq stack_size, ptr out_chil
 	nanosleep(0, 1000000); // sleep 1ms to let thread start (otherwise sometimes the parent exits before child starts)
 	return ret;
 }
-
 
 
 // Minimal futex syscall wrapper (x86_64: SYS_futex=202)

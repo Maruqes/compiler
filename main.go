@@ -30,8 +30,8 @@ AO CRIAR POINTEIRO OBRIGAR A PASSAR TAMANHO <DB/DW/DD/DQ> E METER ISSO EM FUNCOE
 func main() {
 
 	var par parser.Parser
-	// par.StartParse("features.lang")
-	par.StartParse("test.lang")
+	par.StartParse("features.lang")
+	// par.StartParse("test.lang")
 
 	backend.Call("global_init")
 	backend.Call("main")
