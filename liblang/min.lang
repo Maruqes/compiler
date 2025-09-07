@@ -60,3 +60,12 @@ func gettid(){
 	loadVar(tid, rax);
 	return tid;
 }
+
+func printMem(ptr mem, dq size){
+	dq i = 0;
+	while (i < size) {
+		db b = mem[i];
+		printHex(b);
+	}
+	return;
+}

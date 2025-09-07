@@ -343,6 +343,10 @@ func testThreadsCARALHOS(){
 	print("Joined thread 1\n");
 	threadJoin(&t2_id);
 	print("Joined thread 2\n");
+
+	freeMmap(stack_t1, 8);
+	freeMmap(stack_t2, 8);
+	print("Finished all threads\n");
 	return;
 }
 

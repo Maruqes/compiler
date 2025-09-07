@@ -24,14 +24,14 @@ known problems
 -dd(b) = fffffffffffffffa (eu esperava 00000000fffffffa)
 
 PARA FAZER
-AO CRIAR POINTEIRO OBRIGAR A PASSAR TAMANHO <DB/DW/DD/DQ> E METER ISSO EM FUNCOES STRUCTS GLOBAIS
+func kernelInfo(ptr structName<utsname>)
 */
 
 func main() {
 
 	var par parser.Parser
-	par.StartParse("features.lang")
-	// par.StartParse("test.lang")
+	// par.StartParse("features.lang")
+	par.StartParse("test.lang")
 
 	backend.Call("global_init")
 	backend.Call("main")

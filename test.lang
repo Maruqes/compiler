@@ -9,120 +9,37 @@ include("liblang/min.lang")
 include("liblang/mem.lang")
 include("liblang/strings.lang")
 include("liblang/threads.lang")
+include("liblang/net.lang")
 
 
-// Original 4‑parameter test (mixed sizes)
-func test(dq a, dq b, dw c, db d){
-    print("test() params:\n");
-    printHex(a);
-    printHex(b);
-    printHex(c);
-    printHex(d);
-    return;
-}
-
-// 0‑parameter test
-func testZero(){
-    print("testZero() running\n");
-    return;
-}
-
-// 1‑parameter (dq) test
-func testOne(dq x){
-    print("testOne(): x=\n");
-    printHex(x);
-    return;
-}
-
-// 2‑parameter arithmetic
-func testTwo(dq a, dq b){
-    dq sum = a + b;
-    dq diff = a - b;
-    print("testTwo(): a b sum diff\n");
-    printHex(a);
-    printHex(b);
-    printHex(sum);
-    printHex(diff);
-    return;
-}
-
-// 4 small byte params – ensure we can still pass as 8‑byte slots
-func testBytes(db a, db b, db c, db d){
-    print("testBytes(): a b c d\n");
-    printHex(a);
-    printHex(b);
-    printHex(c);
-    printHex(d);
-    return;
-}
-
-// 6 parameters stress
-func testSix(dq a, dq b, dq c, dq d, dq e, dq f){
-    print("testSix(): a..f\n");
-    printHex(a);
-    printHex(b);
-    printHex(c);
-    printHex(d);
-    printHex(e);
-    printHex(f);
-    return;
-}
 
 func main() {
-    // Thread 1: original 4‑param mixed sizes
-    dq a = 0x123456789abcdef0;
-    dq b = 0xdeadbeefcafebabe;
-    dq c = 0x00000000faceface; // keep within 64-bit but highlight narrower load
-    db d = 0x7f;
-    dq t1_id; ptr p1_stack = mmap(8);
-    addThreadVariable(p1_stack, 8 * 4096, a, 0);
-    addThreadVariable(p1_stack, 8 * 4096, b, 1);
-    addThreadVariable(p1_stack, 8 * 4096, c, 2);
-    addThreadVariable(p1_stack, 8 * 4096, d, 3);
-    createThreadIds(&test, p1_stack, 8 * 4096, &t1_id, 0, 4);
+    dq sock = sys_socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if sock < 0 { print("socket() failed\n"); return; }
 
-    // Thread 2: zero params
-    dq t2_id; ptr p2_stack = mmap(8);
-    createThreadIds(&testZero, p2_stack, 8 * 4096, &t2_id, 0, 0);
+    dq addr<sockaddr_in> = sockaddr_in{};
+    addr.family = AF_INET;
+    addr.port = htons(8080);
+    addr.addr = htonl(0x7F000001); // 127.0.0.1
 
-    // Thread 3: one param
-    dq t3_id; ptr p3_stack = mmap(8);
-    dq vx = 0x1111111122222222;
-    addThreadVariable(p3_stack, 8 * 4096, vx, 0);
-    createThreadIds(&testOne, p3_stack, 8 * 4096, &t3_id, 0, 1);
+    print("Attempt connect...\n");
+    dq r = sys_connect(sock, addr, 16);
+    if r < 0 { print("connect() failed\n"); return; }
+    print("connected\n");
 
-    // Thread 4: two params arithmetic
-    dq t4_id; ptr p4_stack = mmap(8);
-    dq ta = 0xaaaa0000aaaa0000; dq tb = 0x1111222233334444;
-    addThreadVariable(p4_stack, 8 * 4096, ta, 0);
-    addThreadVariable(p4_stack, 8 * 4096, tb, 1);
-    createThreadIds(&testTwo, p4_stack, 8 * 4096, &t4_id, 0, 2);
+    db msg = db<64>;
+    memcpy(&msg, "hello from custom runtime", 25);
+    dq w = sys_send(sock, &msg, 25, MSG_NOSIGNAL);
+    print("send ret: "); printHex(w);
+    if w < 0 { print("send failed\n"); }
 
-    // Thread 5: four byte params
-    dq t5_id; ptr p5_stack = mmap(8);
-    dq ba = 0x0101010101010101; dq bb = 0x7f7f7f7f7f7f7f7f; db bc = 0xfe; db bd = 0xaa;
-    addThreadVariable(p5_stack, 8 * 4096, ba, 0);
-    addThreadVariable(p5_stack, 8 * 4096, bb, 1);
-    addThreadVariable(p5_stack, 8 * 4096, bc, 2);
-    addThreadVariable(p5_stack, 8 * 4096, bd, 3);
-    createThreadIds(&testBytes, p5_stack, 8 * 4096, &t5_id, 0, 4);
+    db buf = db<128>;
+    dq rr = sys_read(sock, &buf, 128);
+    print("read ret: "); printHex(rr);
+    if rr == 0 { print("peer closed\n"); }
+    if rr < 0 { print("read failed\n"); }
+    if rr > 0 { printMem(&buf, rr); }
 
-    // Thread 6: six dq params
-    dq t6_id; ptr p6_stack = mmap(8);
-    dq s1 = 0x0102030405060708; dq s2 = 0x1112131415161718; dq s3 = 0x2122232425262728;
-    dq s4 = 0x3132333435363738; dq s5 = 0x4142434445464748; dq s6 = 0x5152535455565758;
-    addThreadVariable(p6_stack, 8 * 4096, s1, 0);
-    addThreadVariable(p6_stack, 8 * 4096, s2, 1);
-    addThreadVariable(p6_stack, 8 * 4096, s3, 2);
-    addThreadVariable(p6_stack, 8 * 4096, s4, 3);
-    addThreadVariable(p6_stack, 8 * 4096, s5, 4);
-    addThreadVariable(p6_stack, 8 * 4096, s6, 5);
-    createThreadIds(&testSix, p6_stack, 8 * 4096, &t6_id, 0, 6);
-
-    // (Optional) Could add joins here if desired once threadJoin is validated
-    // threadJoin(&t1_id); threadJoin(&t2_id); threadJoin(&t3_id);
-    // threadJoin(&t4_id); threadJoin(&t5_id); threadJoin(&t6_id);
-
-    print("Spawned 6 test threads (no joins)\n");
+    sys_close(sock);
     return;
 }
