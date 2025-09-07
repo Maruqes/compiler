@@ -4,6 +4,11 @@ global{
 	dq SOCK_STREAM = 1;
 	dq IPPROTO_TCP = 6;
 	dq MSG_NOSIGNAL = 0x4000; // prevent SIGPIPE on send when peer closed
+
+	// poll() event flags (subset)
+	dq POLLIN = 0x0001;   // there is data to read
+	dq POLLOUT = 0x0004;  // writing now will not block
+	dq POLLERR = 0x0008;  // error condition
 }
 
 // Linux struct sockaddr_in (16 bytes)
@@ -13,11 +18,20 @@ global{
 //   struct in_addr sin_addr;  // 4 bytes (network byte order)
 //   unsigned char sin_zero[8];// padding
 // };
+//compiler interprets struct fields in reverse order for some reason ;D (i know the reason)
 struct sockaddr_in{
-	 dw family;    // AF_INET
-	 dw port;      // network order
-	 dd addr;      // network order (e.g. 0x7F000001 for 127.0.0.1)
 	 db zero db<8>;// padding
+	 dd addr;      // network order (e.g. 0x7F000001 for 127.0.0.1)
+	 dw port;      // network order
+	 dw family;    // AF_INET
+}
+
+// Linux pollfd (8 bytes) (fields declared in reverse order due to backend layout quirk)
+// struct pollfd { int fd; short events; short revents; } -> we declare: revents, events, fd
+struct pollfd{
+	dw revents; // returned events
+	dw events;  // requested events
+	dd fd;      // target file descriptor
 }
 
 // Byte order helpers (host -> network). Host assumed little-endian x86_64.

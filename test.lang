@@ -13,6 +13,21 @@ include("liblang/net.lang")
 
 
 
+func read_stdin_sock(dq sock){
+    // Reusable message buffer (null-filled before each read so it's printable)
+    db msg = db<256>;
+    while 1 {
+        memset(&msg, 256, 0);      
+        dq n = read(&msg, 255);    
+        if n <= 0 {             
+            break;
+        }
+        dq w = sys_send(sock, &msg, n, MSG_NOSIGNAL);
+        if w < 0 { print("send failed\n"); break; }
+    }
+    return;
+}
+
 func main() {
     dq sock = sys_socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if sock < 0 { print("socket() failed\n"); return; }
@@ -27,18 +42,22 @@ func main() {
     if r < 0 { print("connect() failed\n"); return; }
     print("connected\n");
 
-    db msg = db<64>;
-    memcpy(&msg, "hello from custom runtime", 25);
-    dq w = sys_send(sock, &msg, 25, MSG_NOSIGNAL);
-    print("send ret: "); printHex(w);
-    if w < 0 { print("send failed\n"); }
+    
+    dq t1_stack = mmap(5);
+    dq t1_id = 0;
+    addThreadVariable(t1_stack, 5*4096, sock, 0);
 
-    db buf = db<128>;
-    dq rr = sys_read(sock, &buf, 128);
-    print("read ret: "); printHex(rr);
-    if rr == 0 { print("peer closed\n"); }
-    if rr < 0 { print("read failed\n"); }
-    if rr > 0 { printMem(&buf, rr); }
+    createThreadIds(&read_stdin_sock, t1_stack, 5*4096, &t1_id, 0, 1);
+
+
+    db buf = db<512>;
+    while 1 {
+        memset(&buf, 512, 0);
+        dq rr = sys_read(sock, &buf, 512);
+        if rr == 0 { print("peer closed\n"); break; }
+        if rr < 0 { print("read failed\n"); break; }
+        if rr > 0 { print(&buf); }
+    }
 
     sys_close(sock);
     return;
