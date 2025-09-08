@@ -751,6 +751,39 @@ func parseCharacters(token string, reg byte) (bool, error) {
 	return true, nil
 }
 
+func parseSizeOf(parser *Parser, token string, reg byte) (bool, error) {
+	if token != "sizeof" {
+		return false, nil
+	}
+
+	eatSymbol(parser, "(")
+
+	typeToken, err := parser.NextToken()
+	if err != nil {
+		return false, err
+	}
+
+	var size int
+	if isTypeToken(typeToken) {
+		size, err = getTypeFromToken(typeToken)
+		if err != nil {
+			return false, err
+		}
+	} else if GetStructByName(typeToken) != nil {
+		size = GetSizeOfStruct(typeToken)
+		if size <= 0 {
+			return false, fmt.Errorf("unknown struct type or zero size: '%s'", typeToken)
+		}
+	} else {
+		return false, fmt.Errorf("invalid token for sizeof: '%s'", typeToken)
+	}
+
+	eatSymbol(parser, ")")
+
+	backend.Mov64_r_i(reg, uint64(size))
+	return true, nil
+}
+
 // may uses r8
 // uses 64 bit registers to get the value of the token
 func getValueFromToken(parser *Parser, token string, reg byte) error {
@@ -857,6 +890,14 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 	}
 
 	parsed, err = parseCharacters(token, reg)
+	if err != nil && parsed {
+		return err
+	}
+	if parsed {
+		return nil
+	}
+
+	parsed, err = parseSizeOf(parser, token, reg)
 	if err != nil && parsed {
 		return err
 	}

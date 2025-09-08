@@ -160,6 +160,11 @@ func createStructType(parser *Parser) error {
 			return err
 		}
 
+		fieldTypeInt, err := getTypeFromToken(fieldType)
+		if err != nil {
+			return err
+		}
+
 		peekString, err := parser.Peek()
 		if err != nil {
 			return err
@@ -183,17 +188,22 @@ func createStructType(parser *Parser) error {
 
 			finalSize = allocSizeInt
 
+
 			if GetStructByName(peekString) != nil {
 				fieldStruct = GetStructByName(peekString)
+			}else{
+				typeArr,err := getTypeFromToken(peekString)
+				if err != nil {
+					return err
+				}
+				if fieldTypeInt != typeArr {
+					return fmt.Errorf("struct %s type mismatch between field type '%s' and array type '%s'", structName, fieldType, peekString)
+				}
 			}
 		}
 
 		eatSymbol(parser, ";")
 
-		fieldTypeInt, err := getTypeFromToken(fieldType)
-		if err != nil {
-			return err
-		}
 		fields = append(fields, structField{Name: fieldName, Type: fieldTypeInt, Size: finalSize, Struct: fieldStruct})
 	}
 
@@ -201,6 +211,8 @@ func createStructType(parser *Parser) error {
 	structType := StructType{Name: structName, Fields: fields}
 	fmt.Println("Created struct:", structType)
 	AddStructType(structType)
+
+	fmt.Printf("Created struct %s with size %d\n", structType.Name, GetSizeOfStruct(structType.Name))
 
 	return nil
 }
