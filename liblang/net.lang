@@ -3,21 +3,14 @@ global{
 	dq AF_INET = 2;
 	dq SOCK_STREAM = 1;
 	dq IPPROTO_TCP = 6;
-	dq MSG_NOSIGNAL = 0x4000; // prevent SIGPIPE on send when peer closed
+	dq MSG_NOSIGNAL = 0x4000; 
 
-	// poll() event flags (subset)
-	dq POLLIN = 0x0001;   // there is data to read
-	dq POLLOUT = 0x0004;  // writing now will not block
-	dq POLLERR = 0x0008;  // error condition
+
+	dq SOL_SOCKET = 1;
+	dq SO_REUSEADDR = 2;
 }
 
-// Linux struct sockaddr_in (16 bytes)
-// struct sockaddr_in {
-//   sa_family_t sin_family;   // 2 bytes
-//   in_port_t   sin_port;     // 2 bytes (network byte order)
-//   struct in_addr sin_addr;  // 4 bytes (network byte order)
-//   unsigned char sin_zero[8];// padding
-// };
+
 //compiler interprets struct fields in reverse order for some reason ;D (i know the reason)
 struct sockaddr_in{
 	 db zero db<8>;// padding
@@ -26,13 +19,6 @@ struct sockaddr_in{
 	 dw family;    // AF_INET
 }
 
-// Linux pollfd (8 bytes) (fields declared in reverse order due to backend layout quirk)
-// struct pollfd { int fd; short events; short revents; } -> we declare: revents, events, fd
-struct pollfd{
-	dw revents; // returned events
-	dw events;  // requested events
-	dd fd;      // target file descriptor
-}
 
 // Byte order helpers (host -> network). Host assumed little-endian x86_64.
 func htons(dq v){
@@ -67,14 +53,6 @@ func sys_connect(dq sockfd, ptr serv_addr, dq addrlen){
 	return;
 }
 
-func sys_poll(ptr fds, dq nfds, dq timeout){
-	asm(mov64_r_i, rax, 7);
-	loadReg(rdi, fds);
-	loadReg(rsi, nfds);
-	loadReg(rdx, timeout);
-	asm(syscall);
-	return;
-}
 
 func sys_read(dq fd, ptr buf, dq count){
 	asm(mov64_r_i, rax, 0);
@@ -110,6 +88,43 @@ func sys_send(dq fd, ptr buf, dq len, dq flags){
 func sys_close(dq fd){
 	asm(mov64_r_i, rax, 3);
 	loadReg(rdi, fd);
+	asm(syscall);
+	return;
+}
+
+func sys_setsockopt(dq sockfd, dq level, dq optname, ptr optval, dq optlen){
+	asm(mov64_r_i, rax, 54);
+	loadReg(rdi, sockfd);
+	loadReg(rsi, level);
+	loadReg(rdx, optname);
+	loadReg(r10, optval);
+	loadReg(r8, optlen);
+	asm(syscall);
+	return;
+}
+
+func sys_bind(dq sockfd, ptr addr, dq addrlen){
+	asm(mov64_r_i, rax, 49);
+	loadReg(rdi, sockfd);
+	loadReg(rsi, addr);
+	loadReg(rdx, addrlen);
+	asm(syscall);
+	return;
+}
+
+func sys_accept(dq sockfd, ptr addr, ptr addrlen){
+	asm(mov64_r_i, rax, 43);
+	loadReg(rdi, sockfd);
+	loadReg(rsi, addr);
+	loadReg(rdx, addrlen);
+	asm(syscall);
+	return;
+}
+
+func sys_listen(dq sockfd, dq backlog){
+	asm(mov64_r_i, rax, 50);
+	loadReg(rdi, sockfd);
+	loadReg(rsi, backlog);
 	asm(syscall);
 	return;
 }

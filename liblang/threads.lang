@@ -1,3 +1,6 @@
+//depends on liblang/mem.lang
+//depends on liblang/min.lang
+
 func sys_clone(dq flags, ptr child_stack, ptr ptid, ptr ctid, ptr newtls){
 	dq ret;
 	asm(mov64_r_i, rax, 56); // syscall number for clone
@@ -81,4 +84,19 @@ func threadJoin(ptr ctid_addr<dd>){
 		}
 		sys_futex(ctid_addr, FUTEX_WAIT, cur, 0, 0, 0);
     }
+}
+
+func sys_thkill(dq pid, dq tid){
+	asm(mov64_r_i, rax, 234); // SYS_tgkill
+	loadReg(rdi, pid);
+	loadReg(rsi, tid);
+	asm(mov64_r_i, rdx, 9); // SIGKILL
+	asm(syscall);
+	return;
+}
+
+func thkill(dq tid){
+	dq pid = getpid();
+	sys_thkill(pid, tid);
+	return;
 }

@@ -210,6 +210,24 @@ func (p *Parser) NextToken() (string, error) {
 			return "\"" + res + "\"", nil
 		}
 
+		//read characters
+		if char == "'" {
+			nextChar, err := p.readNextChar()
+			if err != nil {
+				return "", err
+			}
+			res += nextChar
+			nextChar, err = p.readNextChar()
+			if err != nil {
+				return "", err
+			}
+			if nextChar != "'" {
+				return "", fmt.Errorf("invalid character literal, missing closing quote at line %d", p.LineNumber)
+			}
+			res = "'" + res + "'"
+			return res, nil
+		}
+
 		//if found a composing token, seek back and return the accumulated string "ola/" found the "/" return "ola"
 		if startsWithComposingToken(char) {
 			if res != "" {

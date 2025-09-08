@@ -7,6 +7,7 @@ include("liblang/min.lang")
 include("liblang/mem.lang")
 include("liblang/strings.lang")
 include("liblang/threads.lang")
+include("liblang/net.lang")
 
 struct MyStruct {
     dq field1;
@@ -146,6 +147,8 @@ func pointers(){
 	ptr bP<dd> = &b;
 	ptr cP<dw> = &c;
 	ptr dP<db> = &d;
+
+	*<dq>aP = 10;
 
 	ptr aPP<dq> = &aP;
 	ptr bPP<dd> = &bP;
@@ -350,6 +353,63 @@ func testThreadsCARALHOS(){
 	return;
 }
 
+
+func read_stdin_sock(dq sock){
+    dq msg = db<256>;
+    while 1 {
+        memset(msg, 256, 0);      
+        dq n = read(msg, 255);    
+        if n <= 0 {             
+            break;
+        }
+        dq w = sys_send(sock, msg, n, MSG_NOSIGNAL);
+        if w < 0 { print("send failed\n"); break; }
+    }
+    return;
+}
+
+func testTCP_lib(){
+  	dq sock = sys_socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if sock < 0 { print("socket() failed\n"); return; }
+
+    dq addr<sockaddr_in> = sockaddr_in{};
+    addr.family = AF_INET;
+    addr.port = htons(8080);
+    addr.addr = htonl(0x7F000001); // 127.0.0.1
+
+    print("Attempt connect...\n");
+    dq r = sys_connect(sock, addr, 16);
+    if r < 0 { print("connect() failed\n"); return; }
+    print("connected\n");
+
+    
+    //create thread to read stdin and send to socket
+    dq t1_stack = mmap(5);
+    dq t1_id = 0;
+    addThreadVariable(t1_stack, 5*4096, sock, 0);
+    createThreadIds(&read_stdin_sock, t1_stack, 5*4096, &t1_id, 0, 1);
+
+
+	//loop reading from socket and printing to stdout
+    dq buf = db<512>;
+    while 1 {
+        memset(buf, 512, 0);
+        dq rr = sys_read(sock, buf, 512);
+        if rr == 0 { print("peer closed\n"); break; }
+        if rr < 0 { print("read failed\n"); break; }
+        if rr > 0 { print(buf); }
+
+        if strcmp(buf, "exit\n") {
+            print("Exiting on 'exit' command\n");
+            break;
+        }
+    }
+
+    thkill(t1_id);
+    sys_close(sock);
+    // exit_group(0);
+}
+
 func main(dq argc){
 
 	structsT();
@@ -403,6 +463,9 @@ func main(dq argc){
 	}
 
 	testThreadsCARALHOS();
+
+	//needs "nc -lvnp 8080" running to connect
+	testTCP_lib();
 
 	nanosleep(1,0);
 	clock_gettimeExec();

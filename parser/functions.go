@@ -253,6 +253,10 @@ func parseCodeBlock(parser *Parser) error {
 			if err := ParseNewLoadVarFunc(parser); err != nil {
 				return err
 			}
+		case "*":
+			if err := ParsePointerDefinition(parser); err != nil {
+				return err
+			}
 		default:
 
 			if isFunctionCall(token) {

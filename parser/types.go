@@ -200,6 +200,52 @@ func parsePointer(parser *Parser, token string, reg byte) (bool, error) {
 	return false, nil
 }
 
+func ParsePointerDefinition(parser *Parser) error {
+
+	eatSymbol(parser, "<")
+
+	token, err := parser.NextToken()
+	if err != nil {
+		return err
+	}
+
+	eatSymbol(parser, ">")
+
+	if !isTypeToken(token) {
+		return fmt.Errorf("invalid type token '%s'", token)
+	}
+
+	typeConvert, err := getTypeFromToken(token)
+	if err != nil {
+		return err
+	}
+
+	err, _, _ = getUntilSymbol(parser, []string{"="}, byte(backend.REG_RBX))
+	if err != nil {
+		return err
+	}
+
+	err, _, _ = getUntilSymbol(parser, []string{";"}, byte(backend.REG_RCX))
+	if err != nil {
+		return err
+	}
+
+	switch typeConvert {
+	case DQ:
+		backend.Mov64_m_r(byte(backend.REG_RBX), byte(backend.REG_RCX))
+	case DD:
+		backend.Mov32_m_r(byte(backend.REG_RBX), byte(backend.REG_RCX))
+	case DW:
+		backend.Mov16_m_r(byte(backend.REG_RBX), byte(backend.REG_RCX))
+	case DB:
+		backend.Mov8_m_r(byte(backend.REG_RBX), byte(backend.REG_RCX))
+	default:
+		return fmt.Errorf("unknown type: %d", typeConvert)
+	}
+
+	return nil
+}
+
 func countArrayElements(p *Parser) (int, error) {
 	mark, err := p.Mark()
 	if err != nil {
@@ -601,6 +647,7 @@ func parseStrings(token string, reg byte) (bool, error) {
 	// (Optional) handle simple escapes you expect in literals
 	// If you need more, switch to strconv.Unquote.
 	token = strings.ReplaceAll(token, `\n`, "\n")
+	token = strings.ReplaceAll(token, `\r`, "\r")
 	token = strings.ReplaceAll(token, `\t`, "\t")
 	token = strings.ReplaceAll(token, `\"`, `"`)
 
@@ -650,6 +697,56 @@ func parseTypeFuncs(parser *Parser, token string, reg byte) (bool, error) {
 	clearReg(reg, typeToken)
 
 	eatSymbol(parser, ")")
+
+	return true, nil
+}
+
+func parseCharacters(token string, reg byte) (bool, error) {
+
+	//token is -> '0'
+
+	// Ensure token is non-empty before indexing; if it does not start with a single quote, this parser is not responsible.
+	if len(token) == 0 || token[0] != '\'' {
+		return false, nil
+	}
+
+	// Minimal valid char literal is like: 'a' (len == 3)
+	if len(token) < 3 || token[len(token)-1] != 39 {
+		return false, fmt.Errorf("invalid character literal: %s", token)
+	}
+
+	charContent := token[1 : len(token)-1] // remove surrounding quotes
+	if len(charContent) == 0 {
+		return false, fmt.Errorf("empty character literal")
+	}
+
+	var charValue byte
+	if charContent[0] == '\\' {
+		// Handle escape sequences
+		if len(charContent) < 2 {
+			return false, fmt.Errorf("invalid escape sequence in character literal: %s", token)
+		}
+		switch charContent[1] {
+		case 'n':
+			charValue = '\n'
+		case 't':
+			charValue = '\t'
+		case '\'':
+			charValue = '\''
+		case '\\':
+			charValue = '\\'
+		default:
+			return false, fmt.Errorf("unknown escape sequence in character literal: %s", token)
+		}
+	} else {
+		if len(charContent) != 1 {
+			return false, fmt.Errorf("character literal must be a single character or escape sequence: %s", token)
+		}
+		charValue = charContent[0]
+	}
+
+	backend.Mov8_r_i(reg, charValue)
+	clearReg(reg, DB)
 
 	return true, nil
 }
@@ -752,6 +849,14 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 	}
 
 	parsed, err = parseStructsCreation(parser, token, reg)
+	if err != nil && parsed {
+		return err
+	}
+	if parsed {
+		return nil
+	}
+
+	parsed, err = parseCharacters(token, reg)
 	if err != nil && parsed {
 		return err
 	}
