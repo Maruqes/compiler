@@ -27,6 +27,6 @@
 // Raw variables and string constants
 #include "raw_vars/raw_vars.h"
 
-int write_elf();
+int write_elf(char *filename);
 
 #endif // BACKEND_H

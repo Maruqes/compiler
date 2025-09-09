@@ -8,6 +8,7 @@ package main
 import "C"
 import (
 	"fmt"
+	"os"
 
 	"github.com/Maruqes/compiler/parser"
 	backend "github.com/Maruqes/compiler/swig"
@@ -26,12 +27,21 @@ known problems
 PARA FAZER
 func kernelInfo(ptr structName<utsname>)
 */
-
 func main() {
+	var (
+		par     parser.Parser
+		outFile string
+	)
 
-	var par parser.Parser
-	// par.StartParse("features.lang")
-	par.StartParse("test.lang")
+	if len(os.Args) < 3 {
+		fmt.Fprintln(os.Stderr, "usage: compiler <input> <output>")
+		return
+	}
+
+	inFile := os.Args[1]
+	outFile = os.Args[2]
+
+	par.StartParse(inFile)
 
 	backend.Call("global_init")
 	backend.Call("main")
@@ -51,7 +61,7 @@ func main() {
 	// .data
 	backend.Add_string_constant("printSave", "--\n")
 	backend.Add_string_constant("printHex", "0123456789abcdef\n")
-	backend.Write_elf()
+	backend.Write_elf(outFile)
 
 	fmt.Println("All C backend functions called successfully!")
 }

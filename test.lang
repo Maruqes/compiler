@@ -120,7 +120,6 @@ func test_multiple_instances_isolation(){
 }
 
 func main() {
-    
     ptr s<Struct1> = Struct1{};
 
     s.a = 1;
@@ -176,5 +175,11 @@ func main() {
     test_cross_element_corruption();
     test_multiple_instances_isolation();
 
+    printHex(sizeof(Struct1));
+    printHex(sizeof(Struct2));
+    printHex(sizeof(dq));
+    printHex(sizeof(dd));
+    printHex(sizeof(dw));
+    printHex(sizeof(db));
     return;
 }

@@ -74,11 +74,11 @@ func sys_futex(ptr uaddr, dq futex_op, dq val, ptr timeout, ptr uaddr2, dq val3)
 	return;
 }
 
-func threadJoin(ptr ctid_addr<dd>){
+func threadJoin(ptr ctid_addr){
     if ctid_addr == 0 { return; }
     dq FUTEX_WAIT = 0;
     while 1 == 1 {
-		dd cur = *ctid_addr;
+		dd cur = *<dd>ctid_addr;
 		if cur == 0 { 
 			break; 
 		}

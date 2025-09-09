@@ -155,7 +155,7 @@ int write_to_file(int fd, const void *buf, size_t count)
 // public Elf64_Phdr
 struct Elf64_Phdr phdrPublic;
 
-int create_elf()
+int create_elf(char *filename)
 {
     uint64_t custom_code_size = get_current_code_size();
 
@@ -171,7 +171,7 @@ int create_elf()
     init_program_header(&phdr, code_offset, custom_code_size, data_bytes);
 
     // Write the ELF file
-    int fd = open("hello_elf_64", O_CREAT | O_WRONLY | O_TRUNC, 0755);
+    int fd = open(filename, O_CREAT | O_WRONLY | O_TRUNC, 0755);
     if (fd < 0)
     {
         perror("open");
@@ -226,11 +226,11 @@ void printHello()
 }
 
 // old main
-int write_elf()
+int write_elf(char *filename)
 {
     // write_code();
 
-    int fd = create_elf();
+    int fd = create_elf(filename);
 
     fix_all_labels();
     uint64_t code_size = get_current_code_size();

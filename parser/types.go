@@ -2,7 +2,6 @@ package parser
 
 import (
 	"fmt"
-	"math"
 	"strconv"
 	"strings"
 
@@ -99,10 +98,6 @@ func parseVariablesFuncCalls(parser *Parser, token string, reg byte) (bool, erro
 	return false, nil
 }
 
-// nested defers solution
-var deferNumber int = 0
-var deferLow int = math.MaxInt
-
 func parsePointer(parser *Parser, token string, reg byte) (bool, error) {
 	varList := GetVarList(SCOPE)
 	if varList == nil {
@@ -129,55 +124,53 @@ func parsePointer(parser *Parser, token string, reg byte) (bool, error) {
 			}
 			return true, nil
 		case '*':
-			// Determine the dereferenced width for this '*' only.
-			derefWidth := DQ
+
+			mark, err := parser.Mark()
+			if err != nil {
+				return false, err
+			}
+			pSeek, err := parser.Peek()
+			if err != nil {
+				return false, err
+			}
+
+			if pSeek != "<" {
+				return false, nil
+			}
+
+			eatSymbol(parser, "<")
+
+			typeString, err := parser.NextToken()
+			if err != nil {
+				return false, err
+			}
+
+			pSeek, err = parser.Peek()
+			if err != nil {
+				return false, err
+			}
+
+			if pSeek != ">" {
+				parser.Restore(mark)
+				return false, nil
+			}
+
+			eatSymbol(parser, ">")
+
+			typeInt, err := getTypeFromToken(typeString)
+			if err != nil {
+				return true, nil
+			}
+			derefWidth := typeInt
 
 			targetTok, err := parser.NextToken()
 			if err != nil {
 				return false, err
 			}
 
-			// If the token refers to a known variable, pick its annotated width if any.
-			if varList.DoesVarExist(targetTok) {
-				vinfo, err := varList.GetVariableStruct(targetTok)
-				if err != nil {
-					return false, err
-				}
-				if vinfo != nil && vinfo.Extra != nil {
-					switch tv := vinfo.Extra.(type) {
-					case string:
-						if isTypeToken(tv) {
-							t, err := getTypeFromToken(tv)
-							if err != nil {
-								return false, err
-							}
-							derefWidth = t
-						}
-					case int:
-						if isType(tv) {
-							derefWidth = tv
-						}
-					}
-				}
-			}
-
-			if deferLow > derefWidth {
-				deferLow = derefWidth
-			}
-
-			deferNumber++
 			// Compute the address into reg.
 			if err := getValueFromToken(parser, targetTok, reg); err != nil {
 				return false, err
-			}
-			deferNumber--
-
-			if deferNumber == 0 {
-				derefWidth = deferLow
-				deferNumber = 0
-				deferLow = math.MaxInt
-			} else {
-				derefWidth = DQ
 			}
 
 			// Load value from [reg] with the chosen width.
@@ -842,7 +835,7 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 	}
 
 	parsed, err = parsePointer(parser, token, reg)
-	if err != nil {
+	if err != nil && parsed {
 		return err
 	}
 	if parsed {

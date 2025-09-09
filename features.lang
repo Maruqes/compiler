@@ -9,34 +9,79 @@ include("liblang/strings.lang")
 include("liblang/threads.lang")
 include("liblang/net.lang")
 
-struct MyStruct {
-    dq field1;
-    dq field2;
-    db field3;
+struct Struct1{
+    dq a;
+    dq arr dq<2>;
+    dq b;
 }
 
-struct MyStruct2 {
-	db field1;
-	db field2;
-	db field3;
-	db field4;
-	db field5 MyStruct<1>;
-	db field5 db<4>;
-	db field6;
+struct Struct2{
+    dq a;
+    dq s1s Struct1<2>;
+    dq b;
 }
+
 
 
 
 func structsT(){
-	ptr structName<MyStruct> = MyStruct{1,2,3};
+	// Struct1: show both ways to access the inline dq[2] field "arr"
+	ptr s<Struct1> = Struct1{};
+	s.a = 1;
+	s.b = 4;
 
-	ptr test<MyStruct2> = MyStruct2{};
+	// Method 1: raw deref on field address
+	*<dq>(&s.arr) = 2;
+	*<dq>(&s.arr + sizeof(dq)) = 3;
 
-    printHex(structName);
-    printHex(structName.field1);
-    printHex(structName.field2);
-    printHex(structName.field3);
-    printHex(test);
+	// Method 2: take a dq* to the array and index it
+	ptr s_arr<dq> = &s.arr;
+
+	printHex(s.a);
+	printHex(*<dq>(&s.arr));                      // 2
+	printHex(*<dq>(&s.arr + sizeof(dq)));         // 3
+	printHex(s_arr[0]);                           // 2
+	printHex(s_arr[1]);                           // 3
+	printHex(s.b);
+
+	// Also write via indexing and read back via raw deref to show equivalence
+	s_arr[0] = 20;
+	s_arr[1] = 30;
+	printHex(*<dq>(&s.arr));                      // 20
+	printHex(*<dq>(&s.arr + sizeof(dq)));         // 30
+
+	// Struct2: array of Struct1 inside a struct
+	ptr s2<Struct2> = Struct2{};
+	s2.a = 1;
+	s2.b = 6;
+
+	// Base pointer to first element of "s1s" (Struct1[2])
+	ptr s2s_1<Struct1> = &s2.s1s;
+	ptr s2s_2<Struct1> = &s2.s1s + sizeof(Struct1);
+	
+
+	// Element 0: use raw deref for its inner dq[2]
+	s2s_1.a = 2;
+	s2s_1.b = 5;
+	*<dq>(&s2s_1.arr) = 3;
+	*<dq>(&s2s_1.arr + sizeof(dq)) = 4;
+
+	printHex(s2s_1.a);
+	printHex(*<dq>(&s2s_1.arr));
+	printHex(*<dq>(&s2s_1.arr + sizeof(dq)));
+	printHex(s2s_1.b);
+
+	// Element 1: use a dq* and index it
+	ptr arr1<dq> = &s2s_2.arr;
+	s2s_2.a = 3;
+	s2s_2.b = 8;
+	arr1[0] = 4;
+	arr1[1] = 5;
+
+	printHex(s2s_2.a);
+	printHex(arr1[0]);
+	printHex(arr1[1]);
+	printHex(s2s_2.b);
 	return;
 }
 
@@ -155,15 +200,15 @@ func pointers(){
 	ptr cPP<dw> = &cP;
 	ptr dPP<db> = &dP;
 
-	printHex(*aP);
-	printHex(*bP);
-	printHex(*cP);
-	printHex(*dP);
+	printHex(*<dq>aP);
+	printHex(*<dd>bP);
+	printHex(*<dw>cP);
+	printHex(*<db>dP);
 
-	printHex(**aPP);
-	printHex(**bPP);
-	printHex(**cPP);
-	printHex(**dPP);
+	printHex(*<dq>*<dq>aPP);
+	printHex(*<dd>*<dq>bPP);
+	printHex(*<dw>*<dq>cPP);
+	printHex(*<db>*<dq>dPP);
 
 	return;
 }
@@ -181,7 +226,7 @@ func functionParams(dq a, dd b, dw c, db d, ptr e<dd>){
 	printHex(b);
 	printHex(c);
 	printHex(d);
-	printHex(*e);
+	printHex(*<dd>e);
 	return;
 }
 
@@ -215,15 +260,58 @@ func arraysT(){
 }
 
 func arithmetics(){
-	dq a = 5;
-	dd b = 10;
-	dw c = 15;
-	db d = 20;
+	// basic arithmetic
+	dq a = 20;
+	dq b = 6;
+	dq c = 3;
 
-	printHex(a + b);
-	printHex(b - c);
-	printHex(c * d);
-	printHex(d / a);
+	print("ADD/SUB/MUL/DIV\n");
+	printHex(a + b); // 26
+	printHex(a - b); // 14
+	printHex(b * c); // 18
+	printHex(a / c); // 6
+
+	// modulus
+	print("MOD\n");
+	printHex(a % b); // 2
+
+	// bitwise ops
+	print("BITWISE\n");
+	dq x = 0x1122334455667788;
+	dq y = 0x0102030405060708;
+	dq pStack = 0xffffffffffffffff;
+	pStack = pStack & 0xfffffffffffffff0;
+	printHex(pStack);
+	printHex(x & y);
+	printHex(x | y);
+	printHex(x ^ y);
+
+	// logical ops
+	print("LOGICAL\n");
+	dq t = 1;
+	dq f = 0;
+	printHex(t && t); // 1
+	printHex(t && f); // 0
+	printHex(f && t); // 0
+	printHex(f || t); // 1
+	printHex(t || f); // 1
+	printHex(f || f); // 0
+
+	// comparisons
+	print("CMP\n");
+	printHex(a == b); // 0
+	printHex(a != b); // 1
+	printHex(a <  b); // 0
+	printHex(a <= b); // 0
+	printHex(a >  b); // 1
+	printHex(a >= b); // 1
+
+	// shifts (amount in register)
+	print("SHIFTS\n");
+	dq sh = 5;
+	x = 0x0123456789abcdef;
+	printHex(x << sh);
+	printHex(x >> sh);
 
 	return;
 }
