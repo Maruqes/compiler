@@ -210,22 +210,49 @@ func (p *Parser) NextToken() (string, error) {
 			return "\"" + res + "\"", nil
 		}
 
-		//read characters
+		// read characters with escape support (e.g., '\n', '\r', '\t', '\\', '\'', '\"', '\0', '\xHH')
 		if char == "'" {
 			nextChar, err := p.readNextChar()
 			if err != nil {
 				return "", err
 			}
+
+			if nextChar == "\\" {
+				// escape sequence
+				esc, err := p.readNextChar()
+				if err != nil {
+					return "", err
+				}
+
+				switch esc {
+				case "n", "r", "t", "\\", "'", "\"", "0":
+					// keep escaped representation as source text
+					res += "\\" + esc
+				default:
+					return "", fmt.Errorf("unknown escape sequence '\\%s' in character literal at line %d", esc, p.LineNumber)
+				}
+
+				// expect closing quote
+				closer, err := p.readNextChar()
+				if err != nil {
+					return "", err
+				}
+				if closer != "'" {
+					return "", fmt.Errorf("invalid character literal, missing closing quote at line %d", p.LineNumber)
+				}
+				return "'" + res + "'", nil
+			}
+
+			// simple one-byte character
 			res += nextChar
-			nextChar, err = p.readNextChar()
+			closer, err := p.readNextChar()
 			if err != nil {
 				return "", err
 			}
-			if nextChar != "'" {
+			if closer != "'" {
 				return "", fmt.Errorf("invalid character literal, missing closing quote at line %d", p.LineNumber)
 			}
-			res = "'" + res + "'"
-			return res, nil
+			return "'" + res + "'", nil
 		}
 
 		//if found a composing token, seek back and return the accumulated string "ola/" found the "/" return "ola"

@@ -63,6 +63,7 @@ run:
 	go build -o compiler main.go
 # 	./compiler test.lang hello_elf_64
 	./compiler features.lang hello_elf_64
+# 	./compiler persondb.lang hello_elf_64
 	./hello_elf_64
 
 .PHONY: all clean swig

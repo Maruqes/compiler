@@ -213,6 +213,278 @@ func pointers(){
 	return;
 }
 
+// Extra pointer stress tests: arrays, pointer arithmetic, multi-level pointers, struct fields, and heap buffers
+func pointers_arrays(){
+	// dq array and pointer indexing
+	dq arr<dq> = dq{10, 20, 30, 40};
+	ptr p<dq> = arr; // base pointer to first element
+	print("p[0..3]\n");
+	printHex(p[0]);
+	printHex(p[1]);
+	printHex(p[2]);
+	printHex(p[3]);
+
+	// modify via pointer and check array view
+	p[2] = 333;
+	printHex(arr[2]); // expect 333
+
+	// element-sized pointer arithmetic (manual byte offset)
+	ptr p2<dq> = p + sizeof(dq);
+	printHex(*<dq>p2);      // expect 20
+	printHex(p2[1]);        // expect 333
+
+	// Multi-level pointers (single, double, triple)
+	dq a = 5;
+	ptr aP<dq> = &a;
+	ptr aPP<dq> = &aP;
+	ptr aPPP<dq> = &aPP;
+	*<dq>aP = 42;
+	printHex(*<dq>aP);                // 42
+	printHex(*<dq>*<dq>aPP);          // 42
+	printHex(*<dq>*<dq>*<dq>aPPP);    // 42
+
+	// Array of addresses (store as dq, cast back to pointer)
+	dq x = 100;
+	dq y = 200;
+	dq pArr<dq> = dq{&x, &y};
+	ptr px<dq> = pArr[0];
+	ptr py<dq> = pArr[1];
+	*<dq>px = 111;
+	*<dq>py = 222;
+	printHex(x); // 111
+	printHex(y); // 222
+
+	// Struct field pointers and inline array field
+	ptr s<Struct1> = Struct1{};
+	ptr pa<dq> = &s.a;
+	ptr parr<dq> = &s.arr;
+	ptr pb<dq> = &s.b;
+	*<dq>pa = 11;
+	parr[0] = 22;
+	parr[1] = 33;
+	*<dq>pb = 44;
+	printHex(s.a);                           // 11
+	printHex(*<dq>(&s.arr));                 // 22
+	printHex(*<dq>(&s.arr + sizeof(dq)));    // 33
+	printHex(s.b);                           // 44
+
+	// Heap buffer (brk) with typed views
+	ptr buf = brk(32);
+	if buf != -1 {
+		// Byte view to write a small C-string
+		ptr b8<db> = buf;
+		b8[0] = 'A'; b8[1] = 'B'; b8[2] = 0;
+		print(b8); // prints "AB"
+		print("\n");
+
+		// 32-bit view
+		ptr w32<dd> = buf;
+		w32[0] = 0x11223344;
+		w32[1] = 0x55667788;
+		printHex(w32[0]);
+		printHex(w32[1]);
+
+		// 64-bit view overlapping same buffer
+		ptr w64<dq> = buf;
+		// w64[0] contains lower 8 bytes (includes 0x11223344 and 0x55667788 bytes)
+		w64[1] = 0xAABBCCDDEEFF0011;
+		printHex(w64[0]);
+		printHex(w64[1]);
+	}
+
+	return;
+}
+
+// Typed-pointer boundary and endianness tests for db/dw/dd/dq
+func pointers_typed_bounds(){
+	dq N = 32;
+	ptr buf = brk(N);
+	if buf == -1 { return; }
+	memset(buf, N, 0);
+
+	// Byte view: set first and last bytes
+	ptr b<db> = buf;
+	b[0]   = 0x11;
+	b[N-1] = 0xAA;
+	print("DB first/last:\n");
+	printHex(b[0]);      // 11
+	printHex(*<db>b);      // 11
+	printHex(b[N-1]);    // AA
+	printHex(*<db>(b + (N-1))); // AA
+
+	// 16-bit view: write within bounds and at last valid index
+	ptr w<dw> = buf;
+	w[1] = 0xBEEF;       // bytes 2..3
+	print("DW at 1 (bytes 2..3) + little-endian bytes:\n");
+	printHex(w[1]);      // BEEF
+	printHex(*<dw>(w + (1 * sizeof(dw)))); 
+	printHex(b[2]);      // EF
+	printHex(*<db>(b + 2));
+	printHex(b[3]);      // BE
+	printHex(*<db>(b + 3));
+	dd last_dw = (N/2) - 1;
+	w[last_dw] = 0x1234; // bytes N-2..N-1
+	print("DW last index and tail bytes:\n");
+	printHex(w[last_dw]);
+	printHex(*<dw>(w + (last_dw * sizeof(dw))));
+	printHex(b[N-2]);    // 34
+	printHex(*<db>(b + (N-2)));
+	printHex(b[N-1]);    // 12 (overwrites 0xAA)
+	printHex(*<db>(b + (N-1)));
+
+	// 32-bit view
+	ptr d<dd> = buf;
+	d[1] = 0xA1B2C3D4;   // bytes 4..7
+	print("DD at 1 and bytes 4..7:\n");
+	printHex(d[1]);
+	printHex(*<dd>(d + (1 * sizeof(dd))));
+	printHex(b[4]);      // D4
+	printHex(*<db>(b + 4));
+	printHex(b[5]);      // C3
+	printHex(*<db>(b + 5));
+	printHex(b[6]);      // B2
+	printHex(*<db>(b + 6));
+	printHex(b[7]);      // A1
+	printHex(*<db>(b + 7));
+	dd last_dd = (N/4) - 1;
+	d[last_dd] = 0x10203040; // bytes N-4..N-1
+	print("DD last index and final 4 bytes:\n");
+	printHex(d[last_dd]);
+	printHex(*<dd>(d + (last_dd * sizeof(dd))));
+	printHex(b[N-4]);    // 40
+	printHex(*<db>(b + (N-4)));
+	printHex(b[N-3]);    // 30
+	printHex(*<db>(b + (N-3)));
+	printHex(b[N-2]);    // 20
+	printHex(*<db>(b + (N-2)));
+	printHex(b[N-1]);    // 10
+	printHex(*<db>(b + (N-1)));
+
+	// 64-bit view
+	ptr q<dq> = buf;
+	q[0] = 0x1122334455667788; // bytes 0..7
+	print("DQ at 0 and bytes 0..7:\n");
+	printHex(q[0]);
+	printHex(*<dq>(q + 0));
+	printHex(b[0]);      // 88
+	printHex(*<db>(b + 0));
+	printHex(b[1]);      // 77
+	printHex(*<db>(b + 1));
+	printHex(b[2]);      // 66
+	printHex(*<db>(b + 2));
+	printHex(b[3]);      // 55
+	printHex(*<db>(b + 3));
+	printHex(b[4]);      // 44
+	printHex(*<db>(b + 4));
+	printHex(b[5]);      // 33
+	printHex(*<db>(b + 5));
+	printHex(b[6]);      // 22
+	printHex(*<db>(b + 6));
+	printHex(b[7]);      // 11
+	printHex(*<db>(b + 7));
+	dd last_dq = (N/8) - 1;
+	q[last_dq] = 0xFFEEDDCCBBAA0099; // bytes N-8..N-1
+	print("DQ last index and last 8 bytes:\n");
+	printHex(q[last_dq]);
+	printHex(*<dq>(q + (last_dq * sizeof(dq))));
+	printHex(b[N-8]);    // 99
+	printHex(*<db>(b + (N-8)));
+	printHex(b[N-7]);    // 00
+	printHex(*<db>(b + (N-7)));
+	printHex(b[N-6]);    // AA
+	printHex(*<db>(b + (N-6)));
+	printHex(b[N-5]);    // BB
+	printHex(*<db>(b + (N-5)));
+	printHex(b[N-4]);    // CC
+	printHex(*<db>(b + (N-4)));
+	printHex(b[N-3]);    // DD
+	printHex(*<db>(b + (N-3)));
+	printHex(b[N-2]);    // EE
+	printHex(*<db>(b + (N-2)));
+	printHex(b[N-1]);    // FF
+	printHex(*<db>(b + (N-1)));
+
+	return;
+}
+
+// Allocate heap and create typed "vars" at offsets using raw deref (*<type>)
+func pointers_heap_vars(){
+	dq N = 64;
+	ptr base = brk(N);
+	if base == -1 { return; }
+	memset(base, N, 0);
+
+	// Convenience byte view
+	ptr b<db> = base;
+
+	print("Heap vars: set/get via *<type> at offsets\n");
+
+	// db at 0
+	*<db>(base + 0) = 0x7F;
+	printHex(*<db>(base + 0));
+	ptr dbp<db> = base + 0;
+	printHex(*<db>dbp);
+
+	// dw at 2 (bytes 2..3)
+	*<dw>(base + 2) = 0xBEEF;
+	printHex(*<dw>(base + 2));
+	printHex(b[2]); // EF
+	printHex(b[3]); // BE
+
+	// dd at 8 (bytes 8..11)
+	*<dd>(base + 8) = 0xA1B2C3D4;
+	printHex(*<dd>(base + 8));
+	printHex(b[8]);  // D4
+	printHex(b[9]);  // C3
+	printHex(b[10]); // B2
+	printHex(b[11]); // A1
+
+	// dq at 16 (bytes 16..23)
+	*<dq>(base + 16) = 0x1122334455667788;
+	printHex(*<dq>(base + 16));
+	printHex(b[16]); // 88
+	printHex(b[17]); // 77
+	printHex(b[18]); // 66
+	printHex(b[19]); // 55
+	printHex(b[20]); // 44
+	printHex(b[21]); // 33
+	printHex(b[22]); // 22
+	printHex(b[23]); // 11
+
+	// boundary: last byte
+	*<db>(base + (N-1)) = 0xFF;
+	printHex(*<db>(base + (N-1))); // FF
+
+	// boundary: dd at last valid start (N-4)
+	*<dd>(base + (N-4)) = 0x10203040;
+	printHex(*<dd>(base + (N-4)));
+	printHex(b[N-4]); // 40
+	printHex(b[N-3]); // 30
+	printHex(b[N-2]); // 20
+	printHex(b[N-1]); // 10
+
+	// boundary: dq at last valid start (N-8)
+	*<dq>(base + (N-8)) = 0xFFEEDDCCBBAA0099;
+	printHex(*<dq>(base + (N-8)));
+	printHex(b[N-8]); // 99
+	printHex(b[N-7]); // 00
+	printHex(b[N-6]); // AA
+	printHex(b[N-5]); // BB
+	printHex(b[N-4]); // CC
+	printHex(b[N-3]); // DD
+	printHex(b[N-2]); // EE
+	printHex(b[N-1]); // FF
+
+	// demonstrate typed pointer variable referencing the same slot
+	ptr qptr<dq> = base + 24;
+	*<dq>qptr = 0xCAFEBABEDEADBEEF;
+	printHex(*<dq>(base + 24));
+	*<dq>qptr = *<dq>qptr + 1;
+	printHex(*<dq>qptr);
+
+	return;
+}
+
 
 func strings(){
 	ptr str = "Hello, World!\n";
@@ -500,64 +772,70 @@ func testTCP_lib(){
 
 func main(dq argc){
 
-	structsT();
+	// structsT();
+	// print("\n");
+	// vars();
+	// print("\n");
+	// flow();
+	// print("\n");
+	// pointers();
+	// print("\n");
+	// pointers_arrays();
+	// print("\n");
+	// pointers_typed_bounds();
+	// print("\n");
+	pointers_heap_vars();
 	print("\n");
-	vars();
-	print("\n");
-	flow();
-	print("\n");
-	pointers();
-	print("\n");
-	strings();
-	print("\n");
+	// strings();
+	// print("\n");
 
-	dq e = 0xdeadbeefcafebabe;
-	functionParams(1, 2, 3, 4, &e);
+	// dq e = 0xdeadbeefcafebabe;
+	// functionParams(1, 2, 3, 4, &e);
 
-	print("\n");
-	globalVars();
-	print("\n");
-	arraysT();
-	print("\n");
-	arithmetics();
-	print("\n");
-	kernelInfo();
-	print("\n");
-	kernelInfo2();
-	printHex(retornoDQ());
-	printHex(retornoDD());
-	printHex(retornoDW());
-	printHex(retornoDB());
-	printHex(dd(retornoDQ()));
-	printHex(dw(retornoDQ()));
-	printHex(db(retornoDQ()));
+	// print("\n");
+	// globalVars();
+	// print("\n");
+	// arraysT();
+	// print("\n");
+	// arithmetics();
+	// print("\n");
+	// kernelInfo();
+	// print("\n");
+	// kernelInfo2();
+	// printHex(retornoDQ());
+	// printHex(retornoDD());
+	// printHex(retornoDW());
+	// printHex(retornoDB());
+	// printHex(dd(retornoDQ()));
+	// printHex(dw(retornoDQ()));
+	// printHex(db(retornoDQ()));
 
-	ptr stringMem = db<200>;
-	memset(stringMem, 200, 0);
-	read(stringMem, 200);
-	reverseString(stringMem);
-	print(stringMem);
+	// ptr stringMem = db<200>;
+	// memset(stringMem, 200, 0);
+	// read(stringMem, 200);
+	// reverseString(stringMem);
+	// print(stringMem);
 
 
-	//cannot be called inside defer cause its another func
-	dq rbpVar;
-	loadVar(rbpVar, rbp);
-	ptr args<dq> = getArgsPtr(argc, rbpVar);
+	// //cannot be called inside defer cause its another func
+	// dq rbpVar;
+	// loadVar(rbpVar, rbp);
+	// ptr args<dq> = getArgsPtr(argc, rbpVar);
 
-	for dq i = 0; i < argc; i++; {
-		print("arg ");
-		print(args[i]);
-		print("\n");
-	}
+	// for dq i = 0; i < argc; i++; {
+	// 	print("arg ");
+	// 	print(args[i]);
+	// 	print("\n");
+	// }
 
-	testThreadsCARALHOS();
+	// testThreadsCARALHOS();
 
-	//needs "nc -lvnp 8080" running to connect
-	testTCP_lib();
+	// //needs "nc -lvnp 8080" running to connect
+	// testTCP_lib();
 
-	nanosleep(1,0);
-	clock_gettimeExec();
-	exit(69);
+	// nanosleep(1,0);
+	// clock_gettimeExec();
+	// exit(69);
 
     return;
 }
