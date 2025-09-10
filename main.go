@@ -16,16 +16,11 @@ import (
 )
 
 /*
-todo->
-asm funcs
-inputs na main-> args    ./main <args>
-*/
-/*
 known problems
 -dd(b) = fffffffffffffffa (eu esperava 00000000fffffffa)
-
-PARA FAZER
-func kernelInfo(ptr structName<utsname>)
+does not exist
+arr[0]++
+arr[0]+=
 */
 func main() {
 	var (
