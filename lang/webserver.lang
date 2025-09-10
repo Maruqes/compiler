@@ -3,19 +3,19 @@ global{
 }
 
 
-include("liblang/min.lang")
-include("liblang/mem.lang")
-include("liblang/strings.lang")
-include("liblang/threads.lang")
-include("liblang/net.lang")
-include("liblang/file.lang")
+include("lang/liblang/min.lang")
+include("lang/liblang/mem.lang")
+include("lang/liblang/strings.lang")
+include("lang/liblang/threads.lang")
+include("lang/liblang/net.lang")
+include("lang/liblang/file.lang")
 
 
 
 
 func main() {
     dq fileSize;
-    dq BODY = readFileToMmap("/home/marques/projects/compiler/test.html", &fileSize);
+    dq BODY = readFileToMmap("lang/test.html", &fileSize);
 
     dq s = sys_socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (s < 0) {

@@ -61,9 +61,10 @@ run:
 	$(MAKE) all
 	$(MAKE) swig
 	go build -o compiler main.go
-# 	./compiler test.lang hello_elf_64
-	./compiler features.lang hello_elf_64
-# 	./compiler persondb.lang hello_elf_64
+# 	./compiler lang/test.lang hello_elf_64
+# 	./compiler lang/features.lang hello_elf_64
+# 	./compiler lang/persondb.lang hello_elf_64
+	./compiler lang/webserver.lang hello_elf_64
 	./hello_elf_64
 
 .PHONY: all clean swig

@@ -1,4 +1,0 @@
-func printHelloWorld() {
-    print("Hello, World!\n");
-	return;
-}
