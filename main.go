@@ -36,6 +36,19 @@ func main() {
 	inFile := os.Args[1]
 	outFile = os.Args[2]
 
+	// Ensure input file exists and is a regular file before proceeding
+	if fi, err := os.Stat(inFile); err != nil {
+		if os.IsNotExist(err) {
+			fmt.Fprintf(os.Stderr, "input file does not exist: %s\n", inFile)
+		} else {
+			fmt.Fprintf(os.Stderr, "cannot access input file %s: %v\n", inFile, err)
+		}
+		os.Exit(1)
+	} else if fi.IsDir() {
+		fmt.Fprintf(os.Stderr, "input path is a directory, expected file: %s\n", inFile)
+		os.Exit(1)
+	}
+
 	par.StartParse(inFile)
 
 	backend.Call("global_init")
