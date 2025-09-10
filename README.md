@@ -22,6 +22,7 @@ See:
 - Instruction emission and writing code: [`c_backend/functions/functions.c`](c_backend/functions/functions.c) (e.g. `write_all_custom_code`)
 - String/data pool: [`c_backend/raw_vars/STRING_CONSTANTS.md`](c_backend/raw_vars/STRING_CONSTANTS.md)
 - Build system: [`Makefile`](Makefile)
+ - Examples: [`lang/`](lang/) (e.g. `webserver.lang`, `threading.lang`, `socket_tcp.lang`)
 
 ## Quick Example (WIP syntax)
 
@@ -83,6 +84,42 @@ Notes:
 - The compiler is intentionally minimal and targets Linux x86_64 only.
 - Binaries are standalone (no dynamic loader, no libc).
 
+## Examples
+
+Practical examples live under `lang/`. These demonstrate direct syscalls, threading with `clone()`/`futex`, and raw TCP networking without libc.
+
+### webserver.lang — syscall-only HTTP server
+Minimal HTTP server implemented with raw Linux syscalls (socket/bind/listen/accept/read/write). Useful to see how request parsing and responses can be done without any runtime.
+
+Build and run:
+```bash
+./compiler lang/webserver.lang webserver_elf
+chmod +x webserver_elf
+./webserver_elf
+```
+
+### threading.lang — clone() + futex synchronization
+Shows native threads created with `clone()` and synchronization primitives using `futex`. This illustrates how 512lang maps directly onto kernel primitives for concurrency.
+
+Build and run:
+```bash
+./compiler lang/threading.lang threading_elf
+chmod +x threading_elf
+./threading_elf
+```
+
+### socket_tcp.lang — TCP sockets with pure syscalls
+Demonstrates TCP networking using `socket`, `bind`, `listen`, `accept`, `connect`, `read`, and `write`. Adjust addresses/ports in the source if needed.
+
+Build and run:
+```bash
+./compiler lang/socket_tcp.lang socket_tcp_elf
+chmod +x socket_tcp_elf
+./socket_tcp_elf
+```
+
+Tip: Explore other samples like `features.lang` for a tour of language constructs.
+
 ## Contributing
 
 Contributions are welcome. Please:
@@ -96,4 +133,4 @@ Contributions are welcome. Please:
 GPL-3.0-only. See [LICENSE](LICENSE).
 
 —
-No libc • No linker • Just
+No libc • No linker • Just syscalls

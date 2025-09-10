@@ -17,6 +17,11 @@ func main() {
     dq fileSize;
     dq BODY = readFileToMmap("lang/test.html", &fileSize);
 
+    if BODY == 0 {
+        print("Failed to read file\n");
+        return;
+    }
+
     dq s = sys_socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (s < 0) {
         print("socket() failed\n");
@@ -74,7 +79,6 @@ func main() {
         memcpy(resp + off, BODY, body_len); off += body_len;
 
         sys_write(c, resp, off);
-        print(resp);
         sys_close(c);
         print("Client disconnected\n");
     }

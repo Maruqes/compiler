@@ -772,70 +772,70 @@ func testTCP_lib(){
 
 func main(dq argc){
 
-	// structsT();
-	// print("\n");
-	// vars();
-	// print("\n");
-	// flow();
-	// print("\n");
-	// pointers();
-	// print("\n");
-	// pointers_arrays();
-	// print("\n");
-	// pointers_typed_bounds();
-	// print("\n");
+	structsT();
+	print("\n");
+	vars();
+	print("\n");
+	flow();
+	print("\n");
+	pointers();
+	print("\n");
+	pointers_arrays();
+	print("\n");
+	pointers_typed_bounds();
+	print("\n");
 	pointers_heap_vars();
 	print("\n");
-	// strings();
-	// print("\n");
+	strings();
+	print("\n");
 
-	// dq e = 0xdeadbeefcafebabe;
-	// functionParams(1, 2, 3, 4, &e);
+	dq e = 0xdeadbeefcafebabe;
+	functionParams(1, 2, 3, 4, &e);
 
-	// print("\n");
-	// globalVars();
-	// print("\n");
-	// arraysT();
-	// print("\n");
-	// arithmetics();
-	// print("\n");
-	// kernelInfo();
-	// print("\n");
-	// kernelInfo2();
-	// printHex(retornoDQ());
-	// printHex(retornoDD());
-	// printHex(retornoDW());
-	// printHex(retornoDB());
-	// printHex(dd(retornoDQ()));
-	// printHex(dw(retornoDQ()));
-	// printHex(db(retornoDQ()));
+	print("\n");
+	globalVars();
+	print("\n");
+	arraysT();
+	print("\n");
+	arithmetics();
+	print("\n");
+	kernelInfo();
+	print("\n");
+	kernelInfo2();
+	printHex(retornoDQ());
+	printHex(retornoDD());
+	printHex(retornoDW());
+	printHex(retornoDB());
+	printHex(dd(retornoDQ()));
+	printHex(dw(retornoDQ()));
+	printHex(db(retornoDQ()));
 
-	// ptr stringMem = db<200>;
-	// memset(stringMem, 200, 0);
-	// read(stringMem, 200);
-	// reverseString(stringMem);
-	// print(stringMem);
+	ptr stringMem = db<200>;
+	memset(stringMem, 200, 0);
+	read(stringMem, 200);
+	reverseString(stringMem);
+	print(stringMem);
 
 
-	// //cannot be called inside defer cause its another func
-	// dq rbpVar;
-	// loadVar(rbpVar, rbp);
-	// ptr args<dq> = getArgsPtr(argc, rbpVar);
+	//cannot be called inside defer cause its another func
+	dq rbpVar;
+	loadVar(rbpVar, rbp);
+	ptr args<dq> = getArgsPtr(argc, rbpVar);
 
-	// for dq i = 0; i < argc; i++; {
-	// 	print("arg ");
-	// 	print(args[i]);
-	// 	print("\n");
-	// }
+	for dq i = 0; i < argc; i++; {
+		print("arg ");
+		print(args[i]);
+		print("\n");
+	}
 
-	// testThreadsCARALHOS();
+	testThreadsCARALHOS();
 
-	// //needs "nc -lvnp 8080" running to connect
-	// testTCP_lib();
+	//needs "nc -lvnp 8080" running to connect
+	testTCP_lib();
 
-	// nanosleep(1,0);
-	// clock_gettimeExec();
-	// exit(69);
+	nanosleep(1,0);
+	clock_gettimeExec();
+	exit(69);
 
     return;
 }
