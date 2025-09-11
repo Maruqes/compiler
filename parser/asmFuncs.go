@@ -423,7 +423,7 @@ func ParseNewAsmFunc(parser *Parser) error {
 		}
 	}
 
-	fmt.Println(asmFuncName, asmParams)
+	// fmt.Println(asmFuncName, asmParams)
 
 	eatSymbol(parser, ";")
 

@@ -67,7 +67,7 @@ func parseIf(parser *Parser) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(token)
+	// fmt.Println(token)
 	switch token {
 	case "else":
 		tok, err := parser.NextToken()

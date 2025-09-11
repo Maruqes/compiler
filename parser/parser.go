@@ -469,7 +469,7 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 			panic("Error getting value from token in line " + fmt.Sprintf("%d: %s", parser.LineNumber, err.Error()))
 		}
 
-		fmt.Println(symbol)
+		// fmt.Println(symbol)
 		switch symbol {
 		case "+":
 			backend.Sum64_r_r(reg, tmp)
@@ -568,7 +568,7 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 			backend.Mov64_r_r(byte(backend.REG_RCX), tmp)
 			backend.Rshfit64_reg(reg)
 		default:
-			fmt.Printf("Current line is %d\n", parser.LineNumber)
+			// fmt.Printf("Current line is %d\n", parser.LineNumber)
 			return fmt.Errorf("unknown symbol '%s' found at line %d", symbol, parser.LineNumber), nil, false
 		}
 	}

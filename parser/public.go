@@ -159,7 +159,7 @@ func checkPublicVars(parser *Parser) (bool, error) {
 	funcGlobalName := fmt.Sprintf("func_global_%d", funcglobalIndex)
 	funcglobalIndex++
 	FUNC_GLOBAL = append(FUNC_GLOBAL, funcGlobalName)
-	fmt.Println(FUNC_GLOBAL)
+	// fmt.Println(FUNC_GLOBAL)
 	backend.Create_label(funcGlobalName)
 	CreateStack()
 	eatSymbol(parser, "{")

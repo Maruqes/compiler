@@ -178,8 +178,8 @@ func createStructType(parser *Parser) error {
 				return err
 			}
 			eatSymbol(parser, ">")
-			allocName := fmt.Sprintf("alloc_%s_%s", fieldName, allocSize)
-			fmt.Println(allocName)
+			// allocName := fmt.Sprintf("alloc_%s_%s", fieldName, allocSize)
+			// fmt.Println(allocName)
 
 			allocSizeInt, err := strconv.Atoi(allocSize)
 			if err != nil {
@@ -209,10 +209,10 @@ func createStructType(parser *Parser) error {
 
 	//create struct type
 	structType := StructType{Name: structName, Fields: fields}
-	fmt.Println("Created struct:", structType)
+	// fmt.Println("Created struct:", structType)
 	AddStructType(structType)
 
-	fmt.Printf("Created struct %s with size %d\n", structType.Name, GetSizeOfStruct(structType.Name))
+	// fmt.Printf("Created struct %s with size %d\n", structType.Name, GetSizeOfStruct(structType.Name))
 
 	return nil
 }

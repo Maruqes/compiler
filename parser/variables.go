@@ -552,7 +552,7 @@ func (vl *VarsList) setVarStruct(parser *Parser, varName string) error {
 		return setDeadressedVar(parser, varName, vl)
 	}
 
-	fmt.Println("Setting variable:", varName)
+	// fmt.Println("Setting variable:", varName)
 	variable, err := vl.GetVariableStruct(varName)
 	if err != nil {
 		return err
@@ -627,7 +627,7 @@ func parseCoisoEstranho(parser *Parser, extra *any) (OriginType, any, error) {
 			return ORIGIN_STRUCT, structRaw, nil
 		} else if err == nil { //checking normal vars
 			*extra = typeRaw
-			fmt.Println("Found normal var:", typeRaw)
+			// fmt.Println("Found normal var:", typeRaw)
 			return ORIGIN_RBP, nil, nil
 		}
 	}
