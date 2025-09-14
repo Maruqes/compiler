@@ -29,6 +29,16 @@
 #define REG_R15 0xF // o que importa sao os ultimos 3 bits ou seja continua a ser 111
 // esta assim so para saber que 8-15 sao difentes do a,c,d,b,s,b,s,d
 
+// xxm regs
+#define REG_XMM0 0x0
+#define REG_XMM1 0x1
+#define REG_XMM2 0x2
+#define REG_XMM3 0x3
+#define REG_XMM4 0x4
+#define REG_XMM5 0x5
+#define REG_XMM6 0x6
+#define REG_XMM7 0x7
+
 // Special Registers (Use with caution, not for general mov instructions)
 #define REG_RIP 0x10
 #define REG_RFLAGS 0x11
@@ -74,6 +84,23 @@ void div64_r(uint8_t reg1);
 void div64_m(uint8_t reg1);
 void div64_mi(uint8_t reg2, uint64_t offset);
 void div64_mr(uint8_t reg2, uint8_t reg3);
+
+void sete(uint8_t reg);
+
+// floats
+void movq_x_r(uint8_t reg, uint8_t reg2);
+void movq_r_x(uint8_t reg, uint8_t reg2);
+void addsd_x_x(uint8_t xmm1, uint8_t xmm2);
+void subsd_x_x(uint8_t xmm1, uint8_t xmm2);
+void mulsd_x_x(uint8_t xmm1, uint8_t xmm2);
+void divsd_x_x(uint8_t xmm1, uint8_t xmm2);
+void ucomisd_x_x(uint8_t xmm1, uint8_t xmm2);
+void comisd_x_x(uint8_t xmm1, uint8_t xmm2);
+void xorpd_x_x(uint8_t xmm1, uint8_t xmm2);
+void andpd_x_x(uint8_t xmm1, uint8_t xmm2);
+void sqrtsd_x_x(uint8_t xmm1, uint8_t xmm2);
+void cvtsi2sd_x_r(uint8_t xmm, uint8_t r64);
+void cvttsd2si_r_x(uint8_t r64, uint8_t xmm);
 
 // Function prototypes for system calls
 void syscall_instruction();

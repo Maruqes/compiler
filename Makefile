@@ -20,6 +20,7 @@ SOURCES := c_backend/compiler.c \
 		   c_backend/functions/bFunctions64/utils64.c \
 		   c_backend/functions/bFunctions64/bTestes64.c \
 		   c_backend/functions/bFunctions64/arithmetics64.c \
+		   c_backend/functions/bFunctions64/floats64.c \
 		   c_backend/functions/jumps/jumps.c \
 		   c_backend/functions/jumps/jumpTeste.c \
 		   c_backend/functions/jumps/labels.c \
@@ -68,6 +69,13 @@ run:
 # 	./compiler lang/socket_tcp.lang hello_elf_64
 # 	./compiler lang/threading.lang hello_elf_64
 	./hello_elf_64
+
+build:
+	$(MAKE) clean
+	$(MAKE) all
+	$(MAKE) swig
+	go build -ldflags="-s -w" -trimpath -o compiler main.go
+
 
 .PHONY: all clean swig
 

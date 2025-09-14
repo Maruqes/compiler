@@ -26,6 +26,7 @@ dq val = (i % 26);
 b[i] = 'A' + val;
 
 b[i] = 'A' + (i % 26); //nao da o mesmo resultado
+
 */
 func main() {
 	var (

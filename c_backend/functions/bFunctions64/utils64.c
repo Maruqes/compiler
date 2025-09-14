@@ -1427,3 +1427,32 @@ void dec64_mr(uint8_t reg_base, uint8_t reg_index)
     op_codes_array = tmp;
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
+
+
+void sete(uint8_t reg)
+{
+    char *opcode_bytes = malloc(4);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+    set_rex_prefix(opcode_bytes, 0,
+                   0,
+                   0,
+                   (reg >= REG_R8) ? 1 : 0);
+    opcode_bytes[1] = 0x0F;
+    opcode_bytes[2] = 0x94; // SETE r/m8
+    set_modrm(&opcode_bytes[3], MOD_REG_DIRECT, 0, reg);
+
+    OpCode new_opcode = {.size = 4, .code = opcode_bytes};
+    OpCode *tmp = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!tmp)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+    op_codes_array = tmp;
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}

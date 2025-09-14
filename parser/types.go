@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -777,6 +778,26 @@ func parseSizeOf(parser *Parser, token string, reg byte) (bool, error) {
 	return true, nil
 }
 
+func parse64Floats(token string, reg byte) (bool, error) {
+	if len(token) < 2 {
+		return false, nil
+	}
+
+	if !strings.ContainsAny(token, ".eE") {
+		return false, nil
+	}
+
+	num, err := strconv.ParseFloat(token, 64)
+	if err != nil {
+		return false, nil
+	}
+
+	floatBits := math.Float64bits(num)
+	backend.Mov64_r_i(reg, floatBits)
+
+	return true, nil
+}
+
 // may uses r8
 // uses 64 bit registers to get the value of the token
 func getValueFromToken(parser *Parser, token string, reg byte) error {
@@ -891,6 +912,14 @@ func getValueFromToken(parser *Parser, token string, reg byte) error {
 	}
 
 	parsed, err = parseSizeOf(parser, token, reg)
+	if err != nil && parsed {
+		return err
+	}
+	if parsed {
+		return nil
+	}
+
+	parsed, err = parse64Floats(token, reg)
 	if err != nil && parsed {
 		return err
 	}

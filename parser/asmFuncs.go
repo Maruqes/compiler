@@ -142,6 +142,22 @@ func convertStringToAsmReg(regString string) (byte, error) {
 		return byte(backend.REG_R14B), nil
 	case "r15b":
 		return byte(backend.REG_R15B), nil
+	case "xmm0":
+		return byte(backend.REG_XMM0), nil
+	case "xmm1":
+		return byte(backend.REG_XMM1), nil
+	case "xmm2":
+		return byte(backend.REG_XMM2), nil
+	case "xmm3":
+		return byte(backend.REG_XMM3), nil
+	case "xmm4":
+		return byte(backend.REG_XMM4), nil
+	case "xmm5":
+		return byte(backend.REG_XMM5), nil
+	case "xmm6":
+		return byte(backend.REG_XMM6), nil
+	case "xmm7":
+		return byte(backend.REG_XMM7), nil
 	}
 	return byte(0), fmt.Errorf("unknown register: %s", regString)
 }
@@ -263,6 +279,22 @@ var asmFuncs = map[string]any{
 	"jmp_reg":          backend.Jump_reg,
 	"jump_reg":         backend.Jump_reg,
 	"and64_r_i":        backend.And64_r_i,
+
+	// float functions
+	"movq_x_r":        backend.Movq_x_r,
+	"movq_r_x":        backend.Movq_r_x,
+	"addsd_x_x":      backend.Addsd_x_x,
+	"subsd_x_x":      backend.Subsd_x_x,
+	"mulsd_x_x":      backend.Mulsd_x_x,
+	"divsd_x_x":      backend.Divsd_x_x,
+	"ucomisd_x_x":    backend.Ucomisd_x_x,
+	"comisd_x_x":    backend.Comisd_x_x,
+	"xorpd_x_x":    backend.Xorpd_x_x,
+	"andpd_x_x":    backend.Andpd_x_x,
+	"sqrtsd_x_x":  backend.Sqrtsd_x_x,
+	"cvtsi2sd_x_r":  backend.Cvtsi2sd_x_r,
+	"cvttsd2si_r_x": backend.Cvttsd2si_r_x,
+	"sete":           backend.Sete,
 }
 
 // callAsmFunction invokes a function value of any type using reflection with the given arguments.
