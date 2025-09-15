@@ -22,6 +22,11 @@ known problems
 todo-
 TESTAR FORTEMENTE O AFTER getUntilSymbol METER TODO OS TIPOS DA FUNCAO getValueFromToken EM VARIOS (), METER DENTRO DE ARRAYS FORA, VER ONDE A FUNCAO É USADA E TESTAR TUDO 1 A 1, POR AMOR DE DEUS
 o VERSION ser de um env var ou alguma cena  o github action consiga alterar ne oh nabissa
+
+
+sonhos->
+Sistema de Chat com encriptacao hehe
+navegador de ficheiros
 */
 var VERSION = "v0.1.0"
 
