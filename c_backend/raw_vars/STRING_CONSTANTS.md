@@ -75,11 +75,11 @@ void create_variable_reference(char *variable_name, uint8_t register_code)
 
 **Generated MOV Instruction Structure:**
 ```
-Byte:  0    1    2    3    4    5    6    7    8    9
+Byte:  0    1   2   3   4   5   6   7   8   9
      [REX][OP][---- 64-bit Immediate Value ----]
      [48 ][B6][40][00][00][00][00][00][00][00]
-              ^
-              └─ instruction_address_ptr points here
+                  ^
+                  └─ instruction_address_ptr points here
 ```
 
 #### Step 2: Register String Constants

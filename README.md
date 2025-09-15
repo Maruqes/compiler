@@ -3,28 +3,7 @@
 512lang is a tiny, educational systems language that compiles directly to native ELF64 binaries. It skips libc and linkers entirely: the compiler emits the ELF header, program header, code, and data, and talks to the Linux kernel via raw syscalls. The goal is to serve as a proof‑of‑concept and a learning playground for low-level code generation, calling conventions, and OS interfaces.
 
 
-## Highlights
-
-- Experimental systems language that emits native ELF64 binaries
-- Parser in Go
-- C backend that writes x86‑64 machine code directly
-- Manual memory management (brk + mmap)
-- Native threading via Linux clone()
-- Synchronization with futex
-- Minimal HTTP server using only syscalls
-- TCP networking: socket/bind/listen/accept/send/read/close
-- Labels + jumps for control flow (if/elif/else, loops)
-- Zero dependencies on libc or external linkers — just syscalls
-
-See:
-- Parser: [parser/](parser/), e.g. [`parser/variables.go`](parser/variables.go)
-- Backend: [`c_backend/compiler.c`](c_backend/compiler.c), [`c_backend/backend.h`](c_backend/backend.h)
-- Instruction emission and writing code: [`c_backend/functions/functions.c`](c_backend/functions/functions.c) (e.g. `write_all_custom_code`)
-- String/data pool: [`c_backend/raw_vars/STRING_CONSTANTS.md`](c_backend/raw_vars/STRING_CONSTANTS.md)
-- Build system: [`Makefile`](Makefile)
- - Examples: [`lang/`](lang/) (e.g. `webserver.lang`, `threading.lang`, `socket_tcp.lang`)
-
-## Quick Example (WIP syntax)
+## Quick Example
 
 The language syntax is evolving. A minimal “hello” conceptually looks like this:
 
