@@ -1,7 +1,15 @@
 name: Release
 
+permissions:
+  contents: write
+
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag name to use for the release (optional). If omitted a manual-<run_id> tag is used.'
+        required: false
+        default: ''
   push:
     tags:
       - 'v*'
@@ -33,7 +41,10 @@ jobs:
       - name: Prepare release tag name
         id: tag
         run: |
-          if [ -n "${GITHUB_REF}" ] && [[ "$GITHUB_REF" == refs/tags/* ]]; then
+          # If workflow_dispatch input 'tag' provided, use it
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            echo "tag=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          elif [ -n "${GITHUB_REF}" ] && [[ "$GITHUB_REF" == refs/tags/* ]]; then
             tagname="${GITHUB_REF#refs/tags/}"
             echo "tag=$tagname" >> "$GITHUB_OUTPUT"
           else
