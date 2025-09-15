@@ -18,6 +18,9 @@ import (
 /*
 known problems
 -dd(b) = fffffffffffffffa (eu esperava 00000000fffffffa)
+
+todo-version manager
+github release automation
 */
 func main() {
 	var (
@@ -45,8 +48,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "input path is a directory, expected file: %s\n", inFile)
 		os.Exit(1)
 	}
-
-
 
 	par.StartParse(inFile)
 

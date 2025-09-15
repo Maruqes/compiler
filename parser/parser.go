@@ -478,12 +478,13 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 		case "*":
 			backend.Mul64_r_r(reg, tmp)
 		case "/":
-			backend.Push64(byte(backend.REG_RAX)) // save RDX
 			if reg == byte(backend.REG_RDX) || tmp == byte(backend.REG_RDX) {
 				return fmt.Errorf("cannot use RDX as destination or source in modulus operation, choose another register"), nil, false
 			}
 
+			//if not using RAX, save it because we need it for division
 			if reg != byte(backend.REG_RAX) {
+				backend.Push64(byte(backend.REG_RAX)) // save RAX
 				backend.Mov64_r_r(byte(backend.REG_RAX), reg)
 			}
 			backend.Xor64_r_r(byte(backend.REG_RDX), byte(backend.REG_RDX)) // clear RDX before division
@@ -491,7 +492,10 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 			if reg != byte(backend.REG_RAX) {
 				backend.Mov64_r_r(reg, byte(backend.REG_RAX))
 			}
-			backend.Pop64(byte(backend.REG_RAX)) // restore RAX
+			//if not using RAX, restore it
+			if reg != byte(backend.REG_RAX) {
+				backend.Pop64(byte(backend.REG_RAX)) // restore RAX
+			}
 		case "&":
 			backend.And64_r_r(reg, tmp)
 		case "|":
@@ -500,12 +504,13 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 			// XOR operation
 			backend.Xor64_r_r(reg, tmp)
 		case "%":
-			backend.Push64(byte(backend.REG_RAX)) // save RAX
 			if reg == byte(backend.REG_RDX) || tmp == byte(backend.REG_RDX) {
 				return fmt.Errorf("cannot use RDX as destination or source in modulus operation, choose another register"), nil, false
 			}
 
+			//if not using RAX, save it because we need it for division
 			if reg != byte(backend.REG_RAX) {
+				backend.Push64(byte(backend.REG_RAX)) // save RAX
 				backend.Mov64_r_r(byte(backend.REG_RAX), reg)
 			}
 			backend.Xor64_r_r(byte(backend.REG_RDX), byte(backend.REG_RDX)) // clear RDX before division
@@ -513,7 +518,10 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 			if reg != byte(backend.REG_RDX) {
 				backend.Mov64_r_r(reg, byte(backend.REG_RDX)) // move remainder to dest
 			}
-			backend.Pop64(byte(backend.REG_RAX)) // restore RAX
+			//if not using RAX, restore it
+			if reg != byte(backend.REG_RAX) {
+				backend.Pop64(byte(backend.REG_RAX)) // restore RAX
+			}
 		case "&&":
 			// Use global counter for unique labels
 			labelCounter++

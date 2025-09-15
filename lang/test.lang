@@ -1,77 +1,205 @@
+include("lang/liblang/min.lang")
+include("lang/liblang/mem.lang")
+include("lang/liblang/strings.lang")
+include("lang/liblang/threads.lang")
+include("lang/liblang/net.lang")
+
+// ---------------- Globals ----------------
 global{
-    db gx = 100;
+	dq gTicks = 0;
+	dq gTotal = 0;
+	dq gThreadDone = 0;
 }
 
-struct S {
-    db a;
-    db b;
+// ---------------- Structs ----------------
+struct Inner { dq a; dq b; }
+struct Complex {
+	dq id;
+	dq values dq<4>;   // inline array
+	dq count;
+	dq inners Inner<2>; // array of 2 Inner structs
+}
+
+// Init Complex instance
+func initComplex(ptr cPtr, dq ident){
+	ptr c<Complex> = cPtr;
+	c.id = ident;
+	c.count = 4;
+	// write inline array via raw deref
+	*<dq>(&c.values) = 10;
+	*<dq>(&c.values + sizeof(dq)) = 20;
+	*<dq>(&c.values + (2 * sizeof(dq))) = 30;
+	*<dq>(&c.values + (3 * sizeof(dq))) = 40;
+	// inners
+	ptr i0<Inner> = &c.inners;
+	ptr i1<Inner> = &c.inners + sizeof(Inner);
+	i0.a = 1; i0.b = 2;
+	i1.a = 3; i1.b = 4;
+	return;
+}
+
+// Sum of all numeric fields for demonstration
+func complexSum(ptr cPtr){
+	ptr c<Complex> = cPtr;
+	dq s = c.id + c.count;
+	ptr vals<dq> = &c.values;
+	for dq i = 0; i < 4; i++; { s = s + vals[i]; }
+	ptr i0<Inner> = &c.inners;
+	ptr i1<Inner> = &c.inners + sizeof(Inner);
+	s = s + i0.a + i0.b + i1.a + i1.b;
+	return s;
+}
+
+// ---------------- Inline asm example (getpid) ----------------
+// Demonstrates invoking getpid (syscall 39) manually and returning pid.
+func getPidAsm(){
+	dq pid; 
+	asm(mov64_r_i, rax, 39); // SYS_getpid
+	asm(syscall);
+	loadVar(pid, rax); // syscall result in rax
+	return pid;
+}
+
+// ---------------- Threads ----------------
+func workerAdd(dq base){
+	// simple workload
+	for dq i = 0; i < 5; i++; {
+		gTotal = gTotal + base + i;
+		gTicks++;
+		nanosleep(0, 2000000); // 2ms
+	}
+	gThreadDone = 1;
+	return;
+}
+
+// ---------------- Heap / brk demo ----------------
+func heapDemo(){
+	dq N = 64;
+	ptr mem = brk(N);
+	if mem == -1 { print("brk failed\n"); return; }
+	memset(mem, N, 0);
+	// Lay out mixed types at offsets
+	*<db>(mem + 0) = 'Z';
+	*<dw>(mem + 2) = 0xBEEF;
+	*<dd>(mem + 8) = 0x11223344;
+	*<dq>(mem + 16) = 0xAABBCCDDEEFF0011;
+	print("*<db>(mem + 0) -> ");printHex(*<db>(mem+0));
+	print("*<dw>(mem + 2) -> ");printHex(*<dw>(mem+2));
+	print("*<dd>(mem + 8) -> ");printHex(*<dd>(mem+8));
+	print("*<dq>(mem + 16) -> ");printHex(*<dq>(mem+16));
+	freeBrk(mem);
+	return;
+}
+
+// ---------------- Network (optional) ----------------
+func tryConnect(){
+	dq sock = sys_socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if sock < 0 { print("socket fail (ok)\n"); return; }
+	dq addr<sockaddr_in> = sockaddr_in{};
+	addr.family = AF_INET; addr.port = htons(65000); addr.addr = htonl(0x7F000001); // 127.0.0.1
+	dq r = sys_connect(sock, addr, 16);
+	if r < 0 { print("connect fail (ok)\n"); sys_close(sock); return; }
+	print("connected (unexpected)\n");
+	sys_close(sock);
+	return;
+}
+
+// ---------------- Raw syscall write demo ----------------
+func rawWrite(ptr msg){
+	dq len = getStringLen(msg);
+	asm(mov64_r_i, rax, 1);
+	asm(mov64_r_i, rdi, 1);
+	loadReg(rsi, msg);
+	loadReg(rdx, len);
+	asm(syscall);
+	return;
+}
+
+// ---------------- Arg echo ----------------
+func echoArgs(dq argc, dq rbpSave){
+	ptr args<dq> = getArgsPtr(rbpSave);
+	for dq i = 0; i < argc; i++; {
+		print("arg[");
+		dq numBuf = db<16>; int_to_string(i, numBuf, 16); print(numBuf); print("] = ");
+		print(args[i]);
+		print("\n");
+	}
+	return;
 }
 
 func main(dq argc){
-    // Normal variable tests
-    db x = 10;
-    x++;
-    printHex(x); // 11
-    x--;
-    printHex(x); // 10
-    x += 5;
-    printHex(x); // 15
-    x -= 3;
-    printHex(x); // 12
-    x *= 2;
-    printHex(x); // 24
-    x /= 4;
-    printHex(x); // 6
+	print("=== Advanced Showcase ===\n");
 
-    gx++;
-    printHex(gx); // 101
-    gx--;
-    printHex(gx); // 100
-    gx += 20;
-    printHex(gx); // 120
-    gx -= 10;
-    printHex(gx); // 110
-    gx *= 2;
-    printHex(gx); // 220
-    gx /= 10;
-    printHex(gx); // 22
+	// Save rbp for args
+	dq rbpVal;
+	loadVar(rbpVal, rbp);
+	echoArgs(argc, rbpVal);
 
-    // Array tests
-    dq arr<db> = dq{7,8,9};
-    arr[1]++;
-    printHex(arr[1]); // 9
-    arr[1]--;
-    printHex(arr[1]); // 8
-    arr[2] += 5;
-    printHex(arr[2]); // 14
-    arr[0] -= 2;
-    printHex(arr[0]); // 5
+	// Struct + nested usage
+	ptr c<Complex> = Complex{};
+	initComplex(c, 99);
+	dq sum = complexSum(c);
+	dq buf = db<32>;
+	int_to_string(sum, buf, 32);
+	print("complexSum = ");
+	print(buf);
+	print("\n");
 
-    
-    dq s<S> = S{};
-    s.a = 3;
-    s.b = 4;
-    s.a++;
-    printHex(s.a); // 4
-    s.b--;
-    printHex(s.b); // 3
-    s.a += 10;
-    printHex(s.a); // 14
-    s.b -= 2;
-    printHex(s.b); // 1
-    s.a *= 2;
-    printHex(s.a); // 28
-    s.b /= 1;
-    printHex(s.b); // 1
+	// getpid via inline asm
+	dq pid = getPidAsm();
+	int_to_string(pid, buf, 32);
+	print("pid = ");
+	print(buf);
+	print("\n");
 
-    // Pointer tests
-    db y = 5;
-    ptr py = &y;
-    
-    *<db>py = *<db>py + 1;
-    // *<db>py++; // does not work
-    printHex(*<db>py); // 6
-  
+	heapDemo();
 
-    return;
+	// Thread demo (create one worker)
+	dq stack_size = 6 * 4096; //each mmap page is 4096 bytes
+	dq stack1 = mmap(6);
+	dq t1_id = 0;
+	if stack1 != -1 {
+		// base param 100
+		addThreadVariable(stack1, stack_size, 100, 0);
+		createThreadIds(&workerAdd, stack1, stack_size, &t1_id, 0, 1);
+		//thread with workerAdd(100)
+	} else {
+		print("mmap stack fail (skip thread)\n");
+	}
+
+	// Poll until thread done (rudimentary join substitute)
+	dq spins = 0;
+	while gThreadDone == 0{
+		spins++;
+	}
+	print("thread finished with spins = ");
+	printHex(spins);
+
+	int_to_string(gTotal, buf, 32);
+	print("gTotal = ");
+	print(buf);
+	print("\n");
+
+	// Network attempt (non-fatal)
+	tryConnect();
+
+	// Raw write + string ops
+	ptr demo = "Reversible line!\n";
+	rawWrite(demo);
+	reverseString(demo);
+	print("reversed: ");
+	print(demo);
+	print("\n");
+
+	// Pointer arithmetic quick sample
+	dq small<dq> = dq{5,6,7};
+	ptr ps<dq> = small;
+	*<dq>(ps + sizeof(dq)) = 66;
+	int_to_string(small[1], buf, 32);
+	print("small[1] = ");
+	print(buf);
+	print("\n");
+
+	print("=== End Showcase ===\n");
+	return;
 }
