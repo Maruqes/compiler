@@ -532,7 +532,7 @@ func (vl *VarsList) divVar(parser *Parser, varName string, variable *Variable) e
 		return fmt.Errorf("error parsing sub variable in line %d", parser.LineNumber)
 	}
 
-	// Subtract the values based on variable type
+	backend.Mov64_r_i(byte(backend.REG_RDX), 0)
 	switch variable.Type {
 	case DB:
 		backend.Div8_r(byte(backend.REG_RBX))

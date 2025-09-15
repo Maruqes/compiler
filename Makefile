@@ -62,8 +62,8 @@ run:
 	$(MAKE) all
 	$(MAKE) swig
 	go build -o compiler main.go
-# 	./compiler lang/test.lang hello_elf_64
-	./compiler lang/floatsExample.lang hello_elf_64
+	./compiler lang/test.lang hello_elf_64
+# 	./compiler lang/floatsExample.lang hello_elf_64
 # 	./compiler lang/features.lang hello_elf_64
 # 	./compiler lang/persondb.lang hello_elf_64
 # 	./compiler lang/webserver.lang hello_elf_64
