@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  workflow_dispatch: {}
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go (for repo build)
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+
+      - name: Make build
+        run: |
+          make build
+
+      - name: Archive 512lang folder
+        run: |
+          if [ -d "512lang" ]; then
+            zip -r 512lang.zip 512lang
+          else
+            echo "512lang folder not found" && exit 1
+          fi
+
+      - name: Prepare release tag name
+        id: tag
+        run: |
+          if [ -n "${GITHUB_REF}" ] && [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            tagname="${GITHUB_REF#refs/tags/}"
+            echo "tag=$tagname" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=manual-${GITHUB_RUN_ID}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release
+        id: gh_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload 512lang.zip
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.gh_release.outputs.upload_url }}
+          asset_path: ./512lang.zip
+          asset_name: 512lang.zip
+          asset_content_type: application/zip
+
+      - name: Check for compiler ELF
+        id: check_elf
+        run: |
+          if [ -f ./compiler ]; then
+            echo "present=true" >> $GITHUB_OUTPUT
+          else
+            echo "present=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload compiler ELF
+        if: steps.check_elf.outputs.present == 'true'
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.gh_release.outputs.upload_url }}
+          asset_path: ./compiler
+          asset_name: compiler
+          asset_content_type: application/octet-stream

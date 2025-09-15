@@ -62,11 +62,11 @@ build:
 	$(MAKE) all
 	$(MAKE) swig
 	go build -ldflags="-s -w" -trimpath -o compiler main.go
+	cp compiler 512lang/compiler
 
 
 run:
 	$(MAKE) build
-	cp compiler 512lang/compiler
 	cd 512lang && make socket_tcp
 
 

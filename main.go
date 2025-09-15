@@ -23,18 +23,25 @@ todo-version manager
 github release automation
 TESTAR FORTEMENTE O AFTER getUntilSymbol METER TODO OS TIPOS DA FUNCAO getValueFromToken EM VARIOS (), METER DENTRO DE ARRAYS FORA, VER ONDE A FUNCAO É USADA E TESTAR TUDO 1 A 1, POR AMOR DE DEUS
 */
+var VERSION = "v0.1.0"
+
 func main() {
 	var (
 		par     parser.Parser
 		outFile string
 	)
 
-	if len(os.Args) < 3 {
-		fmt.Fprintln(os.Stderr, "usage: compiler <input> <output>")
+	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stderr, "usage: compiler <input> <output> or compiler version")
+		return
+	}
+	inFile := os.Args[1]
+
+	if inFile == "version"{
+		fmt.Println("compiler version:", VERSION)
 		return
 	}
 
-	inFile := os.Args[1]
 	outFile = os.Args[2]
 
 	// Ensure input file exists and is a regular file before proceeding
