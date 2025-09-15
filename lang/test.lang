@@ -1,19 +1,77 @@
-include("lang/liblang/strings.lang")
+global{
+    db gx = 100;
+}
 
-func main() {
-    dq a = 1; // 8 bytes
+struct S {
+    db a;
+    db b;
+}
 
-	a++;
-    printHex(a);
-	a--;
-    printHex(a);
-	a+=2;
-    printHex(a);
-	a-=2;
-    printHex(a);
-	a*=2;
-    printHex(a);
-	a/=2;
-    printHex(a);
+func main(dq argc){
+    // Normal variable tests
+    db x = 10;
+    x++;
+    printHex(x); // 11
+    x--;
+    printHex(x); // 10
+    x += 5;
+    printHex(x); // 15
+    x -= 3;
+    printHex(x); // 12
+    x *= 2;
+    printHex(x); // 24
+    x /= 4;
+    printHex(x); // 6
+
+    gx++;
+    printHex(gx); // 101
+    gx--;
+    printHex(gx); // 100
+    gx += 20;
+    printHex(gx); // 120
+    gx -= 10;
+    printHex(gx); // 110
+    gx *= 2;
+    printHex(gx); // 220
+    gx /= 10;
+    printHex(gx); // 22
+
+    // Array tests
+    dq arr<db> = dq{7,8,9};
+    arr[1]++;
+    printHex(arr[1]); // 9
+    arr[1]--;
+    printHex(arr[1]); // 8
+    arr[2] += 5;
+    printHex(arr[2]); // 14
+    arr[0] -= 2;
+    printHex(arr[0]); // 5
+
+    
+    dq s<S> = S{};
+    s.a = 3;
+    s.b = 4;
+    s.a++;
+    printHex(s.a); // 4
+    s.b--;
+    printHex(s.b); // 3
+    s.a += 10;
+    printHex(s.a); // 14
+    s.b -= 2;
+    printHex(s.b); // 1
+    s.a *= 2;
+    printHex(s.a); // 28
+    s.b /= 1;
+    printHex(s.b); // 1
+
+    // Pointer tests
+    db y = 5;
+    ptr py = &y;
+    
+    *<db>py = *<db>py + 1;
+    // *<db>py++; // does not work
+    printHex(*<db>py); // 6
+  
+
     return;
 }
