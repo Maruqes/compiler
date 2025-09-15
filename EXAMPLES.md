@@ -2,7 +2,7 @@
 **⚠️ LINUX ONLY** - This compiler and examples are designed exclusively for Linux x86-64 systems.
 
 
-Download the `512lang.zip` file from `https://github.com/Maruqes/compiler/releases` or download directly from [**512lang.zip**](`https://github.com/Maruqes/compiler/releases/latest/download/512lang.zip`) and decompile it to obtain the `compiler` binary and example files.
+Download the `512lang.zip` file from `https://github.com/Maruqes/compiler/releases` or download directly from [**512lang.zip**](https://github.com/Maruqes/compiler/releases/latest/download/512lang.zip) and decompile it to obtain the `compiler` binary and example files.
 
 
 # Examples
