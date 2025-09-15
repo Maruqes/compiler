@@ -21,8 +21,8 @@ The compiler lowers this to raw syscalls and emits a complete ELF64 with aligned
 
 
 ## Examples
+![Example](example.gif)
 Practical examples live under `lang/` and are collected in [`EXAMPLES.md`](EXAMPLES.md) for quick reference.
-
 See [`EXAMPLES.md`](EXAMPLES.md) for build-and-run commands and short descriptions of the included sample programs.
 
 
