@@ -6,7 +6,7 @@
 ## Highlights
 
 - Experimental systems language that emits native ELF64 binaries
-- Recursive‑descent parser in Go
+- Parser in Go
 - C backend that writes x86‑64 machine code directly
 - Manual memory management (brk + mmap)
 - Native threading via Linux clone()
@@ -39,6 +39,13 @@ func main() {
 ```
 
 The compiler lowers this to raw syscalls and emits a complete ELF64 with aligned segments and a data pool (strings/globals). For how the data pool and relocation of addresses work, see [`c_backend/raw_vars/STRING_CONSTANTS.md`](c_backend/raw_vars/STRING_CONSTANTS.md).
+
+
+## Examples
+Practical examples live under `lang/` and are collected in [`EXAMPLES.md`](EXAMPLES.md) for quick reference.
+
+See [`EXAMPLES.md`](EXAMPLES.md) for build-and-run commands and short descriptions of the included sample programs.
+
 
 ## Build
 
@@ -84,49 +91,6 @@ Notes:
 - The compiler is intentionally minimal and targets Linux x86_64 only.
 - Binaries are standalone (no dynamic loader, no libc).
 
-## Examples
-
-Practical examples live under `lang/`. These demonstrate direct syscalls, threading with `clone()`/`futex`, and raw TCP networking without libc.
-
-### webserver.lang — syscall-only HTTP server
-Minimal HTTP server implemented with raw Linux syscalls (socket/bind/listen/accept/read/write). Useful to see how request parsing and responses can be done without any runtime.
-
-Build and run:
-```bash
-./compiler lang/webserver.lang webserver_elf
-chmod +x webserver_elf
-./webserver_elf
-```
-
-### threading.lang — clone() + futex synchronization
-Shows native threads created with `clone()` and synchronization primitives using `futex`. This illustrates how 512lang maps directly onto kernel primitives for concurrency.
-
-Build and run:
-```bash
-./compiler lang/threading.lang threading_elf
-chmod +x threading_elf
-./threading_elf
-```
-
-### socket_tcp.lang — TCP sockets with pure syscalls
-Demonstrates TCP networking using `socket`, `bind`, `listen`, `accept`, `connect`, `read`, and `write`. Adjust addresses/ports in the source if needed.
-
-Build and run:
-```bash
-./compiler lang/socket_tcp.lang socket_tcp_elf
-chmod +x socket_tcp_elf
-./socket_tcp_elf
-```
-
-Tip: Explore other samples like `features.lang` for a tour of language constructs.
-
-## Contributing
-
-Contributions are welcome. Please:
-- Open an issue to discuss substantial changes first
-- Keep PRs small and focused
-- Include minimal examples and expected output
-- Run `make clean && make all && make swig && go build` before submitting
 
 ## License
 
