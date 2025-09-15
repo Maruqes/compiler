@@ -115,6 +115,9 @@ void div16_m(uint8_t reg1);
 void div16_mi(uint8_t reg2, uint32_t offset);
 void div16_mr(uint8_t reg2, uint8_t reg3);
 
+void sum16_m_r(uint8_t reg1, uint8_t reg2);
+void sub16_m_r(uint8_t reg1, uint8_t reg2);
+
 // Test functions declarations
 void funcao_teste_mov16_r_i(void);
 void funcao_teste_mov16_r_m(void);

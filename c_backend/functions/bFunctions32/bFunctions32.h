@@ -49,8 +49,6 @@ void mov32_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2);
 void mov32_mr_i(uint8_t reg, uint8_t reg2, uint32_t value);
 void mov32_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3);
 
-
-
 // Arithmetic operations
 void sum32_r_r(uint8_t reg1, uint8_t reg2);
 void sum32_r_i(uint8_t reg1, uint32_t imm32);
@@ -119,6 +117,9 @@ void dec32_r(uint8_t reg);
 void dec32_m(uint8_t reg);
 void dec32_mi(uint8_t reg, uint32_t offset);
 void dec32_mr(uint8_t reg_base, uint8_t reg_index);
+
+void sum32_m_r(uint8_t reg1, uint8_t reg2);
+void sub32_m_r(uint8_t reg1, uint8_t reg2);
 
 // Test functions
 void funcao_teste_mov32_r_i(void);

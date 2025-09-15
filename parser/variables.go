@@ -473,6 +473,86 @@ func (vl *VarsList) subVar(parser *Parser, varName string, variable *Variable) e
 
 	return nil
 }
+func (vl *VarsList) mulVar(parser *Parser, varName string, variable *Variable) error {
+	_, err := parser.NextToken()
+	if err != nil {
+		return err
+	}
+
+	// First, load the current variable value into RAX
+	err = vl.GetVariable(varName, byte(backend.REG_RAX))
+	if err != nil {
+		return fmt.Errorf("error getting variable %s in line %d: %s", varName, parser.LineNumber, err.Error())
+	}
+
+	// Parse the expression to subtract and put result in RBX
+	err, _, parsed := getUntilSymbol(parser, []string{";"}, byte(backend.REG_RBX))
+	if !parsed {
+		return fmt.Errorf("error parsing sub variable in line %d", parser.LineNumber)
+	}
+
+	// Subtract the values based on variable type
+	switch variable.Type {
+	case DB:
+		//multiply al by bl
+		backend.Mul8_r(byte(backend.REG_RBX))
+	case DW:
+		backend.Mul16_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
+	case DD:
+		backend.Mul32_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
+	case DQ:
+		backend.Mul64_r_r(byte(backend.REG_RAX), byte(backend.REG_RBX))
+	}
+
+	// Clear the register based on variable type and store result
+	clearReg(byte(backend.REG_RAX), variable.Type)
+	err = vl.SetVar(variable)
+	if err != nil {
+		return fmt.Errorf("error setting variable %s in line %d: %s", varName, parser.LineNumber, err.Error())
+	}
+
+	return nil
+}
+
+func (vl *VarsList) divVar(parser *Parser, varName string, variable *Variable) error {
+	_, err := parser.NextToken()
+	if err != nil {
+		return err
+	}
+
+	// First, load the current variable value into RAX
+	err = vl.GetVariable(varName, byte(backend.REG_RAX))
+	if err != nil {
+		return fmt.Errorf("error getting variable %s in line %d: %s", varName, parser.LineNumber, err.Error())
+	}
+
+	// Parse the expression to subtract and put result in RBX
+	err, _, parsed := getUntilSymbol(parser, []string{";"}, byte(backend.REG_RBX))
+	if !parsed {
+		return fmt.Errorf("error parsing sub variable in line %d", parser.LineNumber)
+	}
+
+	// Subtract the values based on variable type
+	switch variable.Type {
+	case DB:
+		backend.Div8_r(byte(backend.REG_RBX))
+	case DW:
+		backend.Div16_r(byte(backend.REG_RBX))
+	case DD:
+		backend.Div32_r(byte(backend.REG_RBX))
+	case DQ:
+		backend.Div64_r(byte(backend.REG_RBX))
+	}
+
+	// Clear the register based on variable type and store result
+	clearReg(byte(backend.REG_RAX), variable.Type)
+	err = vl.SetVar(variable)
+	if err != nil {
+		return fmt.Errorf("error setting variable %s in line %d: %s", varName, parser.LineNumber, err.Error())
+	}
+
+	return nil
+}
 
 func setDeadressedVar(parser *Parser, varName string, vl *VarsList) error {
 	arrType := DB
@@ -507,35 +587,157 @@ func setDeadressedVar(parser *Parser, varName string, vl *VarsList) error {
 	if err != nil {
 		return err
 	}
-	backend.Push64(byte(backend.REG_RCX))
 
-	//tem de ter os pushs e pops porque o getAfterEqual fode o ECX
-	err = getAfterEqual(parser)
+	peekString, err := parser.Peek()
 	if err != nil {
 		return err
 	}
+	switch peekString {
+	case "=":
+		backend.Push64(byte(backend.REG_RCX))
 
-	backend.Pop64(byte(backend.REG_RCX))
+		//tem de ter os pushs e pops porque o getAfterEqual fode o ECX
+		err = getAfterEqual(parser)
+		if err != nil {
+			return err
+		}
 
-	backend.Mul64_r_i(byte(backend.REG_RCX), uint(arrType))
-	if err := vl.GetVariable(varName, byte(backend.REG_RBX)); err != nil {
-		return err
-	}
+		backend.Pop64(byte(backend.REG_RCX))
 
-	// Ensure value in RAX matches the element width before storing.
-	clearReg(byte(backend.REG_RAX), arrType)
+		backend.Mul64_r_i(byte(backend.REG_RCX), uint(arrType))
+		if err := vl.GetVariable(varName, byte(backend.REG_RBX)); err != nil {
+			return err
+		}
 
-	switch arrType {
-	case DQ:
-		backend.Mov64_mr_r(byte(backend.REG_RBX), byte(backend.REG_RCX), byte(backend.REG_RAX))
-	case DD:
-		backend.Mov32_mr_r(byte(backend.REG_RBX), byte(backend.REG_RCX), byte(backend.REG_RAX))
-	case DW:
-		backend.Mov16_mr_r(byte(backend.REG_RBX), byte(backend.REG_RCX), byte(backend.REG_RAX))
-	case DB:
-		backend.Mov8_mr_r(byte(backend.REG_RBX), byte(backend.REG_RCX), byte(backend.REG_RAX))
+		// Ensure value in RAX matches the element width before storing.
+		clearReg(byte(backend.REG_RAX), arrType)
+
+		switch arrType {
+		case DQ:
+			backend.Mov64_mr_r(byte(backend.REG_RBX), byte(backend.REG_RCX), byte(backend.REG_RAX))
+		case DD:
+			backend.Mov32_mr_r(byte(backend.REG_RBX), byte(backend.REG_RCX), byte(backend.REG_RAX))
+		case DW:
+			backend.Mov16_mr_r(byte(backend.REG_RBX), byte(backend.REG_RCX), byte(backend.REG_RAX))
+		case DB:
+			backend.Mov8_mr_r(byte(backend.REG_RBX), byte(backend.REG_RCX), byte(backend.REG_RAX))
+		default:
+			return fmt.Errorf("unknown array type: %d on line %d", arrType, parser.LineNumber)
+		}
+	case "++":
+		eatSymbol(parser, "++")
+		backend.Mul64_r_i(byte(backend.REG_RCX), uint(arrType))
+
+		if err := vl.GetVariable(varName, byte(backend.REG_RBX)); err != nil {
+			return err
+		}
+
+		backend.Sum64_r_r(byte(backend.REG_RBX), byte(backend.REG_RCX))
+
+		switch arrType {
+		case DB:
+			backend.Inc8_mr(byte(backend.REG_RBX), byte(backend.REG_RCX))
+		case DW:
+			backend.Inc16_mr(byte(backend.REG_RBX), byte(backend.REG_RCX))
+		case DD:
+			backend.Inc32_mr(byte(backend.REG_RBX), byte(backend.REG_RCX))
+		case DQ:
+			backend.Inc64_mr(byte(backend.REG_RBX), byte(backend.REG_RCX))
+		}
+		eatSymbol(parser, ";")
+	case "--":
+		eatSymbol(parser, "--")
+		backend.Mul64_r_i(byte(backend.REG_RCX), uint(arrType))
+
+		if err := vl.GetVariable(varName, byte(backend.REG_RBX)); err != nil {
+			return err
+		}
+
+		backend.Sum64_r_r(byte(backend.REG_RBX), byte(backend.REG_RCX))
+
+		switch arrType {
+		case DB:
+			backend.Dec8_mr(byte(backend.REG_RBX), byte(backend.REG_RCX))
+		case DW:
+			backend.Dec16_mr(byte(backend.REG_RBX), byte(backend.REG_RCX))
+		case DD:
+			backend.Dec32_mr(byte(backend.REG_RBX), byte(backend.REG_RCX))
+		case DQ:
+			backend.Dec64_mr(byte(backend.REG_RBX), byte(backend.REG_RCX))
+		}
+		eatSymbol(parser, ";")
+	case "+=":
+		eatSymbol(parser, "+=")
+		backend.Mul64_r_i(byte(backend.REG_RCX), uint(arrType))
+
+		if err := vl.GetVariable(varName, byte(backend.REG_RBX)); err != nil {
+			return err
+		}
+
+		backend.Sum64_r_r(byte(backend.REG_RBX), byte(backend.REG_RCX))
+		backend.Push64(byte(backend.REG_RBX)) //save RBX
+
+		err, _, parsed := getUntilSymbol(parser, []string{";"}, byte(backend.REG_RAX))
+		if !parsed || err != nil {
+			return fmt.Errorf("expected ';' after '+=' in line %d", parser.LineNumber)
+		}
+		backend.Pop64(byte(backend.REG_RBX)) //restore RBX
+
+		// Ensure value in RAX matches the element width before storing.
+		clearReg(byte(backend.REG_RAX), arrType)
+
+		switch arrType {
+		case DQ:
+			backend.Sum64_m_r(byte(backend.REG_RBX), byte(backend.REG_RAX))
+		case DD:
+			backend.Sum32_m_r(byte(backend.REG_RBX), byte(backend.REG_RAX))
+		case DW:
+			backend.Sum16_m_r(byte(backend.REG_RBX), byte(backend.REG_RAX))
+		case DB:
+			backend.Sum8_m_r(byte(backend.REG_RBX), byte(backend.REG_RAX))
+
+		default:
+			return fmt.Errorf("unknown array type: %d on line %d", arrType, parser.LineNumber)
+		}
+	case "-=":
+		eatSymbol(parser, "-=")
+		backend.Mul64_r_i(byte(backend.REG_RCX), uint(arrType))
+
+		if err := vl.GetVariable(varName, byte(backend.REG_RBX)); err != nil {
+			return err
+		}
+
+		backend.Sum64_r_r(byte(backend.REG_RBX), byte(backend.REG_RCX))
+		backend.Push64(byte(backend.REG_RBX)) //save RBX
+
+		err, _, parsed := getUntilSymbol(parser, []string{";"}, byte(backend.REG_RAX))
+		if !parsed || err != nil {
+			return fmt.Errorf("expected ';' after '+=' in line %d", parser.LineNumber)
+		}
+		backend.Pop64(byte(backend.REG_RBX)) //restore RBX
+
+		// Ensure value in RAX matches the element width before storing.
+		clearReg(byte(backend.REG_RAX), arrType)
+
+		switch arrType {
+		case DQ:
+			backend.Sub64_m_r(byte(backend.REG_RBX), byte(backend.REG_RAX))
+		case DD:
+			backend.Sub32_m_r(byte(backend.REG_RBX), byte(backend.REG_RAX))
+		case DW:
+			backend.Sub16_m_r(byte(backend.REG_RBX), byte(backend.REG_RAX))
+		case DB:
+			backend.Sub8_m_r(byte(backend.REG_RBX), byte(backend.REG_RAX))
+
+		default:
+			return fmt.Errorf("unknown array type: %d on line %d", arrType, parser.LineNumber)
+		}
+	case "*=":
+		return fmt.Errorf("not implemented '*=' for arr[<index>]*=")
+	case "/=":
+		return fmt.Errorf("not implemented '/=' for arr[<index>]/=")
 	default:
-		return fmt.Errorf("unknown array type: %d on line %d", arrType, parser.LineNumber)
+		return fmt.Errorf("unexpected token '%s' after ']' in line %d", peekString, parser.LineNumber)
 	}
 
 	return nil
@@ -582,6 +784,10 @@ func (vl *VarsList) setVarStruct(parser *Parser, varName string) error {
 		return vl.sumVar(parser, varName, variable)
 	case "-=":
 		return vl.subVar(parser, varName, variable)
+	case "*=":
+		return vl.mulVar(parser, varName, variable)
+	case "/=":
+		return vl.divVar(parser, varName, variable)
 	default:
 		return fmt.Errorf("unexpected token '%s' after '--' in line %d", peekToken, parser.LineNumber)
 	}

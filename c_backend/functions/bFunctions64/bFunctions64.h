@@ -85,6 +85,9 @@ void div64_m(uint8_t reg1);
 void div64_mi(uint8_t reg2, uint64_t offset);
 void div64_mr(uint8_t reg2, uint8_t reg3);
 
+void sum64_m_r(uint8_t reg1, uint8_t reg2);
+void sub64_m_r(uint8_t reg1, uint8_t reg2);
+
 void sete(uint8_t reg);
 
 // floats

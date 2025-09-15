@@ -659,3 +659,77 @@ void div32_mr(uint8_t reg2, uint8_t reg3)
 
     op_codes_array[op_codes_array_size++] = new_opcode;
 }
+
+void sum32_m_r(uint8_t reg1, uint8_t reg2)
+{
+    int usa_sib = precisa_sib(MOD_1BYTE_DISP, reg1, 0);
+
+    char *opcode_bytes = malloc(4 + usa_sib);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    // ADD r/m32, r32 -> opcode 0x01, reg = source reg2, rm = memory destination reg1
+    set_rex_prefix(&opcode_bytes[0], 0, (reg2 >= 8) ? 1 : 0, 0, (reg1 >= 8) ? 1 : 0);
+    opcode_bytes[1] = 0x01;
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, reg2 & 0x7, usa_sib ? RM_SIB : (reg1 & 0x7));
+
+    if (usa_sib)
+    {
+        set_sib(&opcode_bytes[3], SCALE_1, RM_SIB, reg1 & 0x7);
+    }
+    opcode_bytes[3 + usa_sib] = 0x00; // 1-byte displacement (0)
+
+    OpCode new_opcode;
+    new_opcode.size = 4 + usa_sib;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}
+
+void sub32_m_r(uint8_t reg1, uint8_t reg2)
+{
+    int usa_sib = precisa_sib(MOD_1BYTE_DISP, reg1, 0);
+
+    char *opcode_bytes = malloc(4 + usa_sib);
+    if (!opcode_bytes)
+    {
+        perror("Failed to allocate memory for opcode_bytes");
+        exit(EXIT_FAILURE);
+    }
+
+    // SUB r/m32, r32 -> opcode 0x29, reg = source reg2, rm = memory destination reg1
+    set_rex_prefix(&opcode_bytes[0], 0, (reg2 >= 8) ? 1 : 0, 0, (reg1 >= 8) ? 1 : 0);
+    opcode_bytes[1] = 0x29;
+    set_modrm(&opcode_bytes[2], MOD_1BYTE_DISP, reg2 & 0x7, usa_sib ? RM_SIB : (reg1 & 0x7));
+
+    if (usa_sib)
+    {
+        set_sib(&opcode_bytes[3], SCALE_1, RM_SIB, reg1 & 0x7);
+    }
+    opcode_bytes[3 + usa_sib] = 0x00; // 1-byte displacement (0)
+
+    OpCode new_opcode;
+    new_opcode.size = 4 + usa_sib;
+    new_opcode.code = opcode_bytes;
+
+    op_codes_array = realloc(op_codes_array, (op_codes_array_size + 1) * sizeof(OpCode));
+    if (!op_codes_array)
+    {
+        perror("Failed to reallocate memory for op_codes_array");
+        free(opcode_bytes);
+        exit(EXIT_FAILURE);
+    }
+
+    op_codes_array[op_codes_array_size++] = new_opcode;
+}

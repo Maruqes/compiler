@@ -40,6 +40,9 @@ void mov8_mi_r(uint8_t reg, uint32_t offset, uint8_t reg2);
 void mov8_mr_i(uint8_t reg, uint8_t reg2, uint8_t value);
 void mov8_mr_r(uint8_t reg_base, uint8_t reg2, uint8_t reg3);
 
+void sum8_m_r(uint8_t reg1, uint8_t reg2);
+void sub8_m_r(uint8_t reg1, uint8_t reg2);
+
 // Compare functions declarations
 void cmp8_r_r(uint8_t reg1, uint8_t reg2);
 void cmp8_r_i(uint8_t reg1, uint8_t imm8);

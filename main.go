@@ -18,15 +18,6 @@ import (
 /*
 known problems
 -dd(b) = fffffffffffffffa (eu esperava 00000000fffffffa)
-does not exist
-arr[0]++
-arr[0]+=
-
-dq val = (i % 26);
-b[i] = 'A' + val;
-
-b[i] = 'A' + (i % 26); //nao da o mesmo resultado
-
 */
 func main() {
 	var (
@@ -54,6 +45,8 @@ func main() {
 		fmt.Fprintf(os.Stderr, "input path is a directory, expected file: %s\n", inFile)
 		os.Exit(1)
 	}
+
+
 
 	par.StartParse(inFile)
 
