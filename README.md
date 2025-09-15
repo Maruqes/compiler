@@ -1,6 +1,6 @@
-[**Visit 512lang Online**](https://512lang.maruqes.com/) - Interactive demos, tutorials, and live compiler playground!
 
 # 512lang — An Experimental Language That Writes Its Own ELF
+### [**Visit 512lang Online**](https://512lang.maruqes.com/) - Interactive demos, tutorials, and live compiler playground!
 
 512lang is a tiny, educational systems language that compiles directly to native ELF64 binaries. It skips libc and linkers entirely: the compiler emits the ELF header, program header, code, and data, and talks to the Linux kernel via raw syscalls. The goal is to serve as a proof‑of‑concept and a learning playground for low-level code generation, calling conventions, and OS interfaces.
 
@@ -23,10 +23,10 @@ The compiler lowers this to raw syscalls and emits a complete ELF64 with aligned
 
 
 ## Examples
-DOWNLOAD TO TRY [`EXAMPLES.md`](EXAMPLES.md)
+Download and try it on [`EXAMPLES.md`](EXAMPLES.md)
 ![Example](example.gif)
-Practical examples live under `lang/` and are collected in [`EXAMPLES.md`](EXAMPLES.md) for quick reference.
-See [`EXAMPLES.md`](EXAMPLES.md) for build-and-run commands and short descriptions of the included sample programs.
+#### Practical examples live under `lang/` and are collected in [`EXAMPLES.md`](EXAMPLES.md) for quick reference.
+#### See [`EXAMPLES.md`](EXAMPLES.md) for build-and-run commands.
 
 
 ## Build
@@ -44,11 +44,6 @@ make all         # builds C backend → bin/libbackend.a
 make swig        # generates SWIG bindings → swig/backend_wrap.c
 go build -o compiler main.go
 ```
-
-What happens:
-- The Makefile compiles the C backend modules (ELF writer, instruction emitters, jumps, raw vars) into a static library at `bin/libbackend.a`. See [`Makefile`](Makefile).
-- SWIG generates the Go bindings used by the parser/frontend to call into the C backend (`swig` target).
-- `go build` links against `bin/libbackend.a` (see cgo flags in [`main.go`](main.go)).
 
 ## Use
 
