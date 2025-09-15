@@ -67,7 +67,7 @@ build:
 
 run:
 	$(MAKE) build
-	cd 512lang && make socket_tcp
+	cd 512lang && make test
 
 
 .PHONY: all clean swig

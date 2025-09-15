@@ -83,6 +83,20 @@ or
 make socket_tcp
 ```
 
+## Tic-Tac-Toe
+
+A simple Tic-Tac-Toe example that demonstrates game logic, input handling, and interactive console output. Compile the example and run the produced binary to play a local two-player game on the terminal.
+
+```bash
+./compiler tictactoe.lang out
+./out
+```
+or
+
+```bash
+make tictactoe
+```
+
 ## Cleanup
 
 Remove the compiled output file:

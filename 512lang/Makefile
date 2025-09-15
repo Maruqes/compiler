@@ -26,6 +26,9 @@ features:
 	./compiler features.lang out
 	./out
 
+tictactoe:
+	./compiler tictactoe.lang out
+	./out
 
 clean:
 	rm -f out
