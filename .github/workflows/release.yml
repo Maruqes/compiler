@@ -61,6 +61,8 @@ jobs:
 
       - name: Upload 512lang.zip
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.gh_release.outputs.upload_url }}
           asset_path: ./512lang.zip
@@ -79,6 +81,8 @@ jobs:
       - name: Upload compiler ELF
         if: steps.check_elf.outputs.present == 'true'
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.gh_release.outputs.upload_url }}
           asset_path: ./compiler
