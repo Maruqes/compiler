@@ -1,9 +1,5 @@
 include("lang/liblang/floats.lang")
-include("lang/liblang/min.lang")
-include("lang/liblang/mem.lang")
 include("lang/liblang/strings.lang")
-include("lang/liblang/threads.lang")
-include("lang/liblang/net.lang")
 
 func main(dq argc){
 
