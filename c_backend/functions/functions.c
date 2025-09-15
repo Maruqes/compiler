@@ -63,11 +63,6 @@ void fixup_addresses()
             if (strcmp(fixup.symbol_name, jump_array[j].var_name) == 0)
             {
                 int32_t displacement = jump_array[j].var_address - (fixup.code_offset) - fixup.jump_offset;
-
-                printf("\nvar address: %u\n", jump_array[j].var_address);
-                printf("opcode index: %u\n", fixup.code_offset);
-                printf("displacement: %d\n\n", displacement);
-
                 symbol_address = displacement;
                 break;
             }
