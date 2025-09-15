@@ -1,205 +1,170 @@
-include("lang/liblang/min.lang")
-include("lang/liblang/mem.lang")
-include("lang/liblang/strings.lang")
-include("lang/liblang/threads.lang")
-include("lang/liblang/net.lang")
+include("liblang/min.lang")
+include("liblang/mem.lang")
+include("liblang/strings.lang")
+include("liblang/threads.lang")
+include("liblang/net.lang")
+include("liblang/floats.lang")
+include("liblang/file.lang")
 
-// ---------------- Globals ----------------
+//constant vars
 global{
-	dq gTicks = 0;
-	dq gTotal = 0;
-	dq gThreadDone = 0;
+	db GAME_CURRENT_PLAYER = 17;
+	db GAME_FIRST_CUBE = 0x4a;
+	db GAME_X_DIFF =  6;
+	db GAME_Y_DIFF =  22;
 }
 
-// ---------------- Structs ----------------
-struct Inner { dq a; dq b; }
-struct Complex {
-	dq id;
-	dq values dq<4>;   // inline array
-	dq count;
-	dq inners Inner<2>; // array of 2 Inner structs
+global{
+	dq tutorial = "
+  Press a number to place your mark:\n
+
+	    7  |  8  |  9                \n
+	    4  |  5  |  6                \n
+	    1  |  2  |  3                \n
+	\n";
+	dq game = "
+  	  Its player x turn\n
+	       |     |     \n
+	       |     |     \n
+	       |     |     \n
+	\n";
+
+	db playerNow = 0;
 }
 
-// Init Complex instance
-func initComplex(ptr cPtr, dq ident){
-	ptr c<Complex> = cPtr;
-	c.id = ident;
-	c.count = 4;
-	// write inline array via raw deref
-	*<dq>(&c.values) = 10;
-	*<dq>(&c.values + sizeof(dq)) = 20;
-	*<dq>(&c.values + (2 * sizeof(dq))) = 30;
-	*<dq>(&c.values + (3 * sizeof(dq))) = 40;
-	// inners
-	ptr i0<Inner> = &c.inners;
-	ptr i1<Inner> = &c.inners + sizeof(Inner);
-	i0.a = 1; i0.b = 2;
-	i1.a = 3; i1.b = 4;
+
+
+func printChar(ptr label, db value){
+	dq buf = db<2>;
+	print(label);
+	buf[0] = value;
+	buf[1] = 0;
+	print(buf);
 	return;
 }
 
-// Sum of all numeric fields for demonstration
-func complexSum(ptr cPtr){
-	ptr c<Complex> = cPtr;
-	dq s = c.id + c.count;
-	ptr vals<dq> = &c.values;
-	for dq i = 0; i < 4; i++; { s = s + vals[i]; }
-	ptr i0<Inner> = &c.inners;
-	ptr i1<Inner> = &c.inners + sizeof(Inner);
-	s = s + i0.a + i0.b + i1.a + i1.b;
-	return s;
-}
 
-// ---------------- Inline asm example (getpid) ----------------
-// Demonstrates invoking getpid (syscall 39) manually and returning pid.
-func getPidAsm(){
-	dq pid; 
-	asm(mov64_r_i, rax, 39); // SYS_getpid
-	asm(syscall);
-	loadVar(pid, rax); // syscall result in rax
-	return pid;
-}
-
-// ---------------- Threads ----------------
-func workerAdd(dq base){
-	// simple workload
-	for dq i = 0; i < 5; i++; {
-		gTotal = gTotal + base + i;
-		gTicks++;
-		nanosleep(0, 2000000); // 2ms
+func get_position(dq x, dq y){
+	if x < 0 || x > 2 || y < 0 || y > 2 {
+		print("Invalid position\n");
+		exit(1);
 	}
-	gThreadDone = 1;
-	return;
+	dq res = GAME_FIRST_CUBE + (x * GAME_X_DIFF) - (y * GAME_Y_DIFF);
+	return res;
 }
 
-// ---------------- Heap / brk demo ----------------
-func heapDemo(){
-	dq N = 64;
-	ptr mem = brk(N);
-	if mem == -1 { print("brk failed\n"); return; }
-	memset(mem, N, 0);
-	// Lay out mixed types at offsets
-	*<db>(mem + 0) = 'Z';
-	*<dw>(mem + 2) = 0xBEEF;
-	*<dd>(mem + 8) = 0x11223344;
-	*<dq>(mem + 16) = 0xAABBCCDDEEFF0011;
-	print("*<db>(mem + 0) -> ");printHex(*<db>(mem+0));
-	print("*<dw>(mem + 2) -> ");printHex(*<dw>(mem+2));
-	print("*<dd>(mem + 8) -> ");printHex(*<dd>(mem+8));
-	print("*<dq>(mem + 16) -> ");printHex(*<dq>(mem+16));
-	freeBrk(mem);
-	return;
+func game_init(dq gamePtr<db>){
+	playerNow = 0;
+	gamePtr[GAME_CURRENT_PLAYER] = 'X';
 }
 
-// ---------------- Network (optional) ----------------
-func tryConnect(){
-	dq sock = sys_socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if sock < 0 { print("socket fail (ok)\n"); return; }
-	dq addr<sockaddr_in> = sockaddr_in{};
-	addr.family = AF_INET; addr.port = htons(65000); addr.addr = htonl(0x7F000001); // 127.0.0.1
-	dq r = sys_connect(sock, addr, 16);
-	if r < 0 { print("connect fail (ok)\n"); sys_close(sock); return; }
-	print("connected (unexpected)\n");
-	sys_close(sock);
-	return;
-}
-
-// ---------------- Raw syscall write demo ----------------
-func rawWrite(ptr msg){
-	dq len = getStringLen(msg);
-	asm(mov64_r_i, rax, 1);
-	asm(mov64_r_i, rdi, 1);
-	loadReg(rsi, msg);
-	loadReg(rdx, len);
-	asm(syscall);
-	return;
-}
-
-// ---------------- Arg echo ----------------
-func echoArgs(dq argc, dq rbpSave){
-	ptr args<dq> = getArgsPtr(rbpSave);
-	for dq i = 0; i < argc; i++; {
-		print("arg[");
-		dq numBuf = db<16>; int_to_string(i, numBuf, 16); print(numBuf); print("] = ");
-		print(args[i]);
-		print("\n");
+func game_ended(dq gamePtr<db>){
+	//check rows 
+	for dq i = 0; i < 3; i++; {
+		dq pos1 = get_position(0,i);
+		dq pos2 = get_position(1,i);
+		dq pos3 = get_position(2,i);
+		if (gamePtr[pos1] == gamePtr[pos2]) && (gamePtr[pos2] == gamePtr[pos3]) && (gamePtr[pos1] != ' ') {
+			printChar("Player ", gamePtr[pos1]);
+			print(" wins!\n");
+			print(game);
+			exit(0);
+		}
 	}
-	return;
+
+	//check columns 
+	for dq i = 0; i < 3; i++; {
+		dq pos1 = get_position(i,0);
+		dq pos2 = get_position(i,1);
+		dq pos3 = get_position(i,2);
+		if (gamePtr[pos1] == gamePtr[pos2]) && (gamePtr[pos2] == gamePtr[pos3]) && (gamePtr[pos1] != ' ') {
+			printChar("Player ", gamePtr[pos1]);
+			print(" wins!\n");
+			print(game);
+			exit(0);
+		}
+	}
+
+	//check diagonals
+	dq pos1Dig1 = get_position(0,0);
+	dq pos2Dig1 = get_position(1,1);
+	dq pos3Dig1 = get_position(2,2);
+	if (gamePtr[pos1Dig1] == gamePtr[pos2Dig1]) && (gamePtr[pos2Dig1] == gamePtr[pos3Dig1]) && (gamePtr[pos1Dig1] != ' ') {
+		printChar("Player ", gamePtr[pos1Dig1]);
+		print(" wins!\n");
+		print(game);
+		exit(0);
+	}
+
+	dq pos1Dig2 = get_position(2,0);
+	dq pos2Dig2 = get_position(1,1);
+	dq pos3Dig2 = get_position(0,2);
+	if (gamePtr[pos1Dig2] == gamePtr[pos2Dig2]) && (gamePtr[pos2Dig2] == gamePtr[pos3Dig2]) && (gamePtr[pos1Dig2] != ' ') {
+		printChar("Player ", gamePtr[pos1Dig2]);
+		print(" wins!\n");
+		print(game);
+		exit(0);
+	}
+
+	//check if draw
+	dq emptySpaces = 0;
+	for dq y = 0; y < 3; y++; {
+		for dq x = 0; x < 3; x++; {
+			dq pos = get_position(x,y);
+			if gamePtr[pos] == ' ' {
+				emptySpaces++;
+			}
+		}
+	}
+	if emptySpaces == 0 {
+		print("It's a draw!\n");
+		print(game);
+		exit(0);
+	}
+}
+
+func get_current_place(dq gamePtr<db>){
+	print(game);
+
+	//input and set 0s
+	dq input = db<5>;
+	memset(input, 0, 5);
+
+	//read input if valid
+	read(input, 3);
+	db place = input[0] - '0';
+	if (place < 1) || (place > 9) {
+		print("Invalid input. Please enter a number between 1 and 9.\n");
+		return get_current_place(gamePtr);
+	}
+
+	dq x = (place - 1) % 3;
+	dq y = (place - 1) / 3;
+
+	if gamePtr[get_position(x,y)] != ' ' {
+		print("Position already taken. Choose another.\n");
+		return get_current_place(gamePtr);
+	}
+
+	if playerNow == 0 {
+		gamePtr[get_position(x,y)] = 'X';
+		playerNow = 1;
+		gamePtr[GAME_CURRENT_PLAYER] = 'O';
+	} else {
+		gamePtr[get_position(x,y)] = 'O';
+		playerNow = 0;
+		gamePtr[GAME_CURRENT_PLAYER] = 'X';
+	}
 }
 
 func main(dq argc){
-	print("=== Advanced Showcase ===\n");
+	dq gamePtr<db> = game;
+	game_init(gamePtr);
 
-	// Save rbp for args
-	dq rbpVal;
-	loadVar(rbpVal, rbp);
-	echoArgs(argc, rbpVal);
-
-	// Struct + nested usage
-	ptr c<Complex> = Complex{};
-	initComplex(c, 99);
-	dq sum = complexSum(c);
-	dq buf = db<32>;
-	int_to_string(sum, buf, 32);
-	print("complexSum = ");
-	print(buf);
-	print("\n");
-
-	// getpid via inline asm
-	dq pid = getPidAsm();
-	int_to_string(pid, buf, 32);
-	print("pid = ");
-	print(buf);
-	print("\n");
-
-	heapDemo();
-
-	// Thread demo (create one worker)
-	dq stack_size = 6 * 4096; //each mmap page is 4096 bytes
-	dq stack1 = mmap(6);
-	dq t1_id = 0;
-	if stack1 != -1 {
-		// base param 100
-		addThreadVariable(stack1, stack_size, 100, 0);
-		createThreadIds(&workerAdd, stack1, stack_size, &t1_id, 0, 1);
-		//thread with workerAdd(100)
-	} else {
-		print("mmap stack fail (skip thread)\n");
+	print(tutorial);
+	while 1 {
+		get_current_place(gamePtr);
+		game_ended(gamePtr);
 	}
-
-	// Poll until thread done (rudimentary join substitute)
-	dq spins = 0;
-	while gThreadDone == 0{
-		spins++;
-	}
-	print("thread finished with spins = ");
-	printHex(spins);
-
-	int_to_string(gTotal, buf, 32);
-	print("gTotal = ");
-	print(buf);
-	print("\n");
-
-	// Network attempt (non-fatal)
-	tryConnect();
-
-	// Raw write + string ops
-	ptr demo = "Reversible line!\n";
-	rawWrite(demo);
-	reverseString(demo);
-	print("reversed: ");
-	print(demo);
-	print("\n");
-
-	// Pointer arithmetic quick sample
-	dq small<dq> = dq{5,6,7};
-	ptr ps<dq> = small;
-	*<dq>(ps + sizeof(dq)) = 66;
-	int_to_string(small[1], buf, 32);
-	print("small[1] = ");
-	print(buf);
-	print("\n");
-
-	print("=== End Showcase ===\n");
 	return;
 }

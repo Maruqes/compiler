@@ -415,7 +415,7 @@ func parseConditionals(token string, reg byte, tmp byte) error {
 	return nil
 }
 
-// uses RDX and funnels dividend through RAX for division
+// uses rdx/rcx fodesse as vezes sabe se la o porque, manda pa rax e mov64_r_r
 func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *string, bool) {
 	// Temporary register for RHS values in binary operations; must differ from reg
 	tmp, err := pickTmpReg(reg)
@@ -462,12 +462,14 @@ func getUntilSymbol(parser *Parser, stopSymbol []string, reg byte) (error, *stri
 		}
 
 		// Compute RHS into our temporary register
+		PushStack64(reg) // save accumulator
 		pushReserved(tmp)
 		err = getValueFromToken(parser, token, tmp)
 		popReserved(1)
 		if err != nil {
 			panic("Error getting value from token in line " + fmt.Sprintf("%d: %s", parser.LineNumber, err.Error()))
 		}
+		PopStack64(reg) // restore accumulator
 
 		// fmt.Println(symbol)
 		switch symbol {

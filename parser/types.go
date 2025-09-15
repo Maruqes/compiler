@@ -93,6 +93,7 @@ func parseVariablesFuncCalls(parser *Parser, token string, reg byte) (bool, erro
 		if err != nil {
 			return false, err
 		}
+		backend.Mov64_r_r(reg, byte(backend.REG_RAX))
 		return true, nil
 	}
 
@@ -478,6 +479,7 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 	} else {
 		return false, fmt.Errorf("Variable '%s' not found in scope0 '%s'", token, SCOPE)
 	}
+	VARNAME := token
 
 	peekString, err := parser.Peek()
 	if err != nil {
@@ -522,7 +524,17 @@ func parseGetArrayIndex(parser *Parser, token string, reg byte) (bool, error) {
 			break
 		}
 
+		if reg == byte(backend.REG_RCX) {
+			return false, fmt.Errorf("cannot use RCX for array indexing")
+		}
+
 		err, _, parsed := getUntilSymbol(parser, []string{"]"}, byte(backend.REG_RCX))
+		if err != nil {
+			return false, err
+		}
+
+		//tem de estar aqui para nao ser sobrescrito pelo getUntilSymbol
+		err = varList.GetVariable(VARNAME, reg)
 		if err != nil {
 			return false, err
 		}
@@ -798,7 +810,7 @@ func parse64Floats(token string, reg byte) (bool, error) {
 	return true, nil
 }
 
-// may uses r8
+// may uses r8/rax
 // uses 64 bit registers to get the value of the token
 func getValueFromToken(parser *Parser, token string, reg byte) error {
 	//detect number and variables

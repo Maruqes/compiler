@@ -583,11 +583,11 @@ func setDeadressedVar(parser *Parser, varName string, vl *VarsList) error {
 		}
 	}
 
-	err, _, _ = getUntilSymbol(parser, []string{"]"}, byte(backend.REG_RCX))
+	err, _, _ = getUntilSymbol(parser, []string{"]"}, byte(backend.REG_RAX))
 	if err != nil {
 		return err
 	}
-
+	backend.Mov64_r_r(byte(backend.REG_RCX), byte(backend.REG_RAX))
 	peekString, err := parser.Peek()
 	if err != nil {
 		return err
@@ -611,7 +611,6 @@ func setDeadressedVar(parser *Parser, varName string, vl *VarsList) error {
 
 		// Ensure value in RAX matches the element width before storing.
 		clearReg(byte(backend.REG_RAX), arrType)
-
 		switch arrType {
 		case DQ:
 			backend.Mov64_mr_r(byte(backend.REG_RBX), byte(backend.REG_RCX), byte(backend.REG_RAX))

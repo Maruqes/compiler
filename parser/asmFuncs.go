@@ -281,20 +281,20 @@ var asmFuncs = map[string]any{
 	"and64_r_i":        backend.And64_r_i,
 
 	// float functions
-	"movq_x_r":        backend.Movq_x_r,
-	"movq_r_x":        backend.Movq_r_x,
-	"addsd_x_x":      backend.Addsd_x_x,
-	"subsd_x_x":      backend.Subsd_x_x,
-	"mulsd_x_x":      backend.Mulsd_x_x,
-	"divsd_x_x":      backend.Divsd_x_x,
-	"ucomisd_x_x":    backend.Ucomisd_x_x,
+	"movq_x_r":      backend.Movq_x_r,
+	"movq_r_x":      backend.Movq_r_x,
+	"addsd_x_x":     backend.Addsd_x_x,
+	"subsd_x_x":     backend.Subsd_x_x,
+	"mulsd_x_x":     backend.Mulsd_x_x,
+	"divsd_x_x":     backend.Divsd_x_x,
+	"ucomisd_x_x":   backend.Ucomisd_x_x,
 	"comisd_x_x":    backend.Comisd_x_x,
-	"xorpd_x_x":    backend.Xorpd_x_x,
-	"andpd_x_x":    backend.Andpd_x_x,
-	"sqrtsd_x_x":  backend.Sqrtsd_x_x,
+	"xorpd_x_x":     backend.Xorpd_x_x,
+	"andpd_x_x":     backend.Andpd_x_x,
+	"sqrtsd_x_x":    backend.Sqrtsd_x_x,
 	"cvtsi2sd_x_r":  backend.Cvtsi2sd_x_r,
 	"cvttsd2si_r_x": backend.Cvttsd2si_r_x,
-	"sete":           backend.Sete,
+	"sete":          backend.Sete,
 }
 
 // callAsmFunction invokes a function value of any type using reflection with the given arguments.

@@ -94,7 +94,7 @@ func parseFunctionCall(parser *Parser, funcName string) error {
 	}
 
 	backend.Call(funcName)
-	SubStack(n_params * 8)
+	SumStack(n_params * 8)
 	return nil
 }
 

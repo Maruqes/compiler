@@ -21,6 +21,7 @@ known problems
 
 todo-version manager
 github release automation
+TESTAR FORTEMENTE O AFTER getUntilSymbol METER TODO OS TIPOS DA FUNCAO getValueFromToken EM VARIOS (), METER DENTRO DE ARRAYS FORA, VER ONDE A FUNCAO É USADA E TESTAR TUDO 1 A 1, POR AMOR DE DEUS
 */
 func main() {
 	var (
