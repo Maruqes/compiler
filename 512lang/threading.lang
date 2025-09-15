@@ -1,8 +1,8 @@
-include("lang/liblang/min.lang")
-include("lang/liblang/mem.lang")
-include("lang/liblang/strings.lang")
-include("lang/liblang/threads.lang")
-include("lang/liblang/net.lang")
+include("liblang/min.lang")
+include("liblang/mem.lang")
+include("liblang/strings.lang")
+include("liblang/threads.lang")
+include("liblang/net.lang")
 
 func worker1(dq p1, dd p2, dw p3, db p4){
 	print("worker1(): p1 p2 p3 p4\n");

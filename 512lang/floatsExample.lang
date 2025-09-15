@@ -1,5 +1,5 @@
-include("lang/liblang/floats.lang")
-include("lang/liblang/strings.lang")
+include("liblang/floats.lang")
+include("liblang/strings.lang")
 
 func main(dq argc){
 
