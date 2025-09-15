@@ -19,9 +19,9 @@ import (
 known problems
 -dd(b) = fffffffffffffffa (eu esperava 00000000fffffffa)
 
-todo-version manager
-github release automation
+todo-
 TESTAR FORTEMENTE O AFTER getUntilSymbol METER TODO OS TIPOS DA FUNCAO getValueFromToken EM VARIOS (), METER DENTRO DE ARRAYS FORA, VER ONDE A FUNCAO É USADA E TESTAR TUDO 1 A 1, POR AMOR DE DEUS
+o VERSION ser de um env var ou alguma cena  o github action consiga alterar ne oh nabissa
 */
 var VERSION = "v0.1.0"
 
