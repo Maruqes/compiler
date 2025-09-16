@@ -28,7 +28,7 @@ sonhos->
 Sistema de Chat com encriptacao hehe
 navegador de ficheiros
 */
-var VERSION = "v0.1.0"
+var VERSION = "dev"
 
 func main() {
 	var (

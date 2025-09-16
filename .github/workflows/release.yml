@@ -26,6 +26,21 @@ jobs:
         with:
           go-version: '1.25'
 
+      - name: Prepare release tag name
+        id: tag
+        run: |
+          # If workflow_dispatch input 'tag' provided, use it
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            tagname="${{ github.event.inputs.tag }}"
+          elif [ -n "${GITHUB_REF}" ] && [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            tagname="${GITHUB_REF#refs/tags/}"
+          else
+            tagname="manual-${GITHUB_RUN_ID}"
+          fi
+          echo "tag=$tagname" >> "$GITHUB_OUTPUT"
+          # Export VERSION for subsequent steps (make build will see this)
+          echo "VERSION=$tagname" >> "$GITHUB_ENV"
+
       - name: Make build
         run: |
           make build
@@ -38,18 +53,7 @@ jobs:
             echo "512lang folder not found" && exit 1
           fi
 
-      - name: Prepare release tag name
-        id: tag
-        run: |
-          # If workflow_dispatch input 'tag' provided, use it
-          if [ -n "${{ github.event.inputs.tag }}" ]; then
-            echo "tag=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
-          elif [ -n "${GITHUB_REF}" ] && [[ "$GITHUB_REF" == refs/tags/* ]]; then
-            tagname="${GITHUB_REF#refs/tags/}"
-            echo "tag=$tagname" >> "$GITHUB_OUTPUT"
-          else
-            echo "tag=manual-${GITHUB_RUN_ID}" >> "$GITHUB_OUTPUT"
-          fi
+
 
       - name: Create GitHub Release
         id: gh_release
