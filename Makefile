@@ -61,7 +61,7 @@ build:
 	$(MAKE) clean
 	$(MAKE) all
 	$(MAKE) swig
-	go build -ldflags="-s -w" -trimpath -o compiler main.go
+	go build -ldflags="-s -w -X 'main.VERSION=$(VERSION)'" -trimpath -o compiler main.go
 	cp compiler 512lang/compiler
 
 
