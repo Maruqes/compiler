@@ -341,6 +341,20 @@ func createVariablesFromParams(parser *Parser, params []ParamType) error {
 		// fmt.Println(param.Name + " -> " + fmt.Sprintf("%d", paramLength-((i-1)*8)))
 		backend.Mov64_r_mi(byte(backend.REG_RAX), byte(backend.REG_RBP), paramLength-((i-1)*8))
 		createVarWithReg(parser, byte(backend.REG_RAX), param.Type, param.Name, param.Extra, ORIGIN_RBP)
+
+		//check if param.extra is a string and if it is a struct
+		if str, ok := param.Extra.(string); ok {
+			structName := GetStructByName(str)
+			//se nao for structname continua proxima iteracao
+			if structName == nil {
+				continue
+			}
+
+			//se for vamos criar as variaveis
+			if err := createVarsFromStruct(structName, param.Name); err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil

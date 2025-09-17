@@ -969,6 +969,7 @@ func createVarWithReg(parser *Parser, reg byte, varType int, name string, extra 
 		return nil, err
 	}
 
+	//talvez nao devesse estar aqui mas por motivos logicos vou deixar :D
 	if origin == ORIGIN_STRUCT {
 		structType := extra.(*StructType)
 		if err := createVarsFromStruct(structType, name); err != nil {

@@ -13,8 +13,7 @@ global{
 	dq NUMBER_OF_MMAP_PAGES = 8; //8*4096 = 32768 bytes
 }
 
-func get_linux_file_struct(ptr linux_fileT, ptr dents_buf){
-	ptr linux_file<Linux_dirent> = linux_fileT;
+func get_linux_file_struct(ptr linux_file<Linux_dirent>, ptr dents_buf){
 
 	linux_file.d_ino = *<dq>(dents_buf);
 	linux_file.d_off = *<dq>(dents_buf + 8);
