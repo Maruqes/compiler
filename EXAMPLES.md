@@ -97,6 +97,18 @@ or
 make tictactoe
 ```
 
+## File Navigator
+A basic file navigator that lists files in the current directory using low-level Linux system calls. It demonstrates how to read directory entries and display them.
+
+```bash
+./compiler file_nav.lang out
+./out
+```
+or
+```bash
+make file_nav
+```
+
 ## Cleanup
 
 Remove the compiled output file:

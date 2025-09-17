@@ -67,7 +67,7 @@ build:
 
 run:
 	$(MAKE) build
-	cd 512lang && make file_nav
+	cd 512lang && make test
 
 
 .PHONY: all clean swig

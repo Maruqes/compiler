@@ -19,11 +19,11 @@ import (
 known problems
 -dd(b) = fffffffffffffffa (eu esperava 00000000fffffffa)
 
+structsParam(Epic_Struct{1,2,3,4,0}, Epic_Struct{11,12,13,14,0});
+a criacao da estrutura dentro dos parametros estoura com a ordem da stack, é foda amigo ahahah, nao vai ser corrigido provavelmente, cria as structs fora dos parametros e passa o nome da variavel ahah
+
 todo-
 TESTAR FORTEMENTE O AFTER getUntilSymbol METER TODO OS TIPOS DA FUNCAO getValueFromToken EM VARIOS (), METER DENTRO DE ARRAYS FORA, VER ONDE A FUNCAO É USADA E TESTAR TUDO 1 A 1, POR AMOR DE DEUS
-
-
-fazer->  linux_file<Linux_dirent> isto nos parametros das funcoes
 
 sonhos->
 Sistema de Chat com encriptacao hehe
@@ -43,7 +43,7 @@ func main() {
 	}
 	inFile := os.Args[1]
 
-	if inFile == "version"{
+	if inFile == "version" {
 		fmt.Println("compiler version:", VERSION)
 		return
 	}

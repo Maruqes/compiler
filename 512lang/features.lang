@@ -770,6 +770,36 @@ func testTCP_lib(){
     // exit_group(0);
 }
 
+struct Epic_Struct{
+	dq a;
+	dd b;
+	dw c;
+	db d;
+	dw arr dw<3>;
+}
+
+
+func structsParam(ptr es1<Epic_Struct>, ptr es2<Epic_Struct>){
+	print("es1:\n");
+	printHex(es1.a);
+	printHex(es1.b);
+	printHex(es1.c);
+	printHex(es1.d);
+	printHex(*<dw>(&es1.arr));
+	printHex(*<dw>(&es1.arr+ (sizeof(dw)*1)));
+	printHex(*<dw>(&es1.arr+ (sizeof(dw)*2)));
+
+	print("es2:\n");
+	printHex(es2.a);
+	printHex(es2.b);
+	printHex(es2.c);
+	printHex(es2.d);
+	printHex(*<dw>(&es2.arr));
+	printHex(*<dw>(&es2.arr+ (sizeof(dw)*1)));
+	printHex(*<dw>(&es2.arr+ (sizeof(dw)*2)));
+	return;
+}
+
 func main(dq argc){
 
 	structsT();
@@ -832,6 +862,19 @@ func main(dq argc){
 
 	//needs "nc -lvnp 8080" running to connect
 	testTCP_lib();
+
+	ptr es1<Epic_Struct> = Epic_Struct{1,2,3,4,0};
+	ptr es2<Epic_Struct> = Epic_Struct{11,12,13,14,0};
+
+	*<dw>(&es1.arr) = 5;
+	*<dw>(&es1.arr+ (sizeof(dw)*1)) = 6;
+	*<dw>(&es1.arr+ (sizeof(dw)*2)) = 7;
+
+	*<dw>(&es2.arr) = 15;
+	*<dw>(&es2.arr+ (sizeof(dw)*1)) = 16;
+	*<dw>(&es2.arr+ (sizeof(dw)*2)) = 17;
+
+	structsParam(es1, es2);
 
 	nanosleep(1,0);
 	clock_gettimeExec();
