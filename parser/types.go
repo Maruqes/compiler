@@ -690,19 +690,12 @@ func parseTypeFuncs(parser *Parser, token string, reg byte) (bool, error) {
 		return false, err
 	}
 
-	nextToken, err := parser.NextToken()
-	if err != nil {
-		return false, err
-	}
-
-	err = getValueFromToken(parser, nextToken, reg)
+	err, _, _ = getUntilSymbol(parser, []string{")"}, reg)
 	if err != nil {
 		return false, err
 	}
 
 	clearReg(reg, typeToken)
-
-	eatSymbol(parser, ")")
 
 	return true, nil
 }

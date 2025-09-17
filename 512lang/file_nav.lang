@@ -1,0 +1,135 @@
+include("liblang/min.lang")
+include("liblang/mem.lang")
+include("liblang/strings.lang")
+include("liblang/threads.lang")
+include("liblang/net.lang")
+include("liblang/floats.lang")
+include("liblang/file.lang")
+
+global{
+	ptr current_dir = 0;
+
+	//constants
+	dq NUMBER_OF_MMAP_PAGES = 8; //8*4096 = 32768 bytes
+}
+
+func get_linux_file_struct(ptr linux_fileT, ptr dents_buf){
+	ptr linux_file<Linux_dirent> = linux_fileT;
+
+	linux_file.d_ino = *<dq>(dents_buf);
+	linux_file.d_off = *<dq>(dents_buf + 8);
+	linux_file.d_reclen = *<dw>(dents_buf + 16);
+	linux_file.d_type = *<db>(dents_buf + 18);
+	////tem de ter dw() porque se nao a funcao como recebe dq tenta ir bsucar 8 bytes ao sitio na struct e peg noutros valores,
+	//com dw força e limpa os bytes a mais que a funcao tenta ir buscar 
+	memcpy(&linux_file.file_name, dents_buf + 18, dw(linux_file.d_reclen - 19)); 
+}
+
+//sets linux_fileRetT struct and returns next position in buffer, if -1 file does not exist
+func get_linux_file_struct_index(dq dents, ptr linux_fileRetT, ptr dents_buf, dq index){
+	ptr linux_file<Linux_dirent> = linux_fileRetT;
+	dq count = 0;
+
+	for dq i = 0; i < (index + 1) ; i++; {
+		get_linux_file_struct(linux_file, dents_buf + count);
+		count = count + linux_file.d_reclen;
+		if count >= dents { return -1; } //no more files
+	}
+}
+
+func print_current_dir() {
+
+	dq fd = sys_open(current_dir, O_RDONLY | O_DIRECTORY, 0);
+	if fd < 0 {
+		print("Error opening directory\n");
+		return;
+	}
+
+	dq dents_buf = mmap(NUMBER_OF_MMAP_PAGES); //1 page = 4096 bytes
+	dq dents = getdents(fd, dents_buf, 4096);
+	if dents < 0 {
+		print("Error reading directory\n");
+		return;
+	}
+	print("\n\nDirectory ");
+	print(current_dir);
+	print(" contents:\n\n");
+	for dq i = 0; 1; i++; {
+		ptr linux_fileIter<Linux_dirent> = Linux_dirent{};
+		dq res = get_linux_file_struct_index(dents, linux_fileIter, dents_buf, i);
+		print(&linux_fileIter.file_name);
+		print("\n");
+		if res == -1 {
+			break;
+		}
+	}
+
+	freeMmap(dents_buf, NUMBER_OF_MMAP_PAGES);
+	sys_close(fd);
+	return;
+}
+
+// 1 for dir, 0 for file, -1 for error
+func is_it_a_dir_or_file(ptr path){
+	//try opening as directory
+	dq fd = sys_open(path, O_RDONLY | O_DIRECTORY, 0);
+	if fd < 0 {
+		//try opening as file
+		fd = sys_open(path, O_RDONLY, 0);
+		if fd < 0 {
+			return -1;
+		} else {
+			sys_close(fd);
+			return 0; //is a file
+		}
+	} else {
+		sys_close(fd);
+		return 1; //is a directory
+	}
+}
+
+
+
+//todo mudar de diretorio
+func main(){
+	//create current_dir
+	ptr memo = mmap(NUMBER_OF_MMAP_PAGES);
+	memcpy(memo, "./", 3); //include null terminator
+	current_dir = memo;
+
+
+	print("File Navigation Example\n");
+	ptr new_dir = db<256>;
+	print_current_dir();
+	while 1 {
+		print("\nWhere do u want to go?\n");
+		memset(new_dir, 256, 0);
+		read(new_dir, 256);
+		//remove newline char
+		new_dir[getStringLen(new_dir) - 1] = '/';
+
+		if strcmp(new_dir, "exit") {
+			print("Exiting...\n");
+			break;
+		}
+
+		//tentativa de contruir o novo path
+		ptr tempMemo = mmap(NUMBER_OF_MMAP_PAGES);
+		append_string(tempMemo, 4096, memo, new_dir);
+
+		//tentar essa nova dir
+		if is_it_a_dir_or_file(tempMemo) == 1 {
+			//se for dir, mudar current_dir, memo
+			append_string(memo, 4096, memo, new_dir);
+			print_current_dir();
+		}else{
+			print("Directory: ");
+			print(memo);
+			print(" does not exist or is a file\n"); 
+		}
+		freeMmap(tempMemo, NUMBER_OF_MMAP_PAGES);
+	}
+
+	freeMmap(memo, NUMBER_OF_MMAP_PAGES);
+	return 0;
+}

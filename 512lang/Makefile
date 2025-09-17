@@ -30,5 +30,9 @@ tictactoe:
 	./compiler tictactoe.lang out
 	./out
 
+file_nav:
+	./compiler file_nav.lang out
+	./out
+
 clean:
 	rm -f out

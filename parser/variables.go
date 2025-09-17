@@ -960,9 +960,20 @@ func createVarWithReg(parser *Parser, reg byte, varType int, name string, extra 
 		backend.Mov64_r_r(byte(backend.REG_RAX), reg)
 	}
 
-	variable, err := varList.AddVariable(name, varType, extra, origin)
+	finalVarType := origin
+	if finalVarType == ORIGIN_STRUCT {
+		finalVarType = ORIGIN_RBP
+	}
+	variable, err := varList.AddVariable(name, varType, extra, finalVarType)
 	if err != nil {
 		return nil, err
+	}
+
+	if origin == ORIGIN_STRUCT {
+		structType := extra.(*StructType)
+		if err := createVarsFromStruct(structType, name); err != nil {
+			return nil, err
+		}
 	}
 
 	return variable, nil
