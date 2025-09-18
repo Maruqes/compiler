@@ -1,13 +1,22 @@
-include("liblang/min.lang")
-include("liblang/mem.lang")
-include("liblang/strings.lang")
-include("liblang/threads.lang")
-include("liblang/net.lang")
-include("liblang/floats.lang")
-include("liblang/file.lang")
+
+struct meudeus{
+	dq a;
+	dw b;
+	dq c;
+}
+
+func printPLS(dq a, dq printasso){
+	printHex(printasso);
+}
 
 
 func main(dq argc){
-	print("Hello from 512lang!\n");
+
+	ptr naosei<meudeus> = meudeus{0x123456789abcdef0, 0x1234, 0xabcdef0123456789};
+
+
+
+	printPLS(0xaaaaaaaaaaaaaaaa,naosei.b);
+
 	return;
 }

@@ -234,11 +234,13 @@ func (vl *VarsList) GetVariable(name string, reg byte) error {
 				if err != nil {
 					return err
 				}
+				// clearReg(reg, v.Type)
 			case ORIGIN_STRUCT:
 				err := getStructVar(&v, reg)
 				if err != nil {
 					return err
 				}
+				// clearReg(reg, v.Type)
 			}
 
 			return nil

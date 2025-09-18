@@ -21,7 +21,7 @@ func get_linux_file_struct(ptr linux_file<Linux_dirent>, ptr dents_buf){
 	linux_file.d_type = *<db>(dents_buf + 18);
 	////tem de ter dw() porque se nao a funcao como recebe dq tenta ir bsucar 8 bytes ao sitio na struct e peg noutros valores,
 	//com dw força e limpa os bytes a mais que a funcao tenta ir buscar 
-	memcpy(&linux_file.file_name, dents_buf + 18, dw(linux_file.d_reclen - 19)); 
+	memcpy(&linux_file.file_name, dents_buf + 18, linux_file.d_reclen - 19); 
 }
 
 //sets linux_fileRetT struct and returns next position in buffer, if -1 file does not exist

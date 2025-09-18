@@ -67,7 +67,7 @@ build:
 
 run:
 	$(MAKE) build
-	cd 512lang && make tcp_conv_server
+	cd 512lang && make test
 
 
 .PHONY: all clean swig

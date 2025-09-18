@@ -188,11 +188,10 @@ func createStructType(parser *Parser) error {
 
 			finalSize = allocSizeInt
 
-
 			if GetStructByName(peekString) != nil {
 				fieldStruct = GetStructByName(peekString)
-			}else{
-				typeArr,err := getTypeFromToken(peekString)
+			} else {
+				typeArr, err := getTypeFromToken(peekString)
 				if err != nil {
 					return err
 				}
@@ -365,7 +364,6 @@ func getStructVar(variable *Variable, reg byte) error {
 	if err := varList.GetVariable(structName, byte(backend.REG_RBX)); err != nil {
 		return err
 	}
-
 	switch variable.Type {
 	case DB:
 		backend.Mov8_r_mi(reg, byte(backend.REG_RBX), int(spacer))
@@ -378,7 +376,7 @@ func getStructVar(variable *Variable, reg byte) error {
 	default:
 		return fmt.Errorf("unknown field type %d for '%s'", variable.Type, variable.Name)
 	}
-
+	clearReg(reg, variable.Type)
 	return nil
 }
 
