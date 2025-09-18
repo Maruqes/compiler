@@ -34,5 +34,13 @@ file_nav:
 	./compiler file_nav.lang out
 	./out
 
+tcp_conv_server:
+	./compiler tcpConv/tcpConvServer.lang out
+	./out
+
+tcp_conv_client:
+	./compiler tcpConv/tcpConvClient.lang out
+	./out
+
 clean:
 	rm -f out

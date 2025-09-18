@@ -128,3 +128,15 @@ func sys_listen(dq sockfd, dq backlog){
 	asm(syscall);
 	return;
 }
+
+func sys_recv(dq sockfd, ptr buf, dq len, dq flags){
+	asm(mov64_r_i, rax, 45); // recvfrom
+	loadReg(rdi, sockfd);
+	loadReg(rsi, buf);
+	loadReg(rdx, len);
+	loadReg(r10, flags);
+	asm(mov64_r_i, r8, 0);  // src_addr
+	asm(mov64_r_i, r9, 0);  // addrlen
+	asm(syscall);
+	return;
+}

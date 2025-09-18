@@ -1,0 +1,43 @@
+include("liblang/min.lang")
+include("liblang/mem.lang")
+include("liblang/strings.lang")
+include("liblang/threads.lang")
+include("liblang/net.lang")
+include("liblang/floats.lang")
+include("liblang/file.lang")
+
+func main(){
+	print("Starting server...\n");
+	dq sock = sys_socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if sock < 0 { print("socket() failed\n"); return; }
+
+    dq addr<sockaddr_in> = sockaddr_in{};
+    addr.family = AF_INET;
+    addr.port = htons(8080);
+    addr.addr = htonl(0x7F000001); // 127.0.0.1
+
+	dq bindRes = sys_bind(sock, addr, 16);
+	if bindRes < 0 { print("bind() failed\n"); return; }
+
+	dq listenRes = sys_listen(sock, 5);
+	if listenRes < 0 { print("listen() failed\n"); return; }
+	print("Listening on port 8080...\n");
+
+
+	//accept loop
+	dq buf = db<512>;
+	while 1 {
+		dq acceptRes = sys_accept(sock, 0, 0);
+		if acceptRes < 0 { print("accept() failed\n"); break; }
+		print("Client connected\n");
+		
+		//recv
+		memset(buf, 512, 0);
+		dq rr = sys_recv(acceptRes, buf, 512, 0);
+		if rr < 0 { print("recv() failed\n"); sys_close(acceptRes); continue; }
+		if rr == 0 { print("Client disconnected\n"); sys_close(acceptRes); continue; }
+		print("Received: ");
+		print(buf);
+
+	}
+}
