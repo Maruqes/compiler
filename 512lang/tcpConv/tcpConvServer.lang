@@ -1,4 +1,5 @@
 include("liblang/min.lang")
+include("liblang/arrays.lang")
 include("liblang/mem.lang")
 include("liblang/strings.lang")
 include("liblang/threads.lang")
@@ -6,7 +7,69 @@ include("liblang/net.lang")
 include("liblang/floats.lang")
 include("liblang/file.lang")
 
+
+global{
+	dq connections_memory = 0;
+	dq connections_count = 0;
+	dq max_connections = 0;
+
+
+
+	dq CONNECTIONS_MAP_SIZE = 5;
+}
+
+func funcToCall(dq buffer){
+	print("In funcToCall:\n");
+	print(buffer);
+	return;
+}
+
+func read_connection_buffer(dq accepted_socket, dq function_pointer){
+	while 1 {
+		dq buf = db<512>;
+		memset(buf, 512, 0);
+		dq rr = sys_recv(accepted_socket, buf, 512, 0);
+		if rr < 0 { print("recv() failed\n"); sys_close(accepted_socket); break; }
+		if rr == 0 { print("Client disconnected\n"); sys_close(accepted_socket); break; }
+		
+		// function_pointer(buf);
+		loadReg(rax, buf);
+		asm(push64, rax);
+		loadReg(rbx, function_pointer);
+		asm(call_raw_address, rbx);
+		asm(pop64, rax); //nao precisa de pop mas fica, porque o while limpa o stack anyway
+	}
+}
+
+func handle_connection(dq accepted_socket, ptr thread_id_pointer, ptr stack){
+	read_connection_buffer(accepted_socket, &funcToCall);
+	dq newCount = remove_item_by_value(connections_memory, connections_count, accepted_socket);
+	connections_count = newCount;
+	threadJoin(thread_id_pointer);
+	freeMmap(stack, CONNECTIONS_MAP_SIZE);
+}
+
+func add_connection(dq accepted_socket){
+	// check we have room for another connection
+	if connections_count >= max_connections {
+		print("Max connections reached, rejecting connection\n");
+		sys_close(accepted_socket);
+		return;
+	}
+
+	 dq cons<dq> = connections_memory;
+	 cons[connections_count] = accepted_socket;
+	 connections_count++;
+	 print("Connection added.\n");
+}
+
+// for each connection, need to spawn a thread to handle it
 func main(){
+
+	connections_memory = mmap(CONNECTIONS_MAP_SIZE); 
+	connections_count = 0;
+	max_connections = (CONNECTIONS_MAP_SIZE * 4096) / 8; // 8 bytes per connection
+
 	print("Starting server...\n");
 	dq sock = sys_socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if sock < 0 { print("socket() failed\n"); return; }
@@ -31,13 +94,30 @@ func main(){
 		if acceptRes < 0 { print("accept() failed\n"); break; }
 		print("Client connected\n");
 		
-		//recv
-		memset(buf, 512, 0);
-		dq rr = sys_recv(acceptRes, buf, 512, 0);
-		if rr < 0 { print("recv() failed\n"); sys_close(acceptRes); continue; }
-		if rr == 0 { print("Client disconnected\n"); sys_close(acceptRes); continue; }
-		print("Received: ");
-		print(buf);
+		add_connection(acceptRes);
+
+		//spawn thread to handle connection
+		dq stack_size = 8 * 4096;
+		dq t1_id; 
+		dq stack_t1 = mmap(8);
+		addThreadVariable(stack_t1, stack_size, acceptRes, 0); // pass variable to thread
+		createThreadIds(&handle_connection, stack_t1, stack_size, &t1_id, 0, 1); // create thread
+		print("Spawned thread to handle connection\n");
+
+
+		// //recv
+		// memset(buf, 512, 0);
+		// //rr is length of received data
+		// dq rr = sys_recv(acceptRes, buf, 512, 0);
+		// if rr < 0 { print("recv() failed\n"); sys_close(acceptRes); continue; }
+		// if rr == 0 { print("Client disconnected\n"); sys_close(acceptRes); continue; }
+		// print("Received: ");
+		// print(buf);
+
+		// //send echo
+		// dq sr = sys_send(acceptRes, buf, rr, 0);
+		// if sr < 0 { print("send() failed\n"); sys_close(acceptRes); continue; }
+		// print("Echoed back to client\n");
 
 	}
 }
