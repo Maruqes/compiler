@@ -56,6 +56,8 @@ func main(){
 	//creating thread 2 with no params
 	createThreadIds(&worker2, stack_t2, stack_size, &t2_id, 0, 0);
 
+	printHex(t1_id);
+	printHex(t2_id);
 	print("Threads created, joining...\n");
 	threadJoin(&t1_id);
 	print("Joined thread 1\n");

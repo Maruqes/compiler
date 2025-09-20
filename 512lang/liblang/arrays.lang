@@ -57,3 +57,10 @@ func copy_item_by_index_to_var(ptr var_ptr, dq var_length, dq arr, dq arr_length
 	}
 	return 0; // success
 }
+
+func get_ptr_by_index(dq arr, dq arr_length, dq index, dq element_size){
+	index = index * element_size; // convert to byte index
+	if (index >= arr_length) { return 0; } 
+	if (index + element_size) > arr_length { return 0; }
+	return arr + index;
+}

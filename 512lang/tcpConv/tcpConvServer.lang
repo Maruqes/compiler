@@ -9,9 +9,6 @@ include("liblang/file.lang")
 
 
 global{
-	dq connections_count = 0;
-	dq max_connections = 0;
-
 	dq threads_arr = 0;
 	dq threads_count = 0;
 	dq max_threads = 0;
@@ -22,17 +19,18 @@ global{
 
 struct thread_data{
 	dq thread_id;
+	dq connection_memory;
 	dq stack;
 	dq dead;
 }
 
 func printAllConnections(){
 	dq i = 0;
-	print_num("Current connections: " , connections_count);
-	while i < connections_count {
+	print_num("Current connections: " , threads_count);
+	while i < threads_count {
 		dq thread_var<thread_data> = thread_data{};
 		copy_item_by_index_to_var(thread_var, sizeof(thread_data), threads_arr, max_threads, i);
-		print_num("Connection socket fd: ", connections_memory[i]);
+		print_num("Connection socket fd: ", thread_var.connection_memory);
 		print_num(" | Thread ID: ", thread_var.thread_id);
 		print_num(" | Dead: ", thread_var.dead);
 		print("\n");
@@ -48,7 +46,7 @@ func check_dead_threads(){
 		copy_item_by_index_to_var(thread_var, sizeof(thread_data), threads_arr, max_threads, i);
 		if thread_var.dead == 1 {
 			print_num("Cleaning up dead thread at index: ", i);
-			// threadJoin(&thread_var.thread_id);
+			threadJoin(&thread_var.thread_id);
 			freeMmap(thread_var.stack, CONNECTIONS_MAP_SIZE);
 			remove_item_by_data(threads_arr, threads_count * sizeof(thread_data), thread_var, sizeof(thread_data));
 			threads_count--;
@@ -84,8 +82,6 @@ func read_connection_buffer(dq accepted_socket, dq function_pointer){
 //index on threads_arr
 func handle_connection(dq accepted_socket, dq index){
 	read_connection_buffer(accepted_socket, &funcToCall);
-	dq newCount = remove_item_by_value(connections_memory, connections_count, accepted_socket);
-	connections_count = newCount;
 
 	//get thread_data from threads_arr and set as dead
 	dq thread_var<thread_data> = thread_data{};
@@ -97,26 +93,8 @@ func handle_connection(dq accepted_socket, dq index){
 	return;
 }
 
-func add_connection(dq accepted_socket){
-	// check we have room for another connection
-	if connections_count >= max_connections {
-		print("Max connections reached, rejecting connection\n");
-		sys_close(accepted_socket);
-		return;
-	}
-
-	 dq cons<dq> = connections_memory;
-	 cons[connections_count] = accepted_socket;
-	 connections_count++;
-	 print("Connection added.\n");
-}
-
 // for each connection, need to spawn a thread to handle it
 func main(){
-
-	connections_memory = mmap(CONNECTIONS_MAP_SIZE); 
-	connections_count = 0;
-	max_connections = (CONNECTIONS_MAP_SIZE * 4096) / 8; // 8 bytes per connection
 
 	threads_arr = mmap(CONNECTIONS_MAP_SIZE * sizeof(thread_data)); //
 	threads_count = 0;
@@ -144,17 +122,17 @@ func main(){
 		if acceptRes < 0 { print("accept() failed\n"); break; }
 		print("Client connected\n");
 		
-		add_connection(acceptRes);
-
 
 		dq thread_var<thread_data> = thread_data{};
 		thread_var.stack = mmap(CONNECTIONS_MAP_SIZE);
+		thread_var.connection_memory = acceptRes;
 		thread_var.dead = 0;
 
 		copy_item_by_index_to_arr(threads_arr, max_threads, threads_count, thread_var, sizeof(thread_data));
 		addThreadVariable(thread_var.stack,  CONNECTIONS_MAP_SIZE*4096, acceptRes, 0); // pass variable to thread
 		addThreadVariable(thread_var.stack,  CONNECTIONS_MAP_SIZE*4096, threads_count, 1); // pass variable to thread
-		createThreadIds(&handle_connection, thread_var.stack, CONNECTIONS_MAP_SIZE*4096, &thread_var.thread_id, 0, 2); // create thread
+		dq tid<thread_data> = get_ptr_by_index(threads_arr, max_threads, threads_count, sizeof(thread_data));
+		createThreadIds(&handle_connection, thread_var.stack, CONNECTIONS_MAP_SIZE*4096, &tid.thread_id, 0, 2); // create thread
 		print("Spawned thread to handle connection\n");
 		threads_count++;
 
