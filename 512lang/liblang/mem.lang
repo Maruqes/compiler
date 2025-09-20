@@ -50,6 +50,31 @@ func memcpy(ptr dest, ptr src, dq len){
 	return;
 }
 
+func cmpmem(ptr s1, ptr s2, dq len){
+	for dq i = 0; i < len; i++; {
+		if s1[i] != s2[i] {
+			return 0;
+		}
+	}
+	return 1;
+}
+
+func shift_left_bytes(ptr arr, dq length, dq shift_amount){
+	if length == 0 || shift_amount == 0 { return; }
+	dq i = 0;
+	while i < (length - shift_amount) {
+		arr[i] = arr[i + shift_amount];
+		i++;
+	}
+	// zero out the remaining bytes
+	dq j = length - shift_amount;
+	while j < length {
+		arr[j] = 0;
+		j++;
+	}
+	return;
+}
+
 //needs to be called from main (defer is another func so can not use it)
 func getArgsPtr(dq rbpVar) {
 	ptr args<dq> = rbpVar + 24;

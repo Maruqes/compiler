@@ -158,3 +158,12 @@ func append_string(ptr dest,dq max_len, ptr str1, ptr str2){
 	dest[len1 + len2] = 0;
 	return;
 }
+
+func print_num(ptr label, dq value){
+	dq buf = db<32>;
+	print(label);
+	int_to_string(value, buf, 32);
+	print(buf);
+	print("\n");
+	return;
+}
