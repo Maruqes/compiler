@@ -3,58 +3,66 @@ include("liblang/mem.lang")
 include("liblang/arrays.lang")
 include("liblang/strings.lang")
 include("liblang/threads.lang")
+include("liblang/locks.lang")
 include("liblang/net.lang")
 include("liblang/floats.lang")
 include("liblang/file.lang")
 
 
 global{
-	dq threads_arr = 0;
-	dq threads_count = 0;
-	dq max_threads = 0;
+	dq connections_arr = 0;
+	dq connections_arr_size = 0;
+	dq connections_count = 0;
+	dq max_connections = 0;
 
-
-	dq CONNECTIONS_MAP_SIZE = 5;
+	dq LOCK_connections_arr = 0;
+	dq CONNECTIONS_MAP_SIZE = 30;
+	dq THREAD_STACK_SIZE = 2;
 }
 
 struct thread_data{
-	dq thread_id;
+	dq thread_id; //thread id from createThreadIds
 	dq connection_memory;
 	dq stack;
 	dq dead;
 }
 
-func printAllConnections(){
-	dq i = 0;
-	print_num("Current connections: " , threads_count);
-	while i < threads_count {
-		dq thread_var<thread_data> = thread_data{};
-		copy_item_by_index_to_var(thread_var, sizeof(thread_data), threads_arr, max_threads, i);
-		print_num("Connection socket fd: ", thread_var.connection_memory);
-		print_num(" | Thread ID: ", thread_var.thread_id);
-		print_num(" | Dead: ", thread_var.dead);
-		print("\n");
-		i++;
-	}
-}
 
 
-func check_dead_threads(){
+func print_number_of_alive(){
+	dq alive_count = 0;
+	// Acquire lock before reading shared threads array
+	lock_lock(&LOCK_connections_arr);
 	dq i = 0;
-	while i < threads_count {
+	while i < connections_count {
 		dq thread_var<thread_data> = thread_data{};
-		copy_item_by_index_to_var(thread_var, sizeof(thread_data), threads_arr, max_threads, i);
-		if thread_var.dead == 1 {
-			print_num("Cleaning up dead thread at index: ", i);
-			threadJoin(&thread_var.thread_id);
-			freeMmap(thread_var.stack, CONNECTIONS_MAP_SIZE);
-			remove_item_by_data(threads_arr, threads_count * sizeof(thread_data), thread_var, sizeof(thread_data));
-			threads_count--;
-			i--; // stay at same index for next iteration since we shifted left
+		SA_get_item_by_index_to_var(thread_var, sizeof(thread_data), connections_arr, connections_arr_size, i);
+		if thread_var.dead == 0 {
+			alive_count++;
 		}
 		i++;
 	}
+	lock_unlock(&LOCK_connections_arr);
+	print_num("Number of alive connections: ", alive_count);
 }
+
+func get_dead_index(){
+	// Acquire lock before reading shared threads array
+	lock_lock(&LOCK_connections_arr);
+	dq i = 0;
+	while i < connections_count {
+		dq thread_var<thread_data> = thread_data{};
+		SA_get_item_by_index_to_var(thread_var, sizeof(thread_data), connections_arr, connections_arr_size, i);
+		if thread_var.dead == 1 {
+			lock_unlock(&LOCK_connections_arr);
+			return i;
+		}
+		i++;
+	}
+	lock_unlock(&LOCK_connections_arr);
+	return -1; // no dead found
+}
+
 
 func funcToCall(dq buffer){
 	print("In funcToCall:\n");
@@ -79,28 +87,83 @@ func read_connection_buffer(dq accepted_socket, dq function_pointer){
 	}
 }
 
-//index on threads_arr
+//index on connections_arr
 func handle_connection(dq accepted_socket, dq index){
 	read_connection_buffer(accepted_socket, &funcToCall);
 
-	//get thread_data from threads_arr and set as dead
-	dq thread_var<thread_data> = thread_data{};
-	copy_item_by_index_to_var(thread_var, sizeof(thread_data), threads_arr, max_threads, index);
+	lock_lock(&LOCK_connections_arr);
+	dq thread_var<thread_data> = SA_get_ptr_by_index(connections_arr, connections_arr_size, index, sizeof(thread_data));
 	thread_var.dead = 1;
-	copy_item_by_index_to_arr(threads_arr, max_threads, index, thread_var, sizeof(thread_data));
+	lock_unlock(&LOCK_connections_arr);
 
 	print_num("Thread handling connection exiting on index: ", index);
 	return;
 }
 
+
+//if find unused set it there, if not just add at the end
+func handle_thread_setup(dq accepted_socket){
+
+	dq possible_index = get_dead_index();
+
+	if possible_index == -1 {
+		possible_index = connections_count; // reuse dead slot
+	}
+
+	//create thread at the last position
+	//get a thread_data from connections_arr at connections_count index
+	lock_lock(&LOCK_connections_arr);
+	dq thread_var<thread_data> = SA_get_ptr_by_index(connections_arr, connections_arr_size, possible_index, sizeof(thread_data));
+	lock_unlock(&LOCK_connections_arr);
+
+	//setup thread_var
+	if possible_index == -1 {
+		threadJoin(&thread_var.thread_id);
+		freeMmap(thread_var.stack, THREAD_STACK_SIZE);
+	}
+	thread_var.stack = mmap(THREAD_STACK_SIZE);
+	if thread_var.stack == 0 { print("mmap() failed\n"); sys_close(accepted_socket); return; }
+	thread_var.connection_memory = accepted_socket;
+	thread_var.dead = 0;
+	thread_var.thread_id = 0;
+		
+	//create thread to handle connection
+	addThreadVariable(thread_var.stack,  THREAD_STACK_SIZE*4096, accepted_socket, 0); // pass variable to thread
+	addThreadVariable(thread_var.stack,  THREAD_STACK_SIZE*4096, possible_index, 1); // pass variable to thread
+	createThreadIds(&handle_connection, thread_var.stack, THREAD_STACK_SIZE*4096, &thread_var.thread_id, 0, 2); // create thread
+	print_num("Spawned thread to handle connection number: ", possible_index);
+
+	if possible_index == connections_count {
+		connections_count++;
+	}
+}
+
+func setup_memory_for_threads(){
+	//setup connections_arr as non dead
+	dq thread_var<thread_data> = thread_data{};
+	thread_var.thread_id = 0;
+	thread_var.connection_memory = 0;
+	thread_var.stack = 0;
+	thread_var.dead = 1; // mark as dead or unused
+	dq i = 0;
+	while i < max_connections {
+		SA_set_item_by_index(connections_arr, connections_arr_size, i, &thread_var, sizeof(thread_data));
+		i++;
+	}
+}
+
 // for each connection, need to spawn a thread to handle it
 func main(){
 
-	threads_arr = mmap(CONNECTIONS_MAP_SIZE * sizeof(thread_data)); //
-	threads_count = 0;
-	max_threads = (CONNECTIONS_MAP_SIZE * 4096) / sizeof(thread_data);
+	create_lock(&LOCK_connections_arr);
 
-	print("Starting server...\n");
+	connections_arr = mmap(CONNECTIONS_MAP_SIZE); 
+	if connections_arr == 0 { print("mmap() failed\n"); return; }
+	connections_count = 0;
+	max_connections = (CONNECTIONS_MAP_SIZE * 4096) / sizeof(thread_data);
+	connections_arr_size = CONNECTIONS_MAP_SIZE * 4096;
+
+	print_num("Starting server with slots: ", max_connections);
 	dq sock = sys_socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if sock < 0 { print("socket() failed\n"); return; }
 
@@ -119,33 +182,12 @@ func main(){
 	//accept loop
 	while 1 {
 		dq acceptRes = sys_accept(sock, 0, 0);
-		if acceptRes < 0 { print("accept() failed\n"); break; }
+		if acceptRes < 0 { print("accept() failed\n"); nanosleep(0, 100000000); continue; }
 		print("Client connected\n");
 		
+		handle_thread_setup(acceptRes);
 
-		dq thread_var<thread_data> = thread_data{};
-		thread_var.stack = mmap(CONNECTIONS_MAP_SIZE);
-		thread_var.connection_memory = acceptRes;
-		thread_var.dead = 0;
-
-		copy_item_by_index_to_arr(threads_arr, max_threads, threads_count, thread_var, sizeof(thread_data));
-		addThreadVariable(thread_var.stack,  CONNECTIONS_MAP_SIZE*4096, acceptRes, 0); // pass variable to thread
-		addThreadVariable(thread_var.stack,  CONNECTIONS_MAP_SIZE*4096, threads_count, 1); // pass variable to thread
-		dq tid<thread_data> = get_ptr_by_index(threads_arr, max_threads, threads_count, sizeof(thread_data));
-		createThreadIds(&handle_connection, thread_var.stack, CONNECTIONS_MAP_SIZE*4096, &tid.thread_id, 0, 2); // create thread
-		print("Spawned thread to handle connection\n");
-		threads_count++;
-
-		printAllConnections();
-
-		check_dead_threads();
-		print("\n");
-		printAllConnections();
-
-		print("\n");
-		print("\n");
-		print("\n");
-
+		print_number_of_alive();
 
 		// //recv
 		// memset(buf, 512, 0);

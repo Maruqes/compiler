@@ -19,48 +19,72 @@ func remove_item_by_value(dq arr, dq length, dq value){
 	return length; // unchanged length
 }
 
-func remove_item_by_data(dq arr, dq length, ptr value, dq value_size){
-    if length == 0 { return 0; }
-    dq i = 0;
-    while i <= (length - value_size) {
-        if cmpmem(arr + i, value, value_size) == 1 {
-            // Shift remaining bytes left by value_size
-            shift_left_bytes(arr + i, length - i, value_size);
-            return length - value_size;
-        }
-        i += value_size; // step by element size
+//AREA FOR STRUCT ARRAY FUNCTIONS
+//ARRAYS OF STRUCTS DO NOT EXISTS, SO WE USE NORMAL ARRAYS AND FUNCTIONS TO MANAGE THEM
+// SA_ = Struct Array
+
+//remove first occurrence of data on struct_ptr from array_struct
+func SA_remove_item_by_struct_data(dq array_struct, dq current_array_length, ptr struct_ptr, dq struct_size){
+    if current_array_length == 0 { 
+        return 0; 
     }
-    return length;
+
+    dq i = 0;
+    while i <= (current_array_length - struct_size) {
+        if cmpmem(array_struct + i, struct_ptr, struct_size) == 1 {
+            // Shift remaining bytes left by struct_size
+            shift_left_bytes(array_struct + i, current_array_length - i, struct_size);
+            return current_array_length - struct_size;
+        }
+        i += struct_size; // step by element size
+    }
+    return current_array_length;
 }
 
+//copies data in struct_ptr to array_struct at index
+func SA_set_item_by_index(dq array_struct, dq current_array_length, dq index, ptr struct_ptr, dq struct_size){
+    index = index * struct_size; // convert to byte index
+    if (index >= current_array_length) { 
+        return -1; 
+    } 
+    if (index + struct_size) > current_array_length { 
+        return -2; 
+    }
 
-func copy_item_by_index_to_arr(dq arr, dq arr_length_bytes, dq index, ptr value, dq value_size){
-	index = index * value_size; // convert to byte index
-	if (index >= arr_length_bytes) { return -1; } 
-	if (index + value_size) > arr_length_bytes { return -2; }
-	dq i = 0;
-	while i < value_size {
-		arr[index + i] = value[i];
-		i++;
-	}
-	return 0; // success
+    dq i = 0;
+    while i < struct_size {
+        array_struct[index + i] = struct_ptr[i];
+        i++;
+    }
+    return 0; // success
 }
 
-func copy_item_by_index_to_var(ptr var_ptr, dq var_length, dq arr, dq arr_length, dq index){
-	index = index * var_length; // convert to byte index
-	if (index >= arr_length) { return -1; } 
-	if (index + var_length) > arr_length { return -2; }
-	dq i = 0;
-	while i < var_length {
-		var_ptr[i] = arr[index + i];
-		i++;
-	}
-	return 0; // success
+//copies data from array_struct at index to struct_ptr
+func SA_get_item_by_index_to_var(ptr struct_ptr, dq struct_size, dq array_struct, dq current_array_length, dq index){
+    index = index * struct_size; // convert to byte index
+    if (index >= current_array_length) { 
+        return -1; 
+    } 
+    if (index + struct_size) > current_array_length { 
+        return -2; 
+    }
+
+    dq i = 0;
+    while i < struct_size {
+        struct_ptr[i] = array_struct[index + i];
+        i++;
+    }
+    return 0; // success
 }
 
-func get_ptr_by_index(dq arr, dq arr_length, dq index, dq element_size){
-	index = index * element_size; // convert to byte index
-	if (index >= arr_length) { return 0; } 
-	if (index + element_size) > arr_length { return 0; }
-	return arr + index;
+//returns pointer to item at index in array_struct
+func SA_get_ptr_by_index(dq array_struct, dq current_array_length, dq index, dq struct_size){
+    index = index * struct_size; // convert to byte index
+    if (index >= current_array_length) { 
+        return 0; 
+    } 
+    if (index + struct_size) > current_array_length { 
+        return 0; 
+    }
+    return array_struct + index;
 }
