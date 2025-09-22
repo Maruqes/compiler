@@ -102,7 +102,7 @@ func handle_connection(dq accepted_socket, dq index){
 
 
 //if find unused set it there, if not just add at the end
-func handle_thread_setup(dq accepted_socket){
+func handle_thread_setup(dq accepted_socket, dq function_pointer){
 
 	dq possible_index = get_dead_index();
 
@@ -138,24 +138,28 @@ func handle_thread_setup(dq accepted_socket){
 	}
 }
 
-func setup_memory_for_threads(){
-	//setup connections_arr as non dead
-	dq thread_var<thread_data> = thread_data{};
-	thread_var.thread_id = 0;
-	thread_var.connection_memory = 0;
-	thread_var.stack = 0;
-	thread_var.dead = 1; // mark as dead or unused
-	dq i = 0;
-	while i < max_connections {
-		SA_set_item_by_index(connections_arr, connections_arr_size, i, &thread_var, sizeof(thread_data));
-		i++;
+func accept_tcp_loop(dq sock, dq function_pointer){
+	//accept loop
+	while 1 {
+		dq acceptRes = sys_accept(sock, 0, 0);
+		if acceptRes < 0 { print("accept() failed\n"); nanosleep(0, 100000000); continue; }
+		print("Client connected\n");
+		
+		handle_thread_setup(acceptRes, function_pointer);
+
+		print_number_of_alive();
+
+		// //send echo
+		// dq sr = sys_send(acceptRes, buf, rr, 0);
+		// if sr < 0 { print("send() failed\n"); sys_close(acceptRes); continue; }
+		// print("Echoed back to client\n");
+
 	}
 }
 
-// for each connection, need to spawn a thread to handle it
-func main(){
-
-	create_lock(&LOCK_connections_arr);
+//ip in hex, lock ptr var
+func setup_tcp_server(dq ip, dq port, ptr lock){
+	create_lock(&lock);
 
 	connections_arr = mmap(CONNECTIONS_MAP_SIZE); 
 	if connections_arr == 0 { print("mmap() failed\n"); return; }
@@ -169,8 +173,8 @@ func main(){
 
     dq addr<sockaddr_in> = sockaddr_in{};
     addr.family = AF_INET;
-    addr.port = htons(8080);
-    addr.addr = htonl(0x7F000001); // 127.0.0.1
+    addr.port = htons(port);
+    addr.addr = htonl(ip); // 127.0.0.1
 
 	dq bindRes = sys_bind(sock, addr, 16);
 	if bindRes < 0 { print("bind() failed\n"); return; }
@@ -179,29 +183,13 @@ func main(){
 	if listenRes < 0 { print("listen() failed\n"); return; }
 	print("Listening on port 8080...\n");
 
-	//accept loop
-	while 1 {
-		dq acceptRes = sys_accept(sock, 0, 0);
-		if acceptRes < 0 { print("accept() failed\n"); nanosleep(0, 100000000); continue; }
-		print("Client connected\n");
-		
-		handle_thread_setup(acceptRes);
+	return sock;
+}
 
-		print_number_of_alive();
-
-		// //recv
-		// memset(buf, 512, 0);
-		// //rr is length of received data
-		// dq rr = sys_recv(acceptRes, buf, 512, 0);
-		// if rr < 0 { print("recv() failed\n"); sys_close(acceptRes); continue; }
-		// if rr == 0 { print("Client disconnected\n"); sys_close(acceptRes); continue; }
-		// print("Received: ");
-		// print(buf);
-
-		// //send echo
-		// dq sr = sys_send(acceptRes, buf, rr, 0);
-		// if sr < 0 { print("send() failed\n"); sys_close(acceptRes); continue; }
-		// print("Echoed back to client\n");
-
-	}
+// for each connection, need to spawn a thread to handle it
+func main(){
+	dq sock = setup_tcp_server(0x7F000001, 8080, &LOCK_connections_arr);
+	if sock < 0 { print("setup_tcp_server() failed\n"); return; }
+	
+	accept_tcp_loop(sock, &funcToCall);
 }
